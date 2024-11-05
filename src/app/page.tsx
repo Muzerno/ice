@@ -1,10 +1,18 @@
-import React from 'react';
-import { Button } from 'antd';
+'use client';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const Home = () => (
-    <div className="App">
 
-    </div>
-);
+
+const Home = () => {
+    const router = useRouter()
+    useEffect(() => {
+        router.push('/auth/login')
+    })
+    return (<div className="App" >
+
+    </div >)
+
+};
 
 export default Home;

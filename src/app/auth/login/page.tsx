@@ -21,18 +21,15 @@ const LoginPage = () => {
     };
 
     return (
-
-        <div className='w-full'>
-            <Card title="Login">
-                <div className=' w-full'>
+        <div className='w-full justify-center'>
+            <Card title="Login" className='mt-50 w-1/3 justify-center '>
+                <div className='w-full'>
                     <Form
                         name="basic"
-
                         initialValues={{ remember: true }}
                         onFinish={onFinish}
                         onFinishFailed={onFinishFailed}
-                        autoComplete="off"
-                        className='w-full flex'
+                        autoComplete={"off"}
                     >
                         <Form.Item
                             className='w-full'
@@ -56,11 +53,10 @@ const LoginPage = () => {
                             </Button>
                         </Form.Item>
                     </Form>
+
                 </div>
             </Card>
         </div>
-
-
     );
 };
 
