@@ -1,5 +1,6 @@
 'use client';
 import { Button, Card, Form, Input } from 'antd';
+import useMessage from 'antd/es/message/useMessage';
 import { useRouter } from 'next/navigation';
 
 import { useState } from 'react';
@@ -7,11 +8,13 @@ import { useState } from 'react';
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [messageApi, contextHolder] = useMessage()
     const router = useRouter();
     const size = 'large';
     const onFinish = (values: any) => {
         // Handle login logic here, e.g., send a request to your backend
         console.log('Success:', values);
+        messageApi.success('Login successful!');
         // Redirect to the desired page after successful login
         router.push('/dashboard'); // Replace '/dashboard' with your desired route
     };
@@ -21,8 +24,9 @@ const LoginPage = () => {
     };
 
     return (
-        <div className='w-full justify-center'>
-            <Card title="Login" className='mt-50 w-1/3 justify-center '>
+        <div className='w-full justify-center flex flex-row-reverse mt-[10%]'>
+            {contextHolder}
+            <Card title="Login" className='mt-50 w-[300px] justify-center '>
                 <div className='w-full'>
                     <Form
                         name="basic"
