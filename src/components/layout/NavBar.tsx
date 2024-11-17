@@ -13,47 +13,47 @@ interface IProps {
     // setNavBarMenu: any
     setCollapsed: any
     // navBarMenu: string
-    handleSelectMenu: (key: string) => void
+    setMenuSelect: any
+    menuSelect: string
 }
 const NavBarComponent = (props: IProps) => {
-    const { collapsed, handleSelectMenu } = props
-    const param = usePathname()
-    console.log(param.replace("/", ""));
-    const path = param.replace("/", "");
+    const { collapsed, setMenuSelect, menuSelect } = props
+
     return (
         <Sider trigger={null} collapsible collapsed={collapsed}>
-            <div className="demo-logo-vertical" ></div>
+            <div className="demo-logo-vertical text-center text-white p-5 text-2xl" >ICE FACTORY</div>
             <Menu
                 theme="dark"
                 mode="inline"
                 className='mt-10'
-                selectedKeys={[path ?? "dashboard"]}
+                onClick={(item) => setMenuSelect(item.key)}
+                selectedKeys={[menuSelect]}
                 items={[
                     {
                         key: 'dashboard',
                         icon: <BarsOutlined />,
                         label: 'Dashboard',
-                        onClick: () => { handleSelectMenu('dashboard') }
+
                     },
 
                     {
                         key: 'transportation',
                         icon: <CarOutlined />,
                         label: 'Transportation',
-                        onClick: () => (handleSelectMenu('transportation'))
+
 
                     },
                     {
                         key: 'product',
                         icon: <BoxPlotOutlined />,
                         label: 'Product',
-                        onClick: () => (handleSelectMenu('product'))
+
                     },
                     {
                         key: 'userManagement',
                         icon: <UserOutlined />,
                         label: 'User Management',
-                        onClick: () => { handleSelectMenu('userManagement') }
+
                     },
                 ]}
             />

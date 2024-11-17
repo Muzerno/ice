@@ -1,9 +1,25 @@
 'use client';
+import EditUserModal from '@/components/editUserModal';
 import LayoutComponent from '@/components/Layout';
-import { Button, Card, Col, Form, Input, Row, Table, } from 'antd';
-import React from 'react';
+import { createUser, deleteUser, findAllUser } from '@/utils/userService';
+import { RestOutlined, ToolOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, Popconfirm, Row, Table, } from 'antd';
+import useMessage from 'antd/es/message/useMessage';
+import { UUID } from 'crypto';
+import { useEffect, useState } from 'react';
 
 export default function userManagement() {
+    const [userData, setUserData] = useState<any>()
+    const [openModalEdit, setOpenModalEdit] = useState(false)
+    const [messageApi, contextHolder] = useMessage()
+    const [form] = Form.useForm()
+    const [formEdit] = Form.useForm()
+    const [openConfirm, setOpenConfirm] = useState(false)
+    const [openConfirmUuid, setOpenConfirmUuid] = useState<UUID | null>(null);
+    const [seleteUUid, setSeleteUUid] = useState<UUID>();
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpenConfirm(newOpen);
+    };
 
     const columns = [
         {
@@ -22,34 +38,81 @@ export default function userManagement() {
             key: 'telephone',
         },
         {
-            title: "Status",
-            dataIndex: "status",
-            key: "status"
-        },
-        {
             title: "",
-            dataIndex: "status",
-            key: "status"
+            key: "button",
+            render: (item: any) => {
+                return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ uuid: item.uuid, username: item.username, telephone: item.telephone, name: item.name }); setSeleteUUid(item.uuid) }}></Button>
+                    <Popconfirm
+                        key={item.uuid}
+                        title="Delete the task"
+                        description="Are you sure to delete this task?"
+                        onConfirm={() => removeUser(item.uuid)}
+                        okText="Yes"
+                        cancelText="No"
+                        open={openConfirmUuid === item.uuid}
+                        onOpenChange={(newOpen) => {
+                            if (newOpen) {
+                                setOpenConfirmUuid(item.uuid);
+                            } else {
+                                setOpenConfirmUuid(null);
+                            }
+                        }}
+
+                    >
+                        <Button type="primary" className='!bg-red-500' key={item.uuid} icon={<RestOutlined />} ></Button>
+                    </Popconfirm ></>
+
+
+
+            }
         }
     ]
 
+
+
+    useEffect(() => {
+        fetchUserdata()
+    }, [openModalEdit])
+    const fetchUserdata = async () => {
+        const user = await findAllUser()
+        setUserData(user.data)
+    }
+
+    const removeUser = async (uuid: UUID) => {
+        const user = await deleteUser(uuid)
+        if (user.status === 200) {
+            messageApi.success('User deleted successfully!');
+            fetchUserdata()
+        }
+    }
+
+    const onFinish = async (values: any) => {
+        const res = await createUser(values)
+        if (res.status === 201) {
+            messageApi.success('User created successfully!');
+            fetchUserdata()
+            form.resetFields();
+        }
+    };
+
     return (
         <LayoutComponent>
-            <Card className="w-full" title={[
+            {contextHolder}
+            <Card key={"cardUser"} className="w-full" title={[
                 <h1>User Management</h1>
             ]}>
                 <Row className='w-full  '>
                     <Col span={18} className='pr-2'>
-                        <Card className='w-full !bg-slate-100'>
-                            <Table columns={columns} >
+                        <Card key={"cardTableUser"} className='w-full !bg-slate-100'>
+                            <Table columns={columns} dataSource={userData} pagination={{ pageSize: 5 }}>
 
                             </Table>
                         </Card>
                     </Col>
                     <Col span={6}>
-                        <Card className='w-full !bg-slate-100' title="Add User">
+                        <Card key={"cardAddUser"} className='w-full !bg-slate-100' title="Add User">
                             <div>
-                                <Form layout='vertical' title='Add User'>
+                                <Form layout='vertical' title='Add User' form={form} onFinish={(e) => onFinish(e)}>
                                     <Form.Item name={"username"} key={"username"} label="Username"
                                         rules={[{ required: true, message: "Username is required" }]} >
                                         <Input type='text' />
@@ -80,6 +143,8 @@ export default function userManagement() {
                 </Row>
 
             </Card>
+
+            <EditUserModal openModalEdit={openModalEdit} setOpenModalEdit={setOpenModalEdit} userEdit={seleteUUid} formEdit={formEdit} />
         </LayoutComponent>
     );
 }
