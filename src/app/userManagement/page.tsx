@@ -14,12 +14,9 @@ export default function userManagement() {
     const [messageApi, contextHolder] = useMessage()
     const [form] = Form.useForm()
     const [formEdit] = Form.useForm()
-    const [openConfirm, setOpenConfirm] = useState(false)
     const [openConfirmUuid, setOpenConfirmUuid] = useState<UUID | null>(null);
     const [seleteUUid, setSeleteUUid] = useState<UUID>();
-    const handleOpenChange = (newOpen: boolean) => {
-        setOpenConfirm(newOpen);
-    };
+
 
     const columns = [
         {

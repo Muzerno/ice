@@ -1,33 +1,138 @@
 'use client';
+import EditProductModal from '@/components/editProductModal';
 import LayoutComponent from '@/components/Layout';
-import { Button, Card, Col, Form, Input, Row, Table } from 'antd';
-import React from 'react';
+import { ICreateProduct } from '@/interface/product';
+import { createProduct, deleteProduct, findAllProduct } from '@/utils/productService';
+import { RestOutlined, ToolOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, Popconfirm, Row, Table } from 'antd';
+import useMessage from 'antd/es/message/useMessage';
+import { UUID } from 'crypto';
+import React, { useEffect, useState } from 'react';
+
+
 
 const ProdectManagement = () => {
-    const columns = [{
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-    }]
+
+    const [form] = Form.useForm()
+    const [messageApi, contextHolder] = useMessage();
+    const [data, setData] = React.useState<any[]>([]);
+    const [openModalEdit, setOpenModalEdit] = useState(false);
+    const [productEdit, setProductEdit] = useState<UUID | null>();
+    const [formEdit] = Form.useForm();
+
+
+    const onFinish = async (values: ICreateProduct) => {
+        const res = await createProduct(values)
+        if (res.status === 201) {
+            messageApi.success('Product created successfully!')
+            form.resetFields();
+        }
+    }
+    useEffect(() => {
+        fetchProductData()
+    }, [openModalEdit])
+
+    const fetchProductData = async () => {
+        const res = await findAllProduct()
+        if (res.status === 200) {
+            setData(res.data)
+            fetchProductData()
+        }
+    }
+
+    const removeProduct = async (uuid: UUID) => {
+        const product = await deleteProduct(uuid)
+        if (product.status === 200) {
+            messageApi.success('Product deleted successfully!')
+            fetchProductData()
+        }
+    }
+    const handleEdit = (item: any) => {
+        setOpenModalEdit(true)
+        setProductEdit(item.uuid)
+        formEdit.setFieldsValue({
+            uuid: item.uuid,
+            product_number: item.product_number,
+            product_name: item.product_name,
+            price: item.price,
+            stock: item.stock,
+        })
+    }
+
+
+    const columns = [
+        {
+            title: 'Product Number',
+            dataIndex: 'product_number',
+            key: 'product_number',
+        },
+        {
+            title: 'Product Name',
+            dataIndex: 'product_name',
+            key: 'product_name',
+        },
+
+        {
+            title: 'Price (บาท)',
+            dataIndex: 'price',
+            key: 'price',
+        },
+        {
+            title: 'Stock',
+            dataIndex: 'stock',
+            key: 'stock',
+        },
+        {
+            title: 'Action',
+            key: 'action',
+            render: (item: any) => {
+                return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => handleEdit(item)} ></Button>
+                    <Popconfirm
+                        key={item.uuid}
+                        title="Delete the task"
+                        description="Are you sure to delete this task?"
+                        onConfirm={() => removeProduct(item.uuid)}
+                        okText="Yes"
+                        cancelText="No"
+                        onOpenChange={(newOpen) => {
+                            if (newOpen) {
+                                setProductEdit(item.uuid);
+                            } else {
+                                setProductEdit(null);
+                            }
+                        }}
+                    >
+                        <Button type="primary" className='!bg-red-500' key={item.uuid} icon={<RestOutlined />} ></Button>
+                    </Popconfirm>
+                </>
+            }
+        }
+    ]
+
+
 
     return (
         <LayoutComponent>
+            {contextHolder}
             <Card className="w-full" title={[
                 <h1>Product</h1>
             ]}>
                 <Row className='w-full  '>
                     <Col span={18} className='pr-2'>
-                        <Card className='w-full !bg-slate-100'>
-                            <Table columns={columns} >
-
+                        <Card key={"tableProduct"} className='w-full !bg-slate-100'>
+                            <Table columns={columns} dataSource={data}>
                             </Table>
                         </Card>
                     </Col>
                     <Col span={6}>
-                        <Card className='w-full !bg-slate-100' title="Add New Product">
+                        <Card key={"formProduct"} className='w-full !bg-slate-100' title="Add New Product">
                             <div>
-                                <Form layout='vertical' title='Add User'>
-                                    <Form.Item name={"name"} key={"name"} label="Name"
+                                <Form layout='vertical' title='Add User' form={form} onFinish={(e) => onFinish(e)}>
+                                    <Form.Item name={"product_number"} key={"product_number"} label="Product Number"
+                                        rules={[{ required: true, message: "Name is required" }]} >
+                                        <Input type='text' />
+                                    </Form.Item>
+                                    <Form.Item name={"product_name"} key={"product_name"} label="Product Name"
                                         rules={[{ required: true, message: "Name is required" }]} >
                                         <Input type='text' />
                                     </Form.Item>
@@ -35,7 +140,7 @@ const ProdectManagement = () => {
                                         rules={[{ required: true, message: "Price is required" }]}>
                                         <Input type='number' />
                                     </Form.Item>
-                                    <Form.Item name={"amount"} key={"amount"} label="Amount"
+                                    <Form.Item name={"stock"} key={"stock"} label="Stock"
                                         rules={[{ required: true, message: "Amount is required" }]}>
                                         <Input type='number' />
                                     </Form.Item>
@@ -57,6 +162,7 @@ const ProdectManagement = () => {
                 </Row>
 
             </Card>
+            <EditProductModal openModalEdit={openModalEdit} setOpenModalEdit={setOpenModalEdit} productEdit={productEdit} formEdit={formEdit} />
         </LayoutComponent>
 
     );
