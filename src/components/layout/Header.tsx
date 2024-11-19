@@ -4,9 +4,11 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
 } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
 
 const { Header } = Layout
 const HeaderDefault = (props: any) => {
+    const router = useRouter()
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
@@ -23,6 +25,12 @@ const HeaderDefault = (props: any) => {
                     height: 64,
                 }}
             />
+            <Button type="primary" className='float-right m-5' danger onClick={() => {
+                localStorage.removeItem('payload')
+                router.push('/auth/login')
+            }}>
+                Logout
+            </Button>
         </Header>
     );
 }

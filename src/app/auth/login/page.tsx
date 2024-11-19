@@ -1,4 +1,5 @@
 'use client';
+import { login } from '@/utils/authService';
 import { Button, Card, Form, Input } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
 import { useRouter } from 'next/navigation';
@@ -11,18 +12,27 @@ const LoginPage = () => {
     const [messageApi, contextHolder] = useMessage()
     const router = useRouter();
     const size = 'large';
-    const onFinish = (values: any) => {
-        // Handle login logic here, e.g., send a request to your backend
-        console.log('Success:', values);
-        messageApi.success('Login successful!');
-        // Redirect to the desired page after successful login
-        router.push('/dashboard'); // Replace '/dashboard' with your desired route
-    };
+    const onFinish = async (values: any) => {
+        const res = await login(values)
+        if (res.status === 200) {
+            localStorage.setItem('payload', JSON.stringify(res.data.payload));
+            messageApi.success('Login successful!');
+            const user = res.data.payload.user
+            console.log(user.role.role_key)
+            console.log(user.role.role_key === 'deviler')
+            if (user.role.role_key === 'admin' || user.role.role_key === 'owner') {
+                router.push('/dashboard');
+            } if (user.role.role_key === 'deliver') {
+                router.push('/deliverDashboard');
+            }
 
+        } else {
+            messageApi.error('Login failed!');
+        }
+    };
     const onFinishFailed = (errorInfo: any) => {
         console.log('Failed:', errorInfo);
     };
-
     return (
         <div className='w-full justify-center flex flex-row-reverse mt-[10%]'>
             {contextHolder}
