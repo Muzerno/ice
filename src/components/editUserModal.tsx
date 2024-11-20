@@ -1,6 +1,6 @@
 'use client';
 import { updateUser } from '@/utils/userService';
-import { Button, Card, Form, FormInstance, Input, Modal } from 'antd';
+import { Button, Card, Form, FormInstance, Input, Modal, Select } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
 import { UUID } from 'crypto';
 import React from 'react';
@@ -8,11 +8,12 @@ import React from 'react';
 interface EditUserModalProps {
     openModalEdit: boolean;
     setOpenModalEdit: (open: boolean) => void;
-    userEdit?: UUID
+    userEdit: UUID | null
     formEdit: FormInstance
+    roleData: any[]
 }
 
-const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenModalEdit, userEdit, formEdit }) => {
+const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenModalEdit, userEdit, formEdit, roleData }) => {
     const [messageApi, contextHolder] = useMessage();
 
     const editUser = async (uuid: UUID, params: any) => {
@@ -45,6 +46,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenMod
                 <Form.Item name={"name"} key={"name"} label="Name"
                     rules={[{ required: true, message: "Name is required" }]} >
                     <Input type='text' />
+                </Form.Item>
+                <Form.Item name={"role_uuid"} key={"role_uuid"} label="Role"
+                    rules={[{ required: true, message: "Role is required" }]} >
+                    <Select >
+                        {roleData.map((item: any) => <Select.Option key={item.uuid} value={item.uuid}>{item.role_name}</Select.Option>)}
+                    </Select>
                 </Form.Item>
 
                 <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>

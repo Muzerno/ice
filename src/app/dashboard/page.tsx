@@ -35,7 +35,7 @@ export default function Dashboard(props: IProps) {
                 <Row className='mt-5'>
                     <Col span={24}>
                         <Card className='w-full'>
-                            <LongdoMap width='100%' height='400px' />
+                            <LongdoMap width='100%' height='400px' isOpenButton={false} />
 
                         </Card>
                     </Col>

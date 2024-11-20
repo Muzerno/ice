@@ -11,6 +11,15 @@ export async function findAllUser() {
     }
 
 }
+export async function findAllUserDeliver() {
+    try {
+        const users = await AxiosInstances.get('/user/deliver')
+        return Promise.resolve(users.data)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+
+}
 
 export async function createUser(params: ICreateUser) {
     try {

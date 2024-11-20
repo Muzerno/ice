@@ -10,7 +10,7 @@ export async function findAllCar() {
     }
 }
 
-export async function updateCar(uuid: UUID, params: any) {
+export async function updateCar(uuid: UUID | null | undefined, params: any) {
     try {
         const car = await AxiosInstances.put(`/transportation/car/${uuid}`, params)
         return Promise.resolve(car)

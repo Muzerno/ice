@@ -4,7 +4,7 @@ import LayoutComponent from '@/components/Layout';
 import { ICreateProduct } from '@/interface/product';
 import { createProduct, deleteProduct, findAllProduct } from '@/utils/productService';
 import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Form, Input, Popconfirm, Row, Table } from 'antd';
+import { Button, Card, Col, Form, Input, Popconfirm, Row, Select, Table } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
 import { UUID } from 'crypto';
 import React, { useEffect, useState } from 'react';
@@ -36,7 +36,6 @@ const ProdectManagement = () => {
         const res = await findAllProduct()
         if (res.status === 200) {
             setData(res.data)
-            fetchProductData()
         }
     }
 
@@ -144,6 +143,7 @@ const ProdectManagement = () => {
                                         rules={[{ required: true, message: "Amount is required" }]}>
                                         <Input type='number' />
                                     </Form.Item>
+
                                     <Row>
                                         <Col span={12} className='mr-1'>
                                             <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>
