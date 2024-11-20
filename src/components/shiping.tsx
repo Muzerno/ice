@@ -146,7 +146,7 @@ const Shipping: React.FC = () => {
                         </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit">
-                                Create Car
+                                Create Delivery
                             </Button>
                         </Form.Item>
                     </Form>

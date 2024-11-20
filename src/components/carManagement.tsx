@@ -111,7 +111,7 @@ const CarManagement: React.FC = () => {
                         </Form.Item>
                         <Form.Item name="user_uid" label="User">
                             <Select>
-                                {userData.map((item: any) => <Select.Option value={item.uuid}>{item.name} {item.role.role_name}</Select.Option>)}
+                                {userData?.map((item: any) => <Select.Option value={item.uuid}>{item.name} {item?.role?.role_name}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>
