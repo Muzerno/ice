@@ -136,7 +136,7 @@ const CustomerManagement = () => {
             <Card className='w-full' title="Customer">
                 <Row className='w-full'>
                     <Col span={16} className='pr-2 '>
-                        <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} />
+                        <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true}/>
                     </Col>
                     <Col span={8}>
                         <Card className="w-full !bg-slate-100">
