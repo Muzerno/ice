@@ -19,27 +19,27 @@ export async function findAllCustomer() {
     }
 }
 
-export async function deleteCustomer(uuid: UUID) {
+export async function deleteCustomer(id: number) {
     try {
-        const customer = await AxiosInstances.delete(`/customer/${uuid}`)
+        const customer = await AxiosInstances.delete(`/customer/${id}`)
         return Promise.resolve(customer)
     } catch (error) {
         return Promise.reject(error)
     }
 }
 
-export async function findOneCustomer(uuid: UUID) {
+export async function findOneCustomer(id: number) {
     try {
-        const customer = await AxiosInstances.get(`/customer/${uuid}`)
+        const customer = await AxiosInstances.get(`/customer/${id}`)
         return Promise.resolve(customer)
     } catch (error) {
         return Promise.reject(error)
     }
 }
 
-export async function updateCustomer(uuid: UUID, params: any) {
+export async function updateCustomer(id: number, params: any) {
     try {
-        const customer = await AxiosInstances.put(`/customer/${uuid}`, params)
+        const customer = await AxiosInstances.put(`/customer/${id}`, params)
         return Promise.resolve(customer)
     } catch (error) {
         return Promise.reject(error)

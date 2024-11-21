@@ -30,18 +30,18 @@ export async function createUser(params: ICreateUser) {
     }
 }
 
-export async function updateUser(uuid: UUID, params: any) {
+export async function updateUser(id: number, params: any) {
     try {
-        const user = await AxiosInstances.put(`/user/${uuid}`, params)
+        const user = await AxiosInstances.put(`/user/${id}`, params)
         return Promise.resolve(user)
     } catch (error) {
         return Promise.reject(error)
     }
 }
 
-export async function deleteUser(uuid: UUID) {
+export async function deleteUser(id: number) {
     try {
-        const user = await AxiosInstances.delete(`/user/${uuid}`)
+        const user = await AxiosInstances.delete(`/user/${id}`)
         return Promise.resolve(user)
     } catch (error) {
         return Promise.reject(error)

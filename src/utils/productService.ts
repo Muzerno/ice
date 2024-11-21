@@ -10,9 +10,9 @@ export async function findAllProduct() {
     }
 }
 
-export async function findOneProduct(uuid: UUID) {
+export async function findOneProduct(id: number) {
     try {
-        const product = await AxiosInstances.get(`/product/${uuid}`)
+        const product = await AxiosInstances.get(`/product/${id}`)
         return Promise.resolve(product)
     } catch (error) {
         return Promise.reject(error)
@@ -29,9 +29,9 @@ export async function createProduct(params: any) {
     }
 }
 
-export async function updateProduct(uuid: UUID, params: any) {
+export async function updateProduct(id: number, params: any) {
     try {
-        const product = await AxiosInstances.patch(`/product/${uuid}`, params)
+        const product = await AxiosInstances.patch(`/product/${id}`, params)
         return Promise.resolve(product)
     } catch (error) {
         return Promise.reject(error)
@@ -39,9 +39,9 @@ export async function updateProduct(uuid: UUID, params: any) {
 }
 
 
-export async function deleteProduct(uuid: UUID) {
+export async function deleteProduct(id: number) {
     try {
-        const product = await AxiosInstances.delete(`/product/${uuid}`)
+        const product = await AxiosInstances.delete(`/product/${id}`)
         return Promise.resolve(product)
     } catch (error) {
         return Promise.reject(error)

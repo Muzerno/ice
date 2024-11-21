@@ -17,7 +17,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ openModalEdit, setO
     const [messageApi, contextHolder] = useMessage();
 
     const onFinish = async (values: any) => {
-        const res = await updateProduct(values.uuid, values)
+        const res = await updateProduct(values.id, values)
         if (res.status === 200) {
             messageApi.success('Product updated successfully!');
             setOpenModalEdit(false)
@@ -28,7 +28,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ openModalEdit, setO
         <Modal title="Edit User" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
             {contextHolder}
             <Form layout='vertical' title='Edit Product' form={formEdit} onFinish={(e) => onFinish(e)}>
-                <Form.Item name={"uuid"} key={"uuid"} hidden={true} initialValue={productEdit} ></Form.Item>
+                <Form.Item name={"id"} key={"id"} hidden={true} initialValue={productEdit} ></Form.Item>
                 <Form.Item name={"product_number"} key={"product_number"} label="Product Number"
                     rules={[{ required: true, message: "Name is required" }]} >
                     <Input type='text' />

@@ -17,7 +17,7 @@ const CustomerManagement = () => {
     const [messageApi, contextHolder] = useMessage();
     const [form] = Form.useForm();
     const [formEdit] = Form.useForm();
-    const [openConfirmUuid, setOpenConfirmUuid] = useState<UUID | null>();
+    const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
     const [trueAddress, setTrueAddress] = useState();
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const columns = [
@@ -56,7 +56,7 @@ const CustomerManagement = () => {
                         onClick={() => {
                             setOpenModalEdit(true);
                             formEdit.setFieldsValue({
-                                uuid: item.uuid,
+                                id: item.id,
                                 name: item.name,
                                 email: item.email,
                                 phone: item.phone,
@@ -64,16 +64,16 @@ const CustomerManagement = () => {
                         }}
                     /> */}
                     <Popconfirm
-                        key={item.uuid}
+                        key={item.id}
                         title="Delete the task"
                         description="Are you sure to delete this task?"
-                        onConfirm={() => onDelete(item.uuid)}
+                        onConfirm={() => onDelete(item.id)}
                         okText="Yes"
                         cancelText="No"
-                        open={openConfirmUuid === item.uuid}
+                        open={openConfirmUuid === item.id}
                         onOpenChange={(newOpen) => {
                             if (newOpen) {
-                                setOpenConfirmUuid(item.uuid);
+                                setOpenConfirmUuid(item.id);
                             } else {
                                 setOpenConfirmUuid(null);
                             }
@@ -82,7 +82,7 @@ const CustomerManagement = () => {
                         <Button
                             type="primary"
                             className="!bg-red-500"
-                            key={item.uuid}
+                            key={item.id}
                             icon={<RestOutlined />}
                         />
                     </Popconfirm>
@@ -116,8 +116,8 @@ const CustomerManagement = () => {
 
     }
 
-    const onDelete = async (uuid: UUID) => {
-        const res = await deleteCustomer(uuid)
+    const onDelete = async (id: number) => {
+        const res = await deleteCustomer(id)
         if (res.status === 200) {
             messageApi.success('Customer deleted successfully!');
             fetchCustomerData()

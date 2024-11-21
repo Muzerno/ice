@@ -15,7 +15,7 @@ const Shipping: React.FC = () => {
     const [form] = Form.useForm();
     const [formEdit] = Form.useForm();
     const [messageApi, contextHolder] = useMessage();
-    const [selectedCar, setSelectedCar] = useState<UUID | null>();
+    const [selectedCar, setSelectedCar] = useState<number | null>();
     const [customerData, setCustomerData] = useState<any>([]);
     const [transportationData, setTransportationData] = useState<any>([]);
     const columns = [
@@ -53,7 +53,7 @@ const Shipping: React.FC = () => {
                     <Popconfirm
                         title="Delete the car"
                         description="Are you sure to delete this car?"
-                        onConfirm={() => deleteLine(item.uuid)}
+                        onConfirm={() => deleteLine(item.id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -83,8 +83,8 @@ const Shipping: React.FC = () => {
         }
     };
 
-    const deleteLine = async (uuid: UUID) => {
-        const res = await deleteTransportationLine(uuid);
+    const deleteLine = async (id: number) => {
+        const res = await deleteTransportationLine(id);
         if (res.status === 200) {
             messageApi.success("Car deleted successfully!");
             deliverLine();
@@ -134,14 +134,14 @@ const Shipping: React.FC = () => {
             <Col span={6} className="pl-2">
                 <Card className="w-full !bg-slate-100">
                     <Form form={form} layout="vertical" onFinish={onFinish}>
-                        <Form.Item name="car_uuid" label="Car Number">
+                        <Form.Item name="car_id" label="Car Number">
                             <Select >
-                                {carData.map((item: any) => <Select.Option value={item.uuid}>{item.car_number}</Select.Option>)}
+                                {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number}</Select.Option>)}
                             </Select>
                         </Form.Item>
-                        <Form.Item name="customer_uuid" label="Customer">
+                        <Form.Item name="customer_id" label="Customer">
                             <Select>
-                                {customerData.map((item: any) => <Select.Option value={item.uuid}>{item.name}</Select.Option>)}
+                                {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>

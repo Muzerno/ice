@@ -17,7 +17,7 @@ const ProdectManagement = () => {
     const [messageApi, contextHolder] = useMessage();
     const [data, setData] = React.useState<any[]>([]);
     const [openModalEdit, setOpenModalEdit] = useState(false);
-    const [productEdit, setProductEdit] = useState<UUID | null>();
+    const [productEdit, setProductEdit] = useState<number | null>();
     const [formEdit] = Form.useForm();
 
 
@@ -39,8 +39,8 @@ const ProdectManagement = () => {
         }
     }
 
-    const removeProduct = async (uuid: UUID) => {
-        const product = await deleteProduct(uuid)
+    const removeProduct = async (id: number) => {
+        const product = await deleteProduct(id)
         if (product.status === 200) {
             messageApi.success('Product deleted successfully!')
             fetchProductData()
@@ -48,9 +48,9 @@ const ProdectManagement = () => {
     }
     const handleEdit = (item: any) => {
         setOpenModalEdit(true)
-        setProductEdit(item.uuid)
+        setProductEdit(item.id)
         formEdit.setFieldsValue({
-            uuid: item.uuid,
+            id: item.id,
             product_number: item.product_number,
             product_name: item.product_name,
             price: item.price,
@@ -87,21 +87,21 @@ const ProdectManagement = () => {
             render: (item: any) => {
                 return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => handleEdit(item)} ></Button>
                     <Popconfirm
-                        key={item.uuid}
+                        key={item.id}
                         title="Delete the task"
                         description="Are you sure to delete this task?"
-                        onConfirm={() => removeProduct(item.uuid)}
+                        onConfirm={() => removeProduct(item.id)}
                         okText="Yes"
                         cancelText="No"
                         onOpenChange={(newOpen) => {
                             if (newOpen) {
-                                setProductEdit(item.uuid);
+                                setProductEdit(item.id);
                             } else {
                                 setProductEdit(null);
                             }
                         }}
                     >
-                        <Button type="primary" className='!bg-red-500' key={item.uuid} icon={<RestOutlined />} ></Button>
+                        <Button type="primary" className='!bg-red-500' key={item.id} icon={<RestOutlined />} ></Button>
                     </Popconfirm>
                 </>
             }

@@ -10,18 +10,18 @@ export async function findAllCar() {
     }
 }
 
-export async function updateCar(uuid: UUID | null | undefined, params: any) {
+export async function updateCar(id: number | null | undefined, params: any) {
     try {
-        const car = await AxiosInstances.put(`/transportation/car/${uuid}`, params)
+        const car = await AxiosInstances.put(`/transportation/car/${id}`, params)
         return Promise.resolve(car)
     } catch (error) {
         return Promise.reject(error)
     }
 }
 
-export async function deleteCar(uuid: UUID) {
+export async function deleteCar(id: number) {
     try {
-        const car = await AxiosInstances.delete(`/transportation/car/${uuid}`)
+        const car = await AxiosInstances.delete(`/transportation/car/${id}`)
         return Promise.resolve(car)
     } catch (error) {
         return Promise.reject(error)
@@ -55,18 +55,18 @@ export async function findAllTransportationLine() {
     }
 }
 
-export async function updateTransportationLine(uuid: UUID, params: any) {
+export async function updateTransportationLine(id: number, params: any) {
     try {
-        const transportationLine = await AxiosInstances.put(`/transportation/${uuid}`, params)
+        const transportationLine = await AxiosInstances.put(`/transportation/${id}`, params)
         return Promise.resolve(transportationLine)
     } catch (error) {
         return Promise.reject(error)
     }
 }
 
-export async function deleteTransportationLine(uuid: UUID) {
+export async function deleteTransportationLine(id: number) {
     try {
-        const transportationLine = await AxiosInstances.delete(`/transportation/${uuid}`)
+        const transportationLine = await AxiosInstances.delete(`/transportation/${id}`)
         return Promise.resolve(transportationLine)
     } catch (error) {
         return Promise.reject(error)

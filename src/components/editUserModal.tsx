@@ -16,14 +16,14 @@ interface EditUserModalProps {
 const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenModalEdit, userEdit, formEdit, roleData }) => {
     const [messageApi, contextHolder] = useMessage();
 
-    const editUser = async (uuid: UUID, params: any) => {
-        const res = await updateUser(uuid, params)
+    const editUser = async (id: number, params: any) => {
+        const res = await updateUser(id, params)
         return res
     }
 
 
     const onFinish = async (values: any) => {
-        const res = await editUser(values.uuid, values)
+        const res = await editUser(values.id, values)
         if (res.status === 200) {
             messageApi.success('User updated successfully!');
             setOpenModalEdit(false)
@@ -34,7 +34,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenMod
         <Modal title="Edit User" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
             {contextHolder}
             <Form layout='vertical' title={`Edit User${formEdit.getFieldValue('username')}`} form={formEdit} onFinish={(e) => onFinish(e)}>
-                <Form.Item name={"uuid"} key={"uuid"} hidden={true} initialValue={userEdit} ></Form.Item>
+                <Form.Item name={"id"} key={"id"} hidden={true} initialValue={userEdit} ></Form.Item>
                 <Form.Item name={"username"} key={"username"} label="Username"
                     rules={[{ required: true, message: "Username is required" }]} >
                     <Input type='text' />
@@ -47,10 +47,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenMod
                     rules={[{ required: true, message: "Name is required" }]} >
                     <Input type='text' />
                 </Form.Item>
-                <Form.Item name={"role_uuid"} key={"role_uuid"} label="Role"
+                <Form.Item name={"role_id"} key={"role_id"} label="Role"
                     rules={[{ required: true, message: "Role is required" }]} >
                     <Select >
-                        {roleData.map((item: any) => <Select.Option key={item.uuid} value={item.uuid}>{item.role_name}</Select.Option>)}
+                        {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
                     </Select>
                 </Form.Item>
 

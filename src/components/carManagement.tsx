@@ -13,7 +13,7 @@ const CarManagement: React.FC = () => {
     const [form] = Form.useForm();
     const [formEdit] = Form.useForm();
     const [messageApi, contextHolder] = useMessage();
-    const [selectedCar, setSelectedCar] = useState<UUID | null>();
+    const [selectedCar, setSelectedCar] = useState<number | null>();
     const [userData, setUserData] = useState<any>([]);
     const columns = [
         {
@@ -35,7 +35,7 @@ const CarManagement: React.FC = () => {
                     <Popconfirm
                         title="Delete the car"
                         description="Are you sure to delete this car?"
-                        onConfirm={() => deleteCars(item.uuid)}
+                        onConfirm={() => deleteCars(item.id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -64,8 +64,8 @@ const CarManagement: React.FC = () => {
         }
     };
 
-    const deleteCars = async (uuid: UUID) => {
-        const res = await deleteCar(uuid);
+    const deleteCars = async (id: number) => {
+        const res = await deleteCar(id);
         if (res.status === 200) {
             messageApi.success("Car deleted successfully!");
             fetchCarData();
@@ -109,9 +109,9 @@ const CarManagement: React.FC = () => {
                         <Form.Item name="car_number" label="Car Number">
                             <Input />
                         </Form.Item>
-                        <Form.Item name="user_uid" label="User">
+                        <Form.Item name="user_id" label="User">
                             <Select>
-                                {userData.map((item: any) => <Select.Option value={item.uuid}>{item.name} {item.role.role_name}</Select.Option>)}
+                                {userData.map((item: any) => <Select.Option value={item.id}>{item.name} {item.role.role_name}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>

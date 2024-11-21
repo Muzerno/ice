@@ -18,7 +18,7 @@ export default function userManagement() {
     const [formEdit] = Form.useForm()
     const [formRole] = Form.useForm()
     const [openConfirmUuid, setOpenConfirmUuid] = useState<UUID | null>(null);
-    const [seleteUUid, setSeleteUUid] = useState<UUID | null>();
+    const [seleteUUid, setSeleteUUid] = useState<number | null>();
     const [roleData, setRoleData] = useState<any>([])
 
     const columns = [
@@ -47,25 +47,25 @@ export default function userManagement() {
             title: "",
             key: "button",
             render: (item: any) => {
-                return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ uuid: item.uuid, username: item.username, telephone: item.telephone, name: item.name, role_uuid: item.role.uuid }); setSeleteUUid(item.uuid) }}></Button>
+                return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ id: item.id, username: item.username, telephone: item.telephone, name: item.name, role_id: item.role.id }); setSeleteUUid(item.id) }}></Button>
                     <Popconfirm
-                        key={item.uuid}
+                        key={item.id}
                         title="Delete the task"
                         description="Are you sure to delete this task?"
-                        onConfirm={() => removeUser(item.uuid)}
+                        onConfirm={() => removeUser(item.id)}
                         okText="Yes"
                         cancelText="No"
-                        open={openConfirmUuid === item.uuid}
+                        open={openConfirmUuid === item.id}
                         onOpenChange={(newOpen) => {
                             if (newOpen) {
-                                setOpenConfirmUuid(item.uuid);
+                                setOpenConfirmUuid(item.id);
                             } else {
                                 setOpenConfirmUuid(null);
                             }
                         }}
 
                     >
-                        <Button type="primary" className='!bg-red-500' key={item.uuid} icon={<RestOutlined />} ></Button>
+                        <Button type="primary" className='!bg-red-500' key={item.id} icon={<RestOutlined />} ></Button>
                     </Popconfirm ></>
 
 
@@ -90,8 +90,8 @@ export default function userManagement() {
         setUserData(user.data)
     }
 
-    const removeUser = async (uuid: UUID) => {
-        const user = await deleteUser(uuid)
+    const removeUser = async (id: number) => {
+        const user = await deleteUser(id)
         if (user.status === 200) {
             messageApi.success('User deleted successfully!');
             fetchUserdata()
@@ -132,10 +132,10 @@ export default function userManagement() {
                                 rules={[{ required: true, message: "Name is required" }]}>
                                 <Input type='text' />
                             </Form.Item>
-                            <Form.Item name={"role_uuid"} key={"role_uuid"} label="Role"
+                            <Form.Item name={"role_id"} key={"role_id"} label="Role"
                                 rules={[{ required: true, message: "Role is required" }]}>
                                 <Select defaultActiveFirstOption>
-                                    {roleData.map((item: any) => <Select.Option key={item.uuid} value={item.uuid}>{item.role_name}</Select.Option>)}
+                                    {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
                                 </Select>
                             </Form.Item>
                             <Row>
