@@ -34,48 +34,49 @@ const NavBarComponent = (props: IProps) => {
         })
     }, [userLogin])
     return (
-        <Sider trigger={null} collapsible collapsed={collapsed}>
-            <div className="demo-logo-vertical text-center text-white p-5 text-2xl" >ICE FACTORY</div>
+        <Sider trigger={null} collapsible collapsed={collapsed} className='sticky'>
+            {!collapsed && <div className="demo-logo-vertical text-center text-white p-5 text-2xl" >ICE FACTORY</div>}
             <Menu
                 theme="dark"
                 mode="inline"
-                className='mt-10'
+
+                className='mt-10 sticky'
                 onClick={(item) => setMenuSelect(item.key)}
                 selectedKeys={[menuSelect]}
                 items={[
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'dashboard',
                         icon: <BarsOutlined />,
-                        label: 'Dashboard',
+                        label: 'แดชบอร์ด',
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'transportation',
                         icon: <CarOutlined />,
-                        label: 'Transportation',
+                        label: 'จัดการการขนส่ง',
                     }
                         : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'product',
                         icon: <BoxPlotOutlined />,
-                        label: 'Product',
+                        label: 'สินค้า',
 
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'userManagement',
                         icon: <UserOutlined />,
-                        label: 'User management',
+                        label: 'จัดการข้อมูลผู้ใช้งาน',
 
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'customer',
                         icon: <UserOutlined />,
-                        label: 'Customer',
+                        label: 'จัดการข้อมูลลูกค้า',
 
                     } : null,
                     role.roleKey === 'deliver' ? {
                         key: 'deliverDashboard',
                         icon: <CarOutlined />,
-                        label: 'Delivery dashboard',
+                        label: 'แดชบอร์ดการขนส่ง',
 
                     } : null,
                 ]}

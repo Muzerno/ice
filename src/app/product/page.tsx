@@ -61,28 +61,28 @@ const ProdectManagement = () => {
 
     const columns = [
         {
-            title: 'Product Number',
-            dataIndex: 'product_number',
-            key: 'product_number',
+            title: 'รหัสสินค้า',
+            dataIndex: 'id',
+            key: 'id',
         },
         {
-            title: 'Product Name',
-            dataIndex: 'product_name',
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
             key: 'product_name',
         },
 
         {
-            title: 'Price (บาท)',
+            title: 'ราคา (บาท)',
             dataIndex: 'price',
             key: 'price',
         },
         {
-            title: 'Stock',
-            dataIndex: 'stock',
-            key: 'stock',
+            title: 'จำนวน',
+            dataIndex: 'amount',
+            key: 'amount',
         },
         {
-            title: 'Action',
+            title: '',
             key: 'action',
             render: (item: any) => {
                 return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => handleEdit(item)} ></Button>
@@ -114,7 +114,7 @@ const ProdectManagement = () => {
         <LayoutComponent>
             {contextHolder}
             <Card className="w-full" title={[
-                <h1>Product</h1>
+                <h1>จัดการสินค้า</h1>
             ]}>
                 <Row className='w-full  '>
                     <Col span={18} className='pr-2'>
@@ -124,33 +124,33 @@ const ProdectManagement = () => {
                         </Card>
                     </Col>
                     <Col span={6}>
-                        <Card key={"formProduct"} className='w-full !bg-slate-100' title="Add New Product">
+                        <Card key={"formProduct"} className='w-full !bg-slate-100' title="เพิ่มข้อมูลสินค้า">
                             <div>
                                 <Form layout='vertical' title='Add User' form={form} onFinish={(e) => onFinish(e)}>
-                                    <Form.Item name={"product_number"} key={"product_number"} label="Product Number"
+                                    {/* <Form.Item name={"product_number"} key={"product_number"} label="เลขสินค้า"
+                                        rules={[{ required: true, message: "Name is required" }]} >
+                                        <Input type='text' />
+                                    </Form.Item> */}
+                                    <Form.Item name={"name"} key={"product_name"} label="ชื่อสินค้า"
                                         rules={[{ required: true, message: "Name is required" }]} >
                                         <Input type='text' />
                                     </Form.Item>
-                                    <Form.Item name={"product_name"} key={"product_name"} label="Product Name"
-                                        rules={[{ required: true, message: "Name is required" }]} >
-                                        <Input type='text' />
-                                    </Form.Item>
-                                    <Form.Item name={"price"} key={"price"} label="Price"
+                                    <Form.Item name={"price"} key={"price"} label="ราคา"
                                         rules={[{ required: true, message: "Price is required" }]}>
                                         <Input type='number' />
                                     </Form.Item>
-                                    <Form.Item name={"stock"} key={"stock"} label="Stock"
+                                    <Form.Item name={"amount"} key={"amount"} label="จำนวน"
                                         rules={[{ required: true, message: "Amount is required" }]}>
                                         <Input type='number' />
                                     </Form.Item>
 
                                     <Row>
                                         <Col span={12} className='mr-1'>
-                                            <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>
+                                            <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
 
                                         </Col>
                                         <Col span={11}>
-                                            <Button type="default" className='w-full' htmlType='reset'>Reset</Button>
+                                            <Button type="default" className='w-full' htmlType='reset'>รีเซ็ต</Button>
                                         </Col>
                                     </Row>
                                 </Form>

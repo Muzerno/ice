@@ -7,7 +7,7 @@ import { UserProvider } from '@/context/userContext';
 const RootLayout = ({ children }: React.PropsWithChildren) => (
   <html lang="en" >
     <head> <script src={`https://api.longdo.com/map/?key=${process.env.MAP_API_KEY}`}></script></head>
-    <body className="w-screen h-screen">
+    <body className="">
       <UserProvider>
         <AntdRegistry>{children}</AntdRegistry>
       </UserProvider>

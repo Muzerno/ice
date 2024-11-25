@@ -20,19 +20,19 @@ const Shipping: React.FC = () => {
     const [transportationData, setTransportationData] = useState<any>([]);
     const columns = [
         {
-            title: "Car Number",
+            title: "เลขทะเบียนรถ",
             dataIndex: "transportation_car",
             key: "car_number",
             render: (item: any) => item.car_number,
         },
         {
-            title: "Customer Name",
+            title: "ชื่อลูกค้า",
             dataIndex: "customer",
             key: "customer",
             render: (item: any) => item.name,
         },
         {
-            title: "Address",
+            title: "ที่อยู่ลูกค้า",
             dataIndex: "customer",
             key: "address",
             render: (item: any) => {
@@ -52,7 +52,7 @@ const Shipping: React.FC = () => {
                 <>
                     <Popconfirm
                         title="Delete the car"
-                        description="Are you sure to delete this car?"
+                        description="แน่ใจหรือไม่"
                         onConfirm={() => deleteLine(item.id)}
                         okText="Yes"
                         cancelText="No"
@@ -68,7 +68,7 @@ const Shipping: React.FC = () => {
 
         const res = await createTransportationLine(values);
         if (res.status === 201) {
-            messageApi.success("Car created successfully!");
+            messageApi.success("บันทึกสําเร็จ!");
             form.resetFields();
             deliverLine();
         }
@@ -77,7 +77,7 @@ const Shipping: React.FC = () => {
     const onFinishEdit = async (values: any) => {
         const res = await updateCar(selectedCar, values);
         if (res.status === 200) {
-            messageApi.success("Car updated successfully!");
+            messageApi.success("แก้ไขสําเร็จ!");
             formEdit.resetFields();
             fetchCarData();
         }
@@ -86,7 +86,7 @@ const Shipping: React.FC = () => {
     const deleteLine = async (id: number) => {
         const res = await deleteTransportationLine(id);
         if (res.status === 200) {
-            messageApi.success("Car deleted successfully!");
+            messageApi.success("ลบสําเร็จ!");
             deliverLine();
         }
     };

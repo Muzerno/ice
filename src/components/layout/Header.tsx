@@ -29,7 +29,7 @@ const HeaderDefault = (props: any) => {
                 localStorage.removeItem('payload')
                 router.push('/auth/login')
             }}>
-                Logout
+                ออกจากระบบ
             </Button>
         </Header>
     );

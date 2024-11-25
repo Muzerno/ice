@@ -17,15 +17,15 @@ const CarManagement: React.FC = () => {
     const [userData, setUserData] = useState<any>([]);
     const columns = [
         {
-            title: "Car Number",
+            title: "เลขทะเบียนรถ",
             dataIndex: "car_number",
             key: "car_number",
         },
         {
-            title: "User Name",
+            title: "ชื่อผู้ใช้",
             dataIndex: "users",
             key: "usesr",
-            render: (item: any) => item.name,
+            render: (item: any) => `${item.firstname} ${item.lastname}`,
         },
         {
             title: "",
@@ -106,42 +106,41 @@ const CarManagement: React.FC = () => {
             <Col span={6} className="pl-2">
                 <Card className="w-full !bg-slate-100">
                     <Form form={form} layout="vertical" onFinish={onFinish}>
-                        <Form.Item name="car_number" label="Car Number">
+                        <Form.Item name="car_number" label="เลขทะเบียนรถ">
                             <Input />
                         </Form.Item>
-                        <Form.Item name="user_id" label="User">
+                        <Form.Item name="user_id" label="ผู้ใช้">
                             <Select>
                                 {userData.map((item: any) => <Select.Option value={item.id}>{item.name} {item.role.role_name}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit">
-                                Create Car
+                                บันทึก
                             </Button>
                         </Form.Item>
                     </Form>
                     <Modal
-                        title="Edit Car"
+                        title="แก้ไขข้อมูลรถ"
                         visible={openModalEdit}
                         onCancel={() => setOpenModalEdit(false)}
                         footer={[
                             <Button key="back" onClick={() => setOpenModalEdit(false)}>
-                                Cancel
+                                ปิด
                             </Button>,
                             <Button key="submit" type="primary" onClick={onFinishEdit}>
-                                Update Car
+                                บันทึก
                             </Button>,
                         ]}
                     >
                         <Form form={formEdit} onFinish={onFinishEdit}>
-                            <Form.Item name="car_number" label="Car Number">
+                            <Form.Item name="car_number" label="เลขทะเบียนรถ">
                                 <Input />
                             </Form.Item>
-                            <Form.Item name="user_name" label="User Name">
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="customer_name" label="Customer Name">
-                                <Input />
+                            <Form.Item name="user_id" label="ผู้ใช้">
+                                <Select>
+                                    {userData.map((item: any) => <Select.Option value={item.id}>{item.name} {item.role.role_name}</Select.Option>)}
+                                </Select>
                             </Form.Item>
                         </Form>
                     </Modal>

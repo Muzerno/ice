@@ -1,15 +1,13 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, Card, Col, Form, Input, Popconfirm, Row, Table, Tabs } from 'antd';
+import { Button, Card, Col, Form, Input, Popconfirm, Row, Table } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
-import { UUID } from 'crypto';
+import { useEffect, useState } from 'react';
 
 import LayoutComponent from '@/components/Layout';
-import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { createCustomer, deleteCustomer, findAllCustomer } from '@/utils/customerService';
 import LongdoMap from '@/components/LongdoMap';
+import { createCustomer, deleteCustomer, findAllCustomer } from '@/utils/customerService';
+import { RestOutlined } from '@ant-design/icons';
 import TextArea from 'antd/es/input/TextArea';
-import { render } from 'react-dom';
 
 const CustomerManagement = () => {
     const [customerData, setCustomerData] = useState<any>();
@@ -107,11 +105,11 @@ const CustomerManagement = () => {
     const createCustomers = async (params: any) => {
         const res = await createCustomer(params)
         if (res.status === 201) {
-            messageApi.success('Customer created successfully!');
+            messageApi.success('สร้างลูกค้าสําเร็จ!');
             fetchCustomerData()
             form.resetFields();
         } else {
-            messageApi.error('Customer created failed!');
+            messageApi.error('สร้างลูกค้าไม่สําเร็จ!');
         }
 
     }
@@ -119,10 +117,10 @@ const CustomerManagement = () => {
     const onDelete = async (id: number) => {
         const res = await deleteCustomer(id)
         if (res.status === 200) {
-            messageApi.success('Customer deleted successfully!');
+            messageApi.success('ลบลูกค้าสําเร็จ!');
             fetchCustomerData()
         } else {
-            messageApi.error('Customer deleted failed!');
+            messageApi.error('ลบลูกค้าไม่สําเร็จ!');
         }
     }
 
@@ -133,34 +131,34 @@ const CustomerManagement = () => {
     return (
         <LayoutComponent>
             {contextHolder}
-            <Card className='w-full' title="Customer">
+            <Card className='w-full' title="จัดการข้อมูลลูกค้า">
                 <Row className='w-full'>
                     <Col span={16} className='pr-2 '>
-                        <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true}/>
+                        <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true} />
                     </Col>
                     <Col span={8}>
                         <Card className="w-full !bg-slate-100">
                             <Form layout='vertical' title='Add Customer' form={form} onFinish={(e) => createCustomers(e)} >
                                 <Row >
                                     <Col span={24}>
-                                        <Form.Item name={"name"} key={"name"} label="Name"
-                                            rules={[{ required: true, message: "Name is required" }]} >
+                                        <Form.Item name={"name"} key={"name"} label="ชื่อลูกค้า"
+                                            rules={[{ required: true, message: "กรอกชื่อลูกค้า" }]} >
                                             <Input type='text' />
                                         </Form.Item>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={24}>
-                                        <Form.Item name={"email"} key={"email"} label="Email"
-                                            rules={[{ required: true, message: "Email is required" }]} >
+                                        <Form.Item name={"email"} key={"email"} label="อีเมล์"
+                                            rules={[{ required: true, message: "กรอกอีเมล์" }, { type: 'email', message: "กรอกอีเมล์ให้ถูกต้อง" }]} >
                                             <Input type='text' />
                                         </Form.Item>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={24}>
-                                        <Form.Item name={"telephone"} key={"telephone"} label="Telephone"
-                                            rules={[{ required: true, message: "Telephone is required" }, { pattern: /^[0-9]{10}$/, message: "Please enter a valid 10-digit phone number" }]} >
+                                        <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
+                                            rules={[{ required: true, message: "กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "กรอกเบอร์โทรศัพท์ให้ถูกต้อง" }]} >
                                             <Input type='text' />
                                         </Form.Item>
                                     </Col>
@@ -168,14 +166,14 @@ const CustomerManagement = () => {
 
                                 <Row>
                                     <Col span={12} className='pr-1'>
-                                        <Form.Item name={"latitude"} key={"lat"} label="Latitude"
+                                        <Form.Item name={"latitude"} key={"lat"} label="ละติจูด"
                                             rules={[{ required: true, message: "Latitude is required" }]} >
                                             <Input type='text' value={location?.lat} />
                                         </Form.Item>
 
                                     </Col>
                                     <Col span={12}>
-                                        <Form.Item name={"longitude"} key={"lon"} label="Longitude"
+                                        <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด"
                                             rules={[{ required: true, message: "Longitude is required" }]} >
                                             <Input type='text' value={location?.lon} />
                                         </Form.Item>
@@ -183,7 +181,7 @@ const CustomerManagement = () => {
                                 </Row>
                                 <Row>
                                     <Col span={24}>
-                                        <Form.Item name={"address"} key={"address"} label="Address"
+                                        <Form.Item name={"address"} key={"address"} label="ที่อยู่"
                                             rules={[{ required: true, message: "Address is required" }]} >
                                             <TextArea rows={2} />
                                         </Form.Item>

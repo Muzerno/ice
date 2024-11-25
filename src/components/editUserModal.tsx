@@ -1,6 +1,7 @@
 'use client';
 import { updateUser } from '@/utils/userService';
 import { Button, Card, Form, FormInstance, Input, Modal, Select } from 'antd';
+import TextArea from 'antd/es/input/TextArea';
 import useMessage from 'antd/es/message/useMessage';
 import { UUID } from 'crypto';
 import React from 'react';
@@ -8,7 +9,7 @@ import React from 'react';
 interface EditUserModalProps {
     openModalEdit: boolean;
     setOpenModalEdit: (open: boolean) => void;
-    userEdit: UUID | null
+    userEdit: number | null
     formEdit: FormInstance
     roleData: any[]
 }
@@ -35,23 +36,31 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenMod
             {contextHolder}
             <Form layout='vertical' title={`Edit User${formEdit.getFieldValue('username')}`} form={formEdit} onFinish={(e) => onFinish(e)}>
                 <Form.Item name={"id"} key={"id"} hidden={true} initialValue={userEdit} ></Form.Item>
-                <Form.Item name={"username"} key={"username"} label="Username"
+                <Form.Item name={"username"} key={"username"} label="ชื่อผู้ใช้"
                     rules={[{ required: true, message: "Username is required" }]} >
                     <Input type='text' />
                 </Form.Item>
-                <Form.Item name={"telephone"} key={"telephone"} label="Telephone"
+                <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
                     rules={[{ required: true, message: "Telephone is required" }, { pattern: /^[0-9]{10}$/, message: "Please enter a valid 10-digit phone number" }]} >
                     <Input type='text' />
                 </Form.Item>
-                <Form.Item name={"name"} key={"name"} label="Name"
+                <Form.Item name={"firstname"} key={"firstname"} label="ชื่อ"
                     rules={[{ required: true, message: "Name is required" }]} >
                     <Input type='text' />
                 </Form.Item>
-                <Form.Item name={"role_id"} key={"role_id"} label="Role"
+                <Form.Item name={"lastname"} key={"lastname"} label="นามสกุล"
+                    rules={[{ required: true, message: "Name is required" }]} >
+                    <Input type='text' />
+                </Form.Item>
+                <Form.Item name={"role_id"} key={"role_id"} label="ระดับผู้ใช้"
                     rules={[{ required: true, message: "Role is required" }]} >
                     <Select >
                         {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
                     </Select>
+                </Form.Item>
+                <Form.Item name={"address"} key={"address"} label="ที่อยู่"
+                    rules={[{ required: true, message: "Name is required" }]} >
+                    <TextArea rows={2}></TextArea>
                 </Form.Item>
 
                 <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>

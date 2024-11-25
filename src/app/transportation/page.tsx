@@ -8,8 +8,8 @@ import { Card, Col, Row, Table, Tabs, TabsProps } from 'antd';
 const transportation = () => {
 
     const items: TabsProps['items'] = [
-        { key: '1', label: 'Car Management', children: <CarManagement /> },
-        { key: '2', label: 'Delivery', children: <Shipping /> },
+        { key: '1', label: 'จัดการข้อมูลรถ', children: <CarManagement /> },
+        { key: '2', label: 'จัดการข้อมูลการขนส่ง', children: <Shipping /> },
     ];
 
     return (

@@ -9,6 +9,7 @@ import { UUID } from 'crypto';
 import { useEffect, useState } from 'react';
 import { createRole, findAllRole } from '@/utils/roleService';
 import { format } from 'date-fns';
+import TextArea from 'antd/es/input/TextArea';
 
 export default function userManagement() {
     const [userData, setUserData] = useState<any>()
@@ -23,25 +24,32 @@ export default function userManagement() {
 
     const columns = [
         {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+            size: "xs md lg"
         },
         {
-            title: 'Username',
+            title: 'ชื่อ',
+            dataIndex: '',
+            key: 'name',
+            render: (item: any) => (`${item.firstname} ${item.lastname}`)
+        },
+        {
+            title: 'ชื่อผู้ใช้',
             dataIndex: 'username',
             key: 'username',
         },
         {
-            title: 'Telephone',
+            title: 'เบอร์โทรศัพท์',
             dataIndex: 'telephone',
             key: 'telephone',
         },
         {
-            title: 'Role',
+            title: 'ระดับผู้ใช้',
             dataIndex: 'role',
             key: 'role',
-            render: (role: any) => role.role_name
+            render: (role: any) => role?.role_name
         },
         {
             title: "",
@@ -109,42 +117,74 @@ export default function userManagement() {
 
     const userTabs = () => {
         return <Row className='w-full  '>
-            <Col span={18} className='pr-2'>
+            <Col span={14} className='pr-2'>
                 <Card key={"cardTableUser"} className='w-full !bg-slate-100'>
                     <Table columns={columns} dataSource={userData} pagination={{ pageSize: 5 }}>
 
                     </Table>
                 </Card>
             </Col>
-            <Col span={6}>
-                <Card key={"cardAddUser"} className='w-full !bg-slate-100' title="Add User">
+            <Col span={10}>
+                <Card key={"cardAddUser"} className='w-full !bg-slate-100' title="เพิ่มผู้ใช้">
                     <div>
                         <Form layout='vertical' title='Add User' form={form} onFinish={(e) => onFinish(e)}>
-                            <Form.Item name={"username"} key={"username"} label="Username"
-                                rules={[{ required: true, message: "Username is required" }]} >
-                                <Input type='text' />
-                            </Form.Item>
-                            <Form.Item name={"telephone"} key={"telephone"} label="Telephone"
-                                rules={[{ required: true, message: "Telephone is required" }, { pattern: /^[0-9]{10}$/, message: "Please enter a valid 10-digit phone number" }]}>
-                                <Input type='text' />
-                            </Form.Item>
-                            <Form.Item name={"name"} key={"name"} label="Name"
-                                rules={[{ required: true, message: "Name is required" }]}>
-                                <Input type='text' />
-                            </Form.Item>
-                            <Form.Item name={"role_id"} key={"role_id"} label="Role"
-                                rules={[{ required: true, message: "Role is required" }]}>
-                                <Select defaultActiveFirstOption>
-                                    {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
-                                </Select>
-                            </Form.Item>
+                            <Row>
+                                <Col span={12} className='pr-1'>
+                                    <Form.Item name={"username"} key={"username"} label="ชื่อผู้ใช้"
+                                        rules={[{ required: true, message: "กรอกชื่อผู้ใช้" }]} >
+                                        <Input type='text' />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
+                                        rules={[{ required: true, message: " กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 ตัว" }]}>
+                                        <Input type='text' />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={12} className='pr-1'>
+                                    <Form.Item name={"firstname"} key={"firstname"} label="ชื่อ"
+                                        rules={[{ required: true, message: "กรอกชื่อ" }]}>
+                                        <Input type='text' />
+                                    </Form.Item>
+
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name={"lastname"} key={"lastname"} label="นามสกุล"
+                                        rules={[{ required: true, message: "กรอกนามสกุล" }]}>
+                                        <Input type='text' />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span={24}>
+                                    <Form.Item name={"address"} key={"address"} label="ที่อยู่"
+                                        rules={[{ required: true, message: "Address is required" }]} >
+                                        <TextArea rows={2}></TextArea>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row>
+                                <Col span={24}>
+                                    <Form.Item name={"role_id"} key={"role_id"} label="ระดับผู้ใช้"
+                                        rules={[{ required: true, message: "Role is required" }]}>
+                                        <Select defaultActiveFirstOption>
+                                            {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+
                             <Row>
                                 <Col span={12} className='mr-1'>
-                                    <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>
+                                    <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
 
                                 </Col>
                                 <Col span={11}>
-                                    <Button type="default" className='w-full' htmlType='reset'>Reset</Button>
+                                    <Button type="default" className='w-full' htmlType='reset'>ล้างค่า</Button>
                                 </Col>
                             </Row>
                         </Form>
@@ -167,7 +207,6 @@ export default function userManagement() {
     const roleTabs = () => {
         const roleColumn = [
             { title: 'Role Name', dataIndex: 'role_name', key: 'role_name' },
-            { title: "createAt", dataIndex: "create_at", key: "create_at", render: (create_at: string) => format(new Date(create_at), 'dd/MM/yyyy') },
         ]
         return <Row className='w-full  '>
             <Col span={18} className='pr-2'>
@@ -211,7 +250,7 @@ export default function userManagement() {
         <LayoutComponent>
             {contextHolder}
             <Card key={"cardUser"} className="w-full" title={[
-                <h1>User Management</h1>
+                <h1>จัดการข้อมูลผู้ใช้งาน</h1>
             ]}>
                 <Tabs defaultActiveKey="1" items={[
                     {
@@ -219,11 +258,11 @@ export default function userManagement() {
                         label: 'User',
                         children: userTabs()
                     },
-                    {
-                        key: '2',
-                        label: 'Role',
-                        children: roleTabs()
-                    },
+                    // {
+                    //     key: '2',
+                    //     label: 'Role',
+                    //     children: roleTabs()
+                    // },
                 ]} />
             </Card>
 

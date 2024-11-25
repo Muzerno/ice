@@ -9,7 +9,7 @@ import React from 'react';
 interface EditProductModalProps {
     openModalEdit: boolean;
     setOpenModalEdit: (open: boolean) => void;
-    productEdit?: UUID | null
+    productEdit?: number | null
     formEdit: FormInstance
 }
 
@@ -25,29 +25,29 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ openModalEdit, setO
     }
     return (
 
-        <Modal title="Edit User" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
+        <Modal title="แก้ไขสินค้า" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
             {contextHolder}
             <Form layout='vertical' title='Edit Product' form={formEdit} onFinish={(e) => onFinish(e)}>
                 <Form.Item name={"id"} key={"id"} hidden={true} initialValue={productEdit} ></Form.Item>
-                <Form.Item name={"product_number"} key={"product_number"} label="Product Number"
+                {/* <Form.Item name={"product_number"} key={"product_number"} label="Product Number"
+                    rules={[{ required: true, message: "Name is required" }]} >
+                    <Input type='text' />
+                </Form.Item> */}
+                <Form.Item name={"name"} key={"name"} label="ชื่อสินค้า"
                     rules={[{ required: true, message: "Name is required" }]} >
                     <Input type='text' />
                 </Form.Item>
-                <Form.Item name={"product_name"} key={"product_name"} label="Product Name"
-                    rules={[{ required: true, message: "Name is required" }]} >
-                    <Input type='text' />
-                </Form.Item>
-                <Form.Item name={"price"} key={"price"} label="Price"
+                <Form.Item name={"price"} key={"price"} label="ราคา"
                     rules={[{ required: true, message: "Price is required" }]}>
                     <Input type='number' />
                 </Form.Item>
-                <Form.Item name={"stock"} key={"stock"} label="Stock"
+                <Form.Item name={"amount"} key={"amount"} label="จำนวน"
                     rules={[{ required: true, message: "Amount is required" }]}>
                     <Input type='number' />
                 </Form.Item>
                 <Row>
                     <Col span={24} className=''>
-                        <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>
+                        <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
 
                     </Col>
                 </Row>

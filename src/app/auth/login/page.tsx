@@ -36,7 +36,7 @@ const LoginPage = () => {
     return (
         <div className='w-full justify-center flex flex-row-reverse mt-[10%]'>
             {contextHolder}
-            <Card title="Login" className='mt-50 w-[300px] justify-center '>
+            <Card title="เข้าสู่ระบบ" className='mt-50 w-[300px] justify-center text-center !bg-blue-100'>
                 <div className='w-full'>
                     <Form
                         name="basic"
@@ -61,9 +61,9 @@ const LoginPage = () => {
                             <Input.Password value={password} placeholder='Password' size={size} onChange={(e) => setPassword(e.target.value)} />
                         </Form.Item>
 
-                        <Form.Item className='items-center flex'>
-                            <Button type="primary" size={size} htmlType="submit">
-                                Submit
+                        <Form.Item className='items-center w-full'>
+                            <Button type="primary" className='w-full' size={size} htmlType="submit">
+                                เข้าสู่ระบบ
                             </Button>
                         </Form.Item>
                     </Form>
