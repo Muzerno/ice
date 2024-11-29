@@ -26,6 +26,12 @@ const Shipping: React.FC = () => {
             render: (item: any) => item.car_number,
         },
         {
+            title: "ชื่อคนขับรถ",
+            dataIndex: "transportation_car",
+            key: "user",
+            render: (item: any) => `${item?.users?.firstname} ${item?.users?.lastname}`,
+        },
+        {
             title: "ชื่อลูกค้า",
             dataIndex: "customer",
             key: "customer",
