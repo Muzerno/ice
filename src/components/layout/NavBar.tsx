@@ -4,6 +4,8 @@ import {
     BarsOutlined,
     BoxPlotOutlined,
     CarOutlined,
+    HomeOutlined,
+    PaperClipOutlined,
     UserOutlined
 } from '@ant-design/icons';
 import { Menu } from 'antd';
@@ -44,10 +46,17 @@ const NavBarComponent = (props: IProps) => {
                 onClick={(item) => setMenuSelect(item.key)}
                 selectedKeys={[menuSelect]}
                 items={[
+
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'dashboard',
                         icon: <BarsOutlined />,
                         label: 'แดชบอร์ด',
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                        key: 'userManagement',
+                        icon: <UserOutlined />,
+                        label: 'จัดการข้อมูลผู้ใช้งาน',
+
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'transportation',
@@ -62,15 +71,21 @@ const NavBarComponent = (props: IProps) => {
 
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
-                        key: 'userManagement',
-                        icon: <UserOutlined />,
-                        label: 'จัดการข้อมูลผู้ใช้งาน',
-
-                    } : null,
-                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'customer',
                         icon: <UserOutlined />,
                         label: 'จัดการข้อมูลลูกค้า',
+
+                    } : null,
+                    role.roleKey === 'admin' ? {
+                        key: 'manufacture',
+                        icon: <HomeOutlined />,
+                        label: 'การผลิตสินค้า',
+
+                    } : null,
+                    role.roleKey === 'admin' ? {
+                        key: 'order',
+                        icon: <PaperClipOutlined />,
+                        label: 'การเบิกสินค้า',
 
                     } : null,
                     role.roleKey === 'deliver' ? {

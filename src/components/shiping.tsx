@@ -150,9 +150,9 @@ const Shipping: React.FC = () => {
                                 {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
                             </Select>
                         </Form.Item>
-                        <Form.Item>
-                            <Button type="primary" htmlType="submit">
-                                Create Delivery
+                        <Form.Item className="w-full">
+                            <Button type="primary" className="w-full" htmlType="submit">
+                                บันทึก
                             </Button>
                         </Form.Item>
                     </Form>

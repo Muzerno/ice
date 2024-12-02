@@ -76,11 +76,11 @@ const ProdectManagement = () => {
             dataIndex: 'price',
             key: 'price',
         },
-        {
-            title: 'จำนวน',
-            dataIndex: 'amount',
-            key: 'amount',
-        },
+        // {
+        //     title: 'จำนวน',
+        //     dataIndex: 'amount',
+        //     key: 'amount',
+        // },
         // {
         //     title: '',
         //     key: 'action',
@@ -139,10 +139,10 @@ const ProdectManagement = () => {
                                         rules={[{ required: true, message: "Price is required" }]}>
                                         <Input type='number' />
                                     </Form.Item>
-                                    <Form.Item name={"amount"} key={"amount"} label="จำนวน"
+                                    {/* <Form.Item name={"amount"} key={"amount"} label="จำนวน"
                                         rules={[{ required: true, message: "Amount is required" }]}>
                                         <Input type='number' />
-                                    </Form.Item>
+                                    </Form.Item> */}
 
                                     <Row>
                                         <Col span={12} className='mr-1'>

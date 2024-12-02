@@ -15,7 +15,7 @@ const transportation = () => {
     return (
         <LayoutComponent>
             <Card className="w-full" title={[
-                <h1>Transportation</h1>
+                <h1>จัดการข้อมูลการขนส่ง</h1>
             ]}>
                 <Tabs defaultActiveKey="1" items={items} />
             </Card>

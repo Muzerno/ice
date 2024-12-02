@@ -10,6 +10,15 @@ export async function findAllProduct() {
     }
 }
 
+export async function findAllProductDrowdown() {
+    try {
+        const product = await AxiosInstances.get('/product/drowdown')
+        return Promise.resolve(product)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
 export async function findOneProduct(id: number) {
     try {
         const product = await AxiosInstances.get(`/product/${id}`)

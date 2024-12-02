@@ -143,7 +143,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
     return <div>
 
         <div ref={mapRef} style={{ width, height }} />
-        {isOpenButton && <Button type='default' className='w-full mt-2 ' onClick={(e) => setLocation()} >Set Location</Button>}
+        {isOpenButton && <Button type='default' className='w-full mt-2 ' onClick={(e) => setLocation()} >ตําแหน่งปัจจุบัน</Button>}
 
     </div>;
 };

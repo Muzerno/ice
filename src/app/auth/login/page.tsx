@@ -37,6 +37,9 @@ const LoginPage = () => {
         <div className='w-full justify-center flex flex-row-reverse mt-[10%]'>
             {contextHolder}
             <Card title="เข้าสู่ระบบ" className='mt-50 w-[300px] justify-center text-center !bg-blue-100'>
+                <Card>
+
+                </Card>
                 <div className='w-full'>
                     <Form
                         name="basic"
