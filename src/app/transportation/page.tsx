@@ -9,13 +9,13 @@ const transportation = () => {
 
     const items: TabsProps['items'] = [
         { key: '1', label: 'จัดการข้อมูลรถ', children: <CarManagement /> },
-        { key: '2', label: 'จัดการข้อมูลการขนส่ง', children: <Shipping /> },
+        // { key: '2', label: 'จัดการข้อมูลการขนส่ง', children: <Shipping /> },
     ];
 
     return (
         <LayoutComponent>
             <Card className="w-full" title={[
-                <h1>จัดการข้อมูลการขนส่ง</h1>
+                <h1>จัดการข้อมูลรถ</h1>
             ]}>
                 <Tabs defaultActiveKey="1" items={items} />
             </Card>

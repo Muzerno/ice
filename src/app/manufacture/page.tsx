@@ -51,8 +51,8 @@ export default function Manufacture(props: IProps) {
         const res = await createManufacture({
             user_id: userLogin?.user?.id,
             product_id: values.product_id,
-            amount: values.amount,
-            date_time: values.date_time
+            amount: parseInt(values.manufacture_amount),
+            date_time: new Date()
         })
         if (res.status === 201) {
             fetchManufacture()
@@ -64,7 +64,7 @@ export default function Manufacture(props: IProps) {
     }
     const columns = [
         {
-            title: 'รหัสการผลิต',
+            title: 'ลำดับ',
             dataIndex: 'id',
             key: 'id',
         },
@@ -75,7 +75,7 @@ export default function Manufacture(props: IProps) {
             render: (item: any) => format(new Date(item), 'dd/MM/yyyy')
         },
         {
-            title: 'ชื่อผู้ผลิต',
+            title: 'ลำดับ',
             dataIndex: 'user',
             key: 'user',
             render: (item: any) => `${item?.firstname} ${item?.lastname}`,
@@ -83,18 +83,18 @@ export default function Manufacture(props: IProps) {
         {
             title: 'จำนวน',
             dataIndex: 'manufacture_details',
-            key: 'amount',
+            key: 'manufacture_amount',
             render: (item: any) => {
-                const amount = item?.map((item: any) => item?.amount)
+                const amount = item?.map((item: any) => item?.manufacture_amount)
                 return amount
             },
         },
-        {
-            title: "รหัสสินค้า",
-            dataIndex: "manufacture_details",
-            key: "product_number",
-            render: (item: any) => item[0]?.products?.id
-        },
+        // {
+        //     title: "รหัสสินค้า",
+        //     dataIndex: "manufacture_details",
+        //     key: "product_number",
+        //     render: (item: any) => item[0]?.products?.id
+        // },
         {
             title: "ชื่อสินค้า",
             dataIndex: "manufacture_details",
@@ -115,12 +115,12 @@ export default function Manufacture(props: IProps) {
                             icon={<ToolOutlined />}
                             onClick={() => {
                                 setOpenModalEdit(true);
-                                const newDate = new Date(item?.date_time);
+                                const newDate = new Date();
                                 formEdit.setFieldsValue({
                                     id: item?.id,
                                     date_time: moment(newDate),
                                     product_id: item?.manufacture_details[0]?.products[0]?.id,
-                                    amount: item?.manufacture_details[0]?.amount
+                                    manufacture_amount: item?.manufacture_details[0]?.manufacture_amount
                                 });
                             }}
                         />
@@ -197,10 +197,10 @@ export default function Manufacture(props: IProps) {
 
                                     </Select>
                                 </Form.Item>
-                                <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
+                                {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
                                     <DatePicker className='w-full' format={'DD/MM/YYYY'} />
-                                </Form.Item>
-                                <Form.Item name={"amount"} className='w-full' label="จำนวน" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
+                                </Form.Item> */}
+                                <Form.Item name={"manufacture_amount"} className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                                     <Input className='w-full' />
                                 </Form.Item>
                                 <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
@@ -227,7 +227,7 @@ export default function Manufacture(props: IProps) {
                     <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
                         <DatePicker className='w-full' format={'DD/MM/YYYY'} />
                     </Form.Item>
-                    <Form.Item name={"amount"} className='w-full' label="จำนวน" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
+                    <Form.Item name={"manufacture_amount"} className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                         <Input className='w-full' />
                     </Form.Item>
                     <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>

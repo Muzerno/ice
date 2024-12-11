@@ -138,7 +138,7 @@ const Shipping: React.FC = () => {
                 </Card>
             </Col>
             <Col span={6} className="pl-2">
-                <Card className="w-full !bg-slate-100">
+                <Card className="w-full !bg-slate-100" title="เพิ่มสายการเดินรถ">
                     <Form form={form} layout="vertical" onFinish={onFinish}>
                         <Form.Item name="car_id" label="Car Number">
                             <Select >
@@ -146,7 +146,7 @@ const Shipping: React.FC = () => {
                             </Select>
                         </Form.Item>
                         <Form.Item name="customer_id" label="Customer">
-                            <Select>
+                            <Select >
                                 {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
                             </Select>
                         </Form.Item>

@@ -6,6 +6,7 @@ import {
     CarOutlined,
     HomeOutlined,
     PaperClipOutlined,
+    TagOutlined,
     UserOutlined
 } from '@ant-design/icons';
 import { Menu } from 'antd';
@@ -61,7 +62,7 @@ const NavBarComponent = (props: IProps) => {
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'transportation',
                         icon: <CarOutlined />,
-                        label: 'จัดการการขนส่ง',
+                        label: 'จัดการรถ',
                     }
                         : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
@@ -74,6 +75,12 @@ const NavBarComponent = (props: IProps) => {
                         key: 'customer',
                         icon: <UserOutlined />,
                         label: 'จัดการข้อมูลลูกค้า',
+
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                        key: 'deliveryLine',
+                        icon: <TagOutlined />,
+                        label: 'จัดสายการเดินรถ',
 
                     } : null,
                     role.roleKey === 'admin' ? {

@@ -76,36 +76,11 @@ const ProdectManagement = () => {
             dataIndex: 'price',
             key: 'price',
         },
-        // {
-        //     title: 'จำนวน',
-        //     dataIndex: 'amount',
-        //     key: 'amount',
-        // },
-        // {
-        //     title: '',
-        //     key: 'action',
-        //     render: (item: any) => {
-        //         return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => handleEdit(item)} ></Button>
-        //             <Popconfirm
-        //                 key={item.id}
-        //                 title="Delete the task"
-        //                 description="Are you sure to delete this task?"
-        //                 onConfirm={() => removeProduct(item.id)}
-        //                 okText="Yes"
-        //                 cancelText="No"
-        //                 onOpenChange={(newOpen) => {
-        //                     if (newOpen) {
-        //                         setProductEdit(item.id);
-        //                     } else {
-        //                         setProductEdit(null);
-        //                     }
-        //                 }}
-        //             >
-        //                 <Button type="primary" className='!bg-red-500' key={item.id} icon={<RestOutlined />} ></Button>
-        //             </Popconfirm>
-        //         </>
-        //     }
-        // }
+        {
+            title: 'จำนวน',
+            dataIndex: 'amount',
+            key: 'amount',
+        },
     ]
 
 
