@@ -24,6 +24,7 @@ const ProdectManagement = () => {
     const onFinish = async (values: ICreateProduct) => {
         const res = await createProduct(values)
         if (res.status === 201) {
+            fetchProductData()
             messageApi.success('Product created successfully!')
             form.resetFields();
         }
