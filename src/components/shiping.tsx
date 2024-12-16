@@ -26,10 +26,9 @@ const Shipping: React.FC = () => {
             render: (item: any) => item.car_number,
         },
         {
-            title: "ชื่อคนขับรถ",
-            dataIndex: "transportation_car",
-            key: "user",
-            render: (item: any) => `${item?.users?.firstname} ${item?.users?.lastname}`,
+            title: "ขื่อสายการเดินรถ",
+            dataIndex: "line_name",
+            key: "line_name",
         },
         {
             title: "ชื่อลูกค้า",
@@ -140,13 +139,16 @@ const Shipping: React.FC = () => {
             <Col span={6} className="pl-2">
                 <Card className="w-full !bg-slate-100" title="เพิ่มสายการเดินรถ">
                     <Form form={form} layout="vertical" onFinish={onFinish}>
+                        <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ">
+                            <Input type="text" />
+                        </Form.Item>
                         <Form.Item name="car_id" label="Car Number">
                             <Select >
                                 {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item name="customer_id" label="Customer">
-                            <Select >
+                            <Select mode="multiple">
                                 {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
                             </Select>
                         </Form.Item>
