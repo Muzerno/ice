@@ -35,9 +35,9 @@ const LayoutComponent = ({ children }: React.PropsWithChildren) => {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
     return (
-        <Layout className='h-screen'>
+        <Layout className=''>
             <NavBarComponent collapsed={collapsed} setCollapsed={setCollapsed} setMenuSelect={setMenuSelect} menuSelect={menuSelect} />
-            <Layout >
+            <Layout className=''>
                 <HeaderDefault collapsed={collapsed} setCollapsed={setCollapsed} />
                 <Content
                     style={{
@@ -46,6 +46,7 @@ const LayoutComponent = ({ children }: React.PropsWithChildren) => {
                         minHeight: 280,
                         background: colorBgContainer,
                         borderRadius: borderRadiusLG,
+                        height: '100%',
                     }}
                 >
                     {children}

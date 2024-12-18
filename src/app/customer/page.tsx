@@ -20,17 +20,17 @@ const CustomerManagement = () => {
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const columns = [
         {
-            title: 'Name',
+            title: 'ชื่อ',
             dataIndex: 'name',
             key: 'name',
         },
         {
-            title: 'Telephone',
+            title: 'เบอร์โทรศัพท์',
             dataIndex: 'telephone',
             key: 'telephone',
         },
         {
-            title: 'Address',
+            title: 'ที่อยู่',
             dataIndex: 'address',
             key: 'address',
             render: (address: any) => {

@@ -2,8 +2,8 @@
 import { findAllCustomer } from "@/utils/customerService";
 import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
 import { findAllUser, findAllUserDeliver } from "@/utils/userService";
-import { DeleteOutlined, ToolOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table } from "antd";
+import { DeleteOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import useMessage from "antd/es/message/useMessage";
 import { UUID } from "crypto";
 import { useEffect, useState } from "react";
@@ -18,43 +18,29 @@ const Shipping: React.FC = () => {
     const [selectedCar, setSelectedCar] = useState<number | null>();
     const [customerData, setCustomerData] = useState<any>([]);
     const [transportationData, setTransportationData] = useState<any>([]);
+    const [selectCustomer, setSelectCustomer] = useState([]);
+    const [openModalCustomer, setOpenModalCustomer] = useState(false);
+
     const columns = [
-        {
-            title: "เลขทะเบียนรถ",
-            dataIndex: "transportation_car",
-            key: "car_number",
-            render: (item: any) => item.car_number,
-        },
+
         {
             title: "ขื่อสายการเดินรถ",
             dataIndex: "line_name",
             key: "line_name",
         },
         {
-            title: "ชื่อลูกค้า",
-            dataIndex: "customer",
-            key: "customer",
-            render: (item: any) => item.name,
+            title: "เลขทะเบียนรถ",
+            dataIndex: "transportation_car",
+            key: "car_number",
+            render: (item: any) => item?.car_number,
         },
-        {
-            title: "ที่อยู่ลูกค้า",
-            dataIndex: "customer",
-            key: "address",
-            render: (item: any) => {
-                const parsedAddress = JSON.parse(item.address);
-                return (
-                    <div>
-                        {parsedAddress.road ? parsedAddress.road : ""} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
-                    </div>
-                );
-            }
-        },
-
         {
             title: "",
             key: "button",
             render: (item: any) => (
-                <>
+                <div className="flex justify-end">
+
+                    <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>ข้อมูลลูกค้า</Button>
                     <Popconfirm
                         title="Delete the car"
                         description="แน่ใจหรือไม่"
@@ -64,8 +50,35 @@ const Shipping: React.FC = () => {
                     >
                         <Button danger type="primary" icon={<DeleteOutlined />} />
                     </Popconfirm>
-                </>
+                </div>
             ),
+        },
+    ];
+
+    const customerColumns = [
+
+        {
+            title: 'ชื่อ',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: 'เบอร์โทรศัพท์',
+            dataIndex: 'telephone',
+            key: 'telephone',
+        },
+        {
+            title: 'ที่อยู่',
+            dataIndex: 'address',
+            key: 'address',
+            render: (address: any) => {
+                const parsedAddress = JSON.parse(address);
+                return (
+                    <div>
+                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                    </div>
+                )
+            }
         },
     ];
 
@@ -115,7 +128,24 @@ const Shipping: React.FC = () => {
         }
     }
 
+    const rowSelection: TableProps<any>['rowSelection'] = {
+        onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+            const customerArray = []
+            for (const row of selectedRows) {
+                customerArray.push(row.id)
+            }
+            form.setFieldsValue({
+                customer_id: customerArray
+            })
+        },
 
+    };
+
+    const handleOpenModalCustomer = (value: any) => {
+        setOpenModalCustomer(true)
+
+        setSelectCustomer(value.customer)
+    }
 
     useEffect(() => {
         getCustomer()
@@ -124,68 +154,99 @@ const Shipping: React.FC = () => {
     }, []);
 
 
+
     return (
-        <Row className="w-full">
-            {contextHolder}
-            <Col span={18} className="pr-2">
-                <Card className="w-full !bg-slate-100">
+        <>
+            <Row className="w-full h-full overflow-auto" >
+                {contextHolder}
+                <Col span={18} className="pr-2" >
                     <Row>
                         <Col span={24}>
-                            <Table columns={columns} className="h-[300px]" dataSource={transportationData} />
+                            <Row>
+                                <Card title="ข้อมูลลูกค้า" className="w-full">
+                                    <Table columns={customerColumns}
+                                        rowSelection={{
+                                            type: "checkbox",
+                                            ...rowSelection,
+                                        }}
+                                        rowKey={(id: any) => id.id}
+                                        className="h-[300px]"
+                                        dataSource={customerData} />
+                                </Card>
+
+                            </Row>
+                            <Row className="mt-2 w-full">
+                                <Card title="ข้อมูลสายการเดินรถ" className="w-full">
+                                    <Table columns={columns} className="h-[300px]" dataSource={transportationData} />
+                                </Card>
+                            </Row>
                         </Col>
                     </Row>
-                </Card>
-            </Col>
-            <Col span={6} className="pl-2">
-                <Card className="w-full !bg-slate-100" title="เพิ่มสายการเดินรถ">
-                    <Form form={form} layout="vertical" onFinish={onFinish}>
-                        <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ">
-                            <Input type="text" />
-                        </Form.Item>
-                        <Form.Item name="car_id" label="Car Number">
-                            <Select >
-                                {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number}</Select.Option>)}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item name="customer_id" label="Customer">
-                            <Select mode="multiple">
-                                {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item className="w-full">
-                            <Button type="primary" className="w-full" htmlType="submit">
-                                บันทึก
-                            </Button>
-                        </Form.Item>
-                    </Form>
-                    {/* <Modal
-                        title="Edit Car"
-                        visible={openModalEdit}
-                        onCancel={() => setOpenModalEdit(false)}
-                        footer={[
-                            <Button key="back" onClick={() => setOpenModalEdit(false)}>
-                                Cancel
-                            </Button>,
-                            <Button key="submit" type="primary" onClick={onFinishEdit}>
-                                Update Car
-                            </Button>,
-                        ]}
-                    >
-                        <Form form={formEdit} onFinish={onFinishEdit}>
-                            <Form.Item name="car_number" label="Car Number">
-                                <Input />
+
+
+                </Col >
+                <Col span={6} className="pl-2">
+                    <Card className="w-full !bg-slate-100" title="เพิ่มสายการเดินรถ">
+                        <Form form={form} layout="vertical" onFinish={onFinish}>
+                            <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ">
+                                <Input type="text" />
                             </Form.Item>
-                            <Form.Item name="user_name" label="User Name">
-                                <Input />
+                            <Form.Item name="car_id" label="เลขทะเบียนรถ">
+                                <Select >
+                                    {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number}</Select.Option>)}
+                                </Select>
                             </Form.Item>
-                            <Form.Item name="customer_name" label="Customer Name">
-                                <Input />
+                            <Form.Item name="customer_id" label="Customer" hidden>
+                                <Select mode="multiple">
+                                    {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
+                                </Select>
+                            </Form.Item>
+                            <Form.Item className="w-full">
+                                <Button type="primary" className="w-full" htmlType="submit">
+                                    บันทึก
+                                </Button>
                             </Form.Item>
                         </Form>
-                    </Modal> */}
+
+                    </Card>
+                </Col>
+            </Row >
+            <Modal width={1000} open={openModalCustomer} onCancel={() => setOpenModalCustomer(false)} footer={[]}>
+                <Card title="ข้อมูลลูกค้า">
+                    {selectCustomer.map((item: any) => (
+                        <div key={item.id}>
+
+                            <div className="mt-5 flex">
+                                <div className="pr-5">
+                                    <label>ชื่อลูกค้า</label>
+                                    <div>{item.name}</div>
+                                </div>
+                                <div className="pr-5">
+                                    <label>เบอร์โทร</label>
+                                    <div>{item.telephone}</div>
+                                </div>
+                                <div className="pr-5">
+                                    <label>ที่อยู่</label>
+                                    <div>
+                                        {item.address && (
+                                            <div>
+                                                {JSON.parse(item.address).road ? JSON.parse(item.address).road : ''}{' '}
+                                                {JSON.parse(item.address).subdistrict}{' '}
+                                                {JSON.parse(item.address).district}{' '}
+                                                {JSON.parse(item.address).province}{' '}
+                                                {JSON.parse(item.address).country}{' '}
+                                                {JSON.parse(item.address).postcode}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </Card>
-            </Col>
-        </Row>
+            </Modal>
+        </>
+
     );
 };
 

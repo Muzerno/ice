@@ -1,0 +1,226 @@
+'use client';
+import LayoutComponent from '@/components/Layout';
+import { UserContext } from '@/context/userContext';
+import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
+import { createOrder, findAllOrder } from '@/utils/orderService';
+import { findAllProductDrowdown } from '@/utils/productService';
+import { findAllCar } from '@/utils/transpotationService';
+import { RestOutlined, ToolOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
+import { format } from 'date-fns';
+import moment from 'moment';
+import React, { useContext, useEffect, useState } from 'react';
+
+const OrderVip = () => {
+
+
+    const [productData, setProductData] = useState([]);
+    const [data, setData] = useState([]);
+    const [messageApi, contextHolder] = message.useMessage();
+    const [form] = Form.useForm();
+    const [formEdit] = Form.useForm();
+    const { userLogin } = useContext(UserContext)
+    const [openModalEdit, setOpenModalEdit] = useState(false);
+    const [carData, setCarData] = useState([]);
+
+    const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
+
+    useEffect(() => {
+        fetchProduct()
+        fetchWithdrawData()
+        fetchCarData()
+    }, [])
+
+    const fetchProduct = async () => {
+        const res = await findAllProductDrowdown()
+        if (res.status === 200) {
+            setProductData(res.data);
+        }
+
+    }
+
+    const fetchWithdrawData = async () => {
+        const res = await findAllOrder()
+        if (res.status === 200) {
+            setData(res.data.data);
+        }
+    }
+
+    const create = async (values: any) => {
+        const res = await createOrder({
+            user_id: userLogin?.user?.id,
+            product_id: values.product_id,
+            amount: parseInt(values.amount),
+            car_id: values.car_id
+        })
+        if (res.data.success === true) {
+            fetchWithdrawData()
+            messageApi.success('เบิกสินค้าสําเร็จ');
+        } else {
+            messageApi.error('เบิกสินค้าไม่สําเร็จ');
+        }
+    }
+    const fetchCarData = async () => {
+        const res = await findAllCar();
+        if (res.success === true) {
+            setCarData(res.data);
+        }
+    };
+    const columns = [
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+        },
+        {
+            title: 'ทะเบียนรถ',
+            dataIndex: 'transportation_car',
+            key: 'transportation_car',
+            render: (item: any) => item.car_number
+        },
+        {
+            title: 'วันที่เบิก',
+            dataIndex: 'data_time',
+            key: 'data_time',
+            render: (item: any) => moment(item).format('DD/MM/YYYY'),
+        },
+        {
+            title: 'รายละเอียดการเบิก',
+            dataIndex: 'withdraw_details',
+            key: 'withdraw_details',
+            render: (item: any) => {
+                return (
+                    <p>
+                        {item?.map((item: any) => (
+                            <p>
+                                สินค้า {item?.product?.name} : จำนวน {item?.amount}
+                            </p>
+                        ))}
+                    </p>
+                );
+            },
+        },
+        // {
+        //     title: "",
+        //     dataIndex: "",
+        //     key: "action",
+        //     width: 100,
+        //     render: (item: any) => {
+        //         return (
+        //             <>
+        //                 <Button
+        //                     type="primary"
+        //                     className="!bg-yellow-300 mr-1"
+        //                     icon={<ToolOutlined />}
+        //                     onClick={() => {
+        //                         setOpenModalEdit(true);
+        //                         const newDate = new Date();
+        //                         formEdit.setFieldsValue({
+        //                             id: item?.id,
+        //                             date_time: moment(newDate),
+        //                             product_id: item?.manufacture_details[0]?.products[0]?.id,
+        //                             manufacture_amount: item?.manufacture_details[0]?.manufacture_amount
+        //                         });
+        //                     }}
+        //                 />
+        //                 <Popconfirm
+        //                     key={item.id}
+        //                     title="ลบข้อมูลการผลิต"
+        //                     description="คุณต้องการลบข้อมูลการผลิตหรือไม่"
+        //                     onConfirm={() => onDelete(item.id)}
+        //                     okText="Yes"
+        //                     cancelText="No"
+        //                     open={openConfirmUuid === item.id}
+        //                     onOpenChange={(newOpen) => {
+        //                         if (newOpen) {
+        //                             setOpenConfirmUuid(item.id);
+        //                         } else {
+        //                             setOpenConfirmUuid(null);
+        //                         }
+        //                     }}
+        //                 >
+        //                     <Button
+        //                         type="primary"
+        //                         className="!bg-red-500"
+        //                         key={item.id}
+        //                         icon={<RestOutlined />}
+        //                     />
+        //                 </Popconfirm>
+        //             </>
+        //         )
+        //     }
+        // }
+    ]
+
+    const onDelete = async (id: number) => {
+        const res = await deleteManufacture(id)
+        if (res.status === 200) {
+            messageApi.success('ลบข้อมูลสำเร็จ');
+            fetchWithdrawData()
+        } else {
+            messageApi.error('ลบข้อมูลไม่สำเร็จ');
+        }
+    }
+
+    const onUpdate = async (values: any) => {
+        const res = await updateManufacture(values.id, values)
+        if (res.status === 200) {
+            messageApi.success('แก้ไขข้อมูลสำเร็จ');
+            setOpenModalEdit(false)
+            fetchWithdrawData()
+        } else {
+            messageApi.error('แก้ไขข้อมูลไม่สำเร็จ');
+        }
+    }
+    return (
+        <LayoutComponent>
+            {contextHolder}
+            <div className='w-full'>
+                <Row className='mt-5'>
+                    <Col span={16}>
+                        <Card className='w-full' title="การเบิกสินค้า">
+                            <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+
+                        </Card>
+                    </Col>
+                    <Col span={8} className='pl-2'>
+                        <Card className='w-full' title="เบิกสินค้า">
+                            <Form layout='vertical' onFinish={create} form={form}>
+                                <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
+                                    <Select className='w-full' >
+                                        {carData.map((item: any) =>
+                                            <Select.Option key={item.id} value={item.id}>
+                                                {item.car_number}
+                                            </Select.Option>
+                                        )}
+
+                                    </Select>
+                                </Form.Item>
+                                <Form.Item name={"product_id"} className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
+                                    <Select className='w-full' >
+                                        {productData.map((item: any) =>
+                                            <Select.Option key={item.id} value={item.id}>
+                                                {item.name}
+                                            </Select.Option>
+                                        )}
+
+                                    </Select>
+                                </Form.Item>
+
+                                {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
+                                    <DatePicker className='w-full' format={'DD/MM/YYYY'} />
+                                </Form.Item> */}
+                                <Form.Item name={"amount"} className='w-full' label="จำนวน" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
+                                    <Input className='w-full' />
+                                </Form.Item>
+                                <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                            </Form>
+                        </Card>
+                    </Col>
+                </Row>
+            </div>
+        </LayoutComponent>
+    );
+}
+
+export default OrderVip;
