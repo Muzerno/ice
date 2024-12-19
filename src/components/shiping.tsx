@@ -171,13 +171,15 @@ const Shipping: React.FC = () => {
                                         }}
                                         rowKey={(id: any) => id.id}
                                         className="h-[300px]"
-                                        dataSource={customerData} />
+                                        dataSource={customerData}
+                                        pagination={{ pageSize: 5 }}
+                                    />
                                 </Card>
 
                             </Row>
                             <Row className="mt-2 w-full">
                                 <Card title="ข้อมูลสายการเดินรถ" className="w-full">
-                                    <Table columns={columns} className="h-[300px]" dataSource={transportationData} />
+                                    <Table columns={columns} className="h-[300px]" pagination={{ pageSize: 5 }} dataSource={transportationData} />
                                 </Card>
                             </Row>
                         </Col>
