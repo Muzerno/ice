@@ -7,9 +7,9 @@ import React from 'react';
 const Page = () => {
     return (
         <LayoutComponent>
-            <Card>
-                <Tabs defaultActiveKey="1" items={[{ key: '1', label: 'จัดการข้อมูลการขนส่ง', children: <Shipping /> }]} />
-            </Card>
+            {/* <Card className='w-full h-fit'> */}
+            <Tabs defaultActiveKey="1" items={[{ key: '1', label: 'จัดการข้อมูลการขนส่ง', children: <Shipping /> }]} />
+            {/* </Card> */}
 
         </LayoutComponent>
     );

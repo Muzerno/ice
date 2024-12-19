@@ -98,7 +98,7 @@ const CarManagement: React.FC = () => {
                 <Card className="w-full !bg-slate-100">
                     <Row>
                         <Col span={24}>
-                            <Table columns={columns} className="h-[300px]" dataSource={carData} />
+                            <Table columns={columns} className="h-fit" dataSource={carData} />
                         </Col>
                     </Row>
                 </Card>

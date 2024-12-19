@@ -204,7 +204,7 @@ const CustomerManagement = () => {
                 <Row className=" w-full mt-5">
                     <Col span={24} className='pr-2'>
                         <Card className="w-full  !bg-slate-100" >
-                            <Table columns={columns} dataSource={customerData} pagination={{ pageSize: 10 }} />
+                            <Table columns={columns} dataSource={customerData} pagination={{ pageSize: 5 }} />
                         </Card>
                     </Col>
 
