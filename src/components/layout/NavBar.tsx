@@ -83,13 +83,13 @@ const NavBarComponent = (props: IProps) => {
                         label: 'จัดสายการเดินรถ',
 
                     } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'manufacture',
                         icon: <HomeOutlined />,
                         label: 'การผลิตสินค้า',
 
                     } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'order',
                         icon: <PaperClipOutlined />,
                         label: 'การเบิกสินค้า',

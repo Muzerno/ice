@@ -69,10 +69,10 @@ export default function Manufacture(props: IProps) {
             key: 'id',
         },
         {
-            title: 'วันที่ผลิต',
+            title: 'วันที่ผลิต / เวลา',
             dataIndex: 'date_time',
             key: 'date_time',
-            render: (item: any) => format(new Date(item), 'dd/MM/yyyy')
+            render: (item: any) => format(new Date(item), 'dd/MM/yyyy HH:mm'),
         },
         {
             title: 'ลำดับ',

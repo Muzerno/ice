@@ -36,8 +36,8 @@ const Order = () => {
         if (res.status === 200) {
             setProductData(res.data);
         }
-
     }
+
 
     const fetchWithdrawData = async () => {
         const res = await findAllOrder()
@@ -55,6 +55,7 @@ const Order = () => {
         })
         if (res.data.success === true) {
             fetchWithdrawData()
+            fetchProduct()
             messageApi.success('เบิกสินค้าสําเร็จ');
         } else {
             messageApi.error('เบิกสินค้าไม่สําเร็จ');
@@ -79,10 +80,10 @@ const Order = () => {
             render: (item: any) => item.car_number
         },
         {
-            title: 'วันที่เบิก',
+            title: 'วันที่เบิก / เวลา',
             dataIndex: 'data_time',
             key: 'data_time',
-            render: (item: any) => moment(item).format('DD/MM/YYYY'),
+            render: (item: any) => moment(item).format('DD/MM/YYYY HH:mm'),
         },
         {
             title: 'รายละเอียดการเบิก',
@@ -152,6 +153,30 @@ const Order = () => {
         // }
     ]
 
+    const ProductColumns = [
+        {
+            title: 'รหัสสินค้า',
+            dataIndex: 'id',
+            key: 'id',
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
+            key: 'product_name',
+        },
+
+        {
+            title: 'ราคา (บาท)',
+            dataIndex: 'price',
+            key: 'price',
+        },
+        {
+            title: 'จำนวน',
+            dataIndex: 'amount',
+            key: 'amount',
+        },
+    ]
+
     const onDelete = async (id: number) => {
         const res = await deleteManufacture(id)
         if (res.status === 200) {
@@ -180,7 +205,6 @@ const Order = () => {
                     <Col span={16}>
                         <Card className='w-full' title="การเบิกสินค้า">
                             <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
-
                         </Card>
                     </Col>
                     <Col span={8} className='pl-2'>
@@ -217,6 +241,12 @@ const Order = () => {
                             </Form>
                         </Card>
                     </Col>
+                    <Col span={16}>
+                        <Card className='w-full' title="สินค้าในคลัง">
+                            <Table columns={ProductColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                        </Card>
+                    </Col>
+
                 </Row>
             </div>
         </LayoutComponent>
