@@ -64,6 +64,17 @@ export async function updateTransportationLine(id: number, params: any) {
     }
 }
 
+export async function deleteTransportationLineWithIds(id: number[]) {
+    try {
+        const transportationLine = await AxiosInstances.patch(`/transportation/delete`, {
+            ids: id
+        })
+        return Promise.resolve(transportationLine)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
 export async function deleteTransportationLine(id: number) {
     try {
         const transportationLine = await AxiosInstances.delete(`/transportation/${id}`)

@@ -1,6 +1,6 @@
 // src/components/carManagement.tsx
 import { findAllCustomer } from "@/utils/customerService";
-import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
+import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
 import { findAllUser, findAllUserDeliver } from "@/utils/userService";
 import { DeleteOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
@@ -20,9 +20,14 @@ const Shipping: React.FC = () => {
     const [transportationData, setTransportationData] = useState<any>([]);
     const [selectCustomer, setSelectCustomer] = useState([]);
     const [openModalCustomer, setOpenModalCustomer] = useState(false);
-
+    const [rowSelectList, setRowSelectList] = useState<any[]>([]);
     const columns = [
-
+        {
+            title: "ลำดับ",
+            dataIndex: "id",
+            key: "id",
+            render: (text: any, record: any, index: any) => index + 1
+        },
         {
             title: "ขื่อสายการเดินรถ",
             dataIndex: "line_name",
@@ -39,12 +44,11 @@ const Shipping: React.FC = () => {
             key: "button",
             render: (item: any) => (
                 <div className="flex justify-end">
-
                     <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>ข้อมูลลูกค้า</Button>
                     <Popconfirm
                         title="Delete the car"
                         description="แน่ใจหรือไม่"
-                        onConfirm={() => deleteLine(item.id)}
+                        onConfirm={() => deleteLineWithIdsArray(item.lineArray)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -53,10 +57,16 @@ const Shipping: React.FC = () => {
                 </div>
             ),
         },
+
     ];
 
     const customerColumns = [
-
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
+        },
         {
             title: 'ชื่อ',
             dataIndex: 'name',
@@ -80,6 +90,57 @@ const Shipping: React.FC = () => {
                 )
             }
         },
+
+
+    ];
+
+    const customerModalColumns = [
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
+        },
+        {
+            title: 'ชื่อ',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: 'เบอร์โทรศัพท์',
+            dataIndex: 'telephone',
+            key: 'telephone',
+        },
+        {
+            title: 'ที่อยู่',
+            dataIndex: 'address',
+            key: 'address',
+            render: (address: any) => {
+                const parsedAddress = JSON.parse(address);
+                return (
+                    <div>
+                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                    </div>
+                )
+            }
+        },
+        {
+            title: "",
+            key: "button",
+            render: (item: any) => (
+                <div className="flex justify-end">
+                    <Popconfirm
+                        title="Delete the car"
+                        description="แน่ใจหรือไม่"
+                        onConfirm={() => deleteLine(item.line_id)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button danger type="primary" icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                </div>
+            ),
+        },
     ];
 
     const onFinish = async (values: any) => {
@@ -89,6 +150,7 @@ const Shipping: React.FC = () => {
             messageApi.success("บันทึกสําเร็จ!");
             form.resetFields();
             deliverLine();
+            setRowSelectList([])
         }
     };
 
@@ -106,6 +168,18 @@ const Shipping: React.FC = () => {
         if (res.status === 200) {
             messageApi.success("ลบสําเร็จ!");
             deliverLine();
+            getCustomer()
+            setOpenModalCustomer(false)
+        }
+    };
+
+    const deleteLineWithIdsArray = async (id: number[]) => {
+        const res = await deleteTransportationLineWithIds(id);
+        if (res.status === 200) {
+            messageApi.success("ลบสําเร็จ!");
+            deliverLine();
+            getCustomer()
+
         }
     };
     const getCustomer = async () => {
@@ -129,6 +203,7 @@ const Shipping: React.FC = () => {
     }
 
     const rowSelection: TableProps<any>['rowSelection'] = {
+        selectedRowKeys: rowSelectList,
         onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
             const customerArray = []
             for (const row of selectedRows) {
@@ -137,7 +212,11 @@ const Shipping: React.FC = () => {
             form.setFieldsValue({
                 customer_id: customerArray
             })
+            setRowSelectList([...customerArray])
         },
+        getCheckboxProps: (record: any) => ({
+            name: record.name,
+        }),
 
     };
 
@@ -216,36 +295,9 @@ const Shipping: React.FC = () => {
             </Row >
             <Modal width={1000} open={openModalCustomer} onCancel={() => setOpenModalCustomer(false)} footer={[]}>
                 <Card title="ข้อมูลลูกค้า">
-                    {selectCustomer.map((item: any) => (
-                        <div key={item.id}>
 
-                            <div className="mt-5 flex">
-                                <div className="pr-5">
-                                    <label>ชื่อลูกค้า</label>
-                                    <div>{item.name}</div>
-                                </div>
-                                <div className="pr-5">
-                                    <label>เบอร์โทร</label>
-                                    <div>{item.telephone}</div>
-                                </div>
-                                <div className="pr-5">
-                                    <label>ที่อยู่</label>
-                                    <div>
-                                        {item.address && (
-                                            <div>
-                                                {JSON.parse(item.address).road ? JSON.parse(item.address).road : ''}{' '}
-                                                {JSON.parse(item.address).subdistrict}{' '}
-                                                {JSON.parse(item.address).district}{' '}
-                                                {JSON.parse(item.address).province}{' '}
-                                                {JSON.parse(item.address).country}{' '}
-                                                {JSON.parse(item.address).postcode}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                    <Table columns={customerModalColumns} className="h-fit" dataSource={selectCustomer} />
+
                 </Card>
             </Modal>
         </>
