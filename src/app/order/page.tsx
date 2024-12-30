@@ -4,7 +4,7 @@ import { UserContext } from '@/context/userContext';
 import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
 import { createOrder, findAllOrder } from '@/utils/orderService';
 import { findAllProductDrowdown } from '@/utils/productService';
-import { findAllCar } from '@/utils/transpotationService';
+import { findAllCar, findAllTransportationLine } from '@/utils/transpotationService';
 import { RestOutlined, ToolOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
 import { format } from 'date-fns';
@@ -22,6 +22,7 @@ const Order = () => {
     const { userLogin } = useContext(UserContext)
     const [openModalEdit, setOpenModalEdit] = useState(false);
     const [carData, setCarData] = useState([]);
+    const [lineData, setLineData] = useState([])
 
     const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
 
@@ -29,6 +30,7 @@ const Order = () => {
         fetchProduct()
         fetchWithdrawData()
         fetchCarData()
+        fetchLine()
     }, [])
 
     const fetchProduct = async () => {
@@ -46,6 +48,13 @@ const Order = () => {
         }
     }
 
+    const fetchLine = async () => {
+        const res = await findAllTransportationLine()
+        if (res) {
+            setLineData(res)
+        }
+    }
+
     const create = async (values: any) => {
         const res = await createOrder({
             user_id: userLogin?.user?.id,
@@ -57,6 +66,8 @@ const Order = () => {
             fetchWithdrawData()
             fetchProduct()
             messageApi.success('เบิกสินค้าสําเร็จ');
+        } else if (res.status === 201 && res.data.success === false) {
+            messageApi.warning('จำนวนสินค้ามีไม่พอ!');
         } else {
             messageApi.error('เบิกสินค้าไม่สําเร็จ');
         }
@@ -64,6 +75,7 @@ const Order = () => {
     const fetchCarData = async () => {
         const res = await findAllCar();
         if (res.success === true) {
+
             setCarData(res.data);
         }
     };
@@ -72,6 +84,7 @@ const Order = () => {
             title: 'ลำดับ',
             dataIndex: 'id',
             key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
         },
         {
             title: 'ทะเบียนรถ',
@@ -197,6 +210,15 @@ const Order = () => {
             messageApi.error('แก้ไขข้อมูลไม่สำเร็จ');
         }
     }
+
+    const handleChangeLine = (id: any) => {
+        const findLine: any = lineData.find((line: any) => line.id === id)
+        if (findLine) {
+            form.setFieldsValue({
+                car_id: findLine.car_id
+            })
+        }
+    }
     return (
         <LayoutComponent>
             {contextHolder}
@@ -210,6 +232,16 @@ const Order = () => {
                     <Col span={8} className='pl-2'>
                         <Card className='w-full' title="เบิกสินค้า">
                             <Form layout='vertical' onFinish={create} form={form}>
+                                <Form.Item name={"car_id"} className='w-full' label="สายการเดินรถ" rules={[{ required: true, message: "กรุณาเลือกสาย" }]}>
+                                    <Select className='w-full' onChange={(e) => handleChangeLine(e)}>
+                                        {lineData.map((item: any) =>
+                                            <Select.Option key={item.id} value={item.id}>
+                                                {item.line_name}
+                                            </Select.Option>
+                                        )}
+
+                                    </Select>
+                                </Form.Item>
                                 <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
                                     <Select className='w-full' >
                                         {carData.map((item: any) =>
