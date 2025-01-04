@@ -232,7 +232,7 @@ const Order = () => {
                     <Col span={8} className='pl-2'>
                         <Card className='w-full' title="เบิกสินค้า">
                             <Form layout='vertical' onFinish={create} form={form}>
-                                <Form.Item name={"car_id"} className='w-full' label="สายการเดินรถ" rules={[{ required: true, message: "กรุณาเลือกสาย" }]}>
+                                <Form.Item name={"line_id"} key={"line_id"} className='w-full' label="สายการเดินรถ" rules={[{ required: true, message: "กรุณาเลือกสาย" }]}>
                                     <Select className='w-full' onChange={(e) => handleChangeLine(e)}>
                                         {lineData.map((item: any) =>
                                             <Select.Option key={item.id} value={item.id}>
