@@ -10,6 +10,7 @@ import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Table
 import { format } from 'date-fns';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
+import { render } from 'react-dom';
 
 const Order = () => {
 
@@ -171,6 +172,7 @@ const Order = () => {
             title: 'รหัสสินค้า',
             dataIndex: 'id',
             key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
         },
         {
             title: 'ชื่อสินค้า',
