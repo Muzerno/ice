@@ -67,6 +67,7 @@ export default function Manufacture(props: IProps) {
             title: 'ลำดับ',
             dataIndex: 'id',
             key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
         },
         {
             title: 'วันที่ผลิต / เวลา',

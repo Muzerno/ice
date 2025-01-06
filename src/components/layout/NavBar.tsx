@@ -51,7 +51,7 @@ const NavBarComponent = (props: IProps) => {
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'dashboard',
                         icon: <BarsOutlined />,
-                        label: 'แดชบอร์ด',
+                        label: 'รายงาน',
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'userManagement',
