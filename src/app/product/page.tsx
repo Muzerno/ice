@@ -8,6 +8,7 @@ import { Button, Card, Col, Form, Input, Popconfirm, Row, Select, Table } from '
 import useMessage from 'antd/es/message/useMessage';
 import { UUID } from 'crypto';
 import React, { useEffect, useState } from 'react';
+import { render } from 'react-dom';
 
 
 
@@ -65,6 +66,7 @@ const ProdectManagement = () => {
             title: 'รหัสสินค้า',
             dataIndex: 'id',
             key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
         },
         {
             title: 'ชื่อสินค้า',
