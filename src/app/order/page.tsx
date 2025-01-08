@@ -227,10 +227,21 @@ const Order = () => {
             <div className='w-full'>
                 <Row className='mt-5'>
                     <Col span={16}>
-                        <Card className='w-full' title="การเบิกสินค้า">
-                            <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
-                        </Card>
+                        <Row>
+                            <Card className='w-full' title="สินค้าในคลัง">
+                                <Table columns={ProductColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                            </Card>
+                        </Row>
+
+                        <Row className='mt-5'>
+                            <Card className='w-full pt-5' title="การเบิกสินค้า">
+                                <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+                            </Card>
+                        </Row>
+
+
                     </Col>
+
                     <Col span={8} className='pl-2'>
                         <Card className='w-full' title="เบิกสินค้า">
                             <Form layout='vertical' onFinish={create} form={form}>
@@ -275,13 +286,11 @@ const Order = () => {
                             </Form>
                         </Card>
                     </Col>
-                    <Col span={16}>
-                        <Card className='w-full' title="สินค้าในคลัง">
-                            <Table columns={ProductColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
-                        </Card>
-                    </Col>
 
                 </Row>
+
+
+
             </div>
         </LayoutComponent>
     );

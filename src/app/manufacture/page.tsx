@@ -40,8 +40,8 @@ export default function Manufacture(props: IProps) {
 
     }
 
-    const fetchManufacture = async () => {
-        const res = await findAllManufacture()
+    const fetchManufacture = async (date: any = new Date()) => {
+        const res = await findAllManufacture(date)
         if (res.status === 200) {
             setData(res.data);
         }
@@ -63,23 +63,12 @@ export default function Manufacture(props: IProps) {
         }
     }
     const columns = [
+
         {
-            title: 'ลำดับ',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: any, record: any, index: any) => index + 1
-        },
-        {
-            title: 'วันที่ผลิต / เวลา',
+            title: 'เวลาที่ผลิต',
             dataIndex: 'date_time',
             key: 'date_time',
-            render: (item: any) => format(new Date(item), 'dd/MM/yyyy HH:mm'),
-        },
-        {
-            title: 'ลำดับ',
-            dataIndex: 'user',
-            key: 'user',
-            render: (item: any) => `${item?.firstname} ${item?.lastname}`,
+            render: (item: any) => format(new Date(item), 'HH:mm'),
         },
         {
             title: 'จำนวน',
@@ -90,12 +79,6 @@ export default function Manufacture(props: IProps) {
                 return amount
             },
         },
-        // {
-        //     title: "รหัสสินค้า",
-        //     dataIndex: "manufacture_details",
-        //     key: "product_number",
-        //     render: (item: any) => item[0]?.products?.id
-        // },
         {
             title: "ชื่อสินค้า",
             dataIndex: "manufacture_details",
@@ -154,6 +137,31 @@ export default function Manufacture(props: IProps) {
         }
     ]
 
+    const ProductColumns = [
+        {
+            title: 'รหัสสินค้า',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
+            key: 'product_name',
+        },
+
+        {
+            title: 'ราคา (บาท)',
+            dataIndex: 'price',
+            key: 'price',
+        },
+        {
+            title: 'จำนวน',
+            dataIndex: 'amount',
+            key: 'amount',
+        },
+    ]
+
     const onDelete = async (id: number) => {
         const res = await deleteManufacture(id)
         if (res.status === 200) {
@@ -180,10 +188,22 @@ export default function Manufacture(props: IProps) {
             <div className='w-full'>
                 <Row className='mt-5'>
                     <Col span={16}>
-                        <Card className='w-full' title="จัดการข้อมูลการผลิต">
-                            <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+                        <Row>
+                            <Card className='w-full' title="สินค้าในคลัง">
 
-                        </Card>
+                                <Table columns={ProductColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                            </Card>
+                        </Row>
+                        <Row className='mt-5'>
+                            <Card className='w-full' title="จัดการข้อมูลการผลิต" >
+                                <div className='mb-2 float-end'>
+                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
+                                </div>
+                                <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+                            </Card>
+                        </Row>
+
+
                     </Col>
                     <Col span={8} className='pl-2'>
                         <Card className='w-full' title="เพิ่มข้อมูลการผลิต">

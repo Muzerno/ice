@@ -1,3 +1,4 @@
+import { format } from "date-fns"
 import AxiosInstances from "./axiosInstance"
 
 export async function createManufacture(params: any) {
@@ -9,9 +10,13 @@ export async function createManufacture(params: any) {
     }
 }
 
-export async function findAllManufacture() {
+export async function findAllManufacture(date: any) {
     try {
-        const manufactures = await AxiosInstances.get('/manufacture')
+        const manufactures = await AxiosInstances.get('/manufacture', {
+            params: {
+                date: format(date, 'yyyy-MM-dd')
+            }
+        })
         return Promise.resolve(manufactures)
     } catch (error) {
         return Promise.reject(error)

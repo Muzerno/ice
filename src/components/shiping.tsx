@@ -9,7 +9,7 @@ import { UUID } from "crypto";
 import { useEffect, useState } from "react";
 import { render } from "react-dom";
 
-const Shipping: React.FC = () => {
+const Shipping = () => {
     const [carData, setCarData] = useState<any[]>([]);
 
     const [form] = Form.useForm();
@@ -235,13 +235,14 @@ const Shipping: React.FC = () => {
 
 
     return (
-        <>
-            <Row className="w-full h-full overflow-auto" >
+        <div>
+
+            <Row  >
                 {contextHolder}
                 <Col span={18} className="pr-2" >
                     <Row>
-                        <Col span={24}>
-                            <Row>
+                        <Col >
+                            <div>
                                 <Card title="ข้อมูลลูกค้า" className="w-full">
                                     <Table columns={customerColumns}
                                         rowSelection={{
@@ -256,19 +257,17 @@ const Shipping: React.FC = () => {
                                     />
                                 </Card>
 
-                            </Row>
-                            <Row className="mt-5 w-full">
+                            </div>
+                            <div className="mt-5 w-full">
                                 <Card title="ข้อมูลสายการเดินรถ" className="w-full">
                                     <Table columns={columns} className="h-fit" dataSource={transportationData} />
                                 </Card>
-                            </Row>
+                            </div>
                         </Col>
                     </Row>
-
-
                 </Col >
                 <Col span={6} className="pl-2">
-                    <Card className="w-full !bg-slate-100" title="เพิ่มสายการเดินรถ">
+                    <Card className=" !bg-slate-100" title="เพิ่มสายการเดินรถ">
                         <Form form={form} layout="vertical" onFinish={onFinish}>
                             <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ">
                                 <Input type="text" />
@@ -293,14 +292,15 @@ const Shipping: React.FC = () => {
                     </Card>
                 </Col>
             </Row >
+
             <Modal width={1000} open={openModalCustomer} onCancel={() => setOpenModalCustomer(false)} footer={[]}>
                 <Card title="ข้อมูลลูกค้า">
-
                     <Table columns={customerModalColumns} className="h-fit" dataSource={selectCustomer} />
-
                 </Card>
             </Modal>
-        </>
+        </div>
+
+
 
     );
 };
