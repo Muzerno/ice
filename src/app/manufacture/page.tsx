@@ -3,7 +3,7 @@ import LayoutComponent from '@/components/Layout';
 import { UserContext } from '@/context/userContext';
 import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
 import { findAllProduct, findAllProductDrowdown } from '@/utils/productService';
-import { DeleteOutlined, RestOutlined, ToolOutlined } from '@ant-design/icons';
+import { BoxPlotOutlined, DeleteOutlined, RestOutlined, StockOutlined, ToolOutlined } from '@ant-design/icons';
 import { Button, Card, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Table } from "antd";
 import FormItem from 'antd/es/form/FormItem';
 import { format, isValid } from 'date-fns';
@@ -196,6 +196,9 @@ export default function Manufacture(props: IProps) {
                         </Row>
                         <Row className='mt-5'>
                             <Card className='w-full' title="จัดการข้อมูลการผลิต" >
+                                <div className='mb-2 float-start'>
+                                    <StockOutlined /> จำนวนทั้งหมดของวันนี้ {data.length} รายการ
+                                </div>
                                 <div className='mb-2 float-end'>
                                     <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
                                 </div>

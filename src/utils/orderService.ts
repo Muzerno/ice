@@ -10,6 +10,19 @@ export async function findAllOrder() {
     }
 }
 
+export async function findAllOrderWithDay(date: string) {
+    try {
+        const withdraw = await AxiosInstances.get('/withdraw', {
+            params: {
+                date
+            }
+        })
+        return Promise.resolve(withdraw)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
 export async function createOrder(data: any) {
     try {
         const withdraw = await AxiosInstances.post('/withdraw', data)

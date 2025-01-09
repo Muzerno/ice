@@ -2,11 +2,11 @@
 import LayoutComponent from '@/components/Layout';
 import { UserContext } from '@/context/userContext';
 import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
-import { createOrder, findAllOrder } from '@/utils/orderService';
+import { createOrder, findAllOrder, findAllOrderWithDay } from '@/utils/orderService';
 import { findAllProductDrowdown } from '@/utils/productService';
 import { findAllCar, findAllTransportationLine } from '@/utils/transpotationService';
 import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
+import { Button, Card, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
 import { format } from 'date-fns';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
@@ -42,8 +42,8 @@ const Order = () => {
     }
 
 
-    const fetchWithdrawData = async () => {
-        const res = await findAllOrder()
+    const fetchWithdrawData = async (date: any = new Date()) => {
+        const res = await findAllOrderWithDay(format(date, 'yyyy-MM-dd'))
         if (res.status === 200) {
             setData(res.data.data);
         }
@@ -94,10 +94,10 @@ const Order = () => {
             render: (item: any) => item.car_number
         },
         {
-            title: 'วันที่เบิก / เวลา',
+            title: 'วันที่เบิก',
             dataIndex: 'data_time',
             key: 'data_time',
-            render: (item: any) => moment(item).format('DD/MM/YYYY HH:mm'),
+            render: (item: any) => moment(item).format('DD/MM/YYYY'),
         },
         {
             title: 'รายละเอียดการเบิก',
@@ -234,7 +234,12 @@ const Order = () => {
                         </Row>
 
                         <Row className='mt-5'>
+
                             <Card className='w-full pt-5' title="การเบิกสินค้า">
+                                <div className='mb-2 float-end'>
+                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchWithdrawData(date)} />
+
+                                </div>
                                 <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
                             </Card>
                         </Row>
