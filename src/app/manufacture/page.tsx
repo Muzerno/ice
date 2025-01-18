@@ -4,12 +4,13 @@ import { UserContext } from '@/context/userContext';
 import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
 import { findAllProduct, findAllProductDrowdown } from '@/utils/productService';
 import { BoxPlotOutlined, DeleteOutlined, RestOutlined, StockOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Table } from "antd";
+import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Table } from "antd";
 import FormItem from 'antd/es/form/FormItem';
-import { format, isValid } from 'date-fns';
+import { format, isValid, set } from 'date-fns';
 import { useContext, useEffect, useState } from 'react';
 import { render } from 'react-dom';
 import moment from 'moment';
+import { se } from 'date-fns/locale';
 
 interface IProps {
     navBarMenu: number
@@ -24,9 +25,9 @@ export default function Manufacture(props: IProps) {
     const [formEdit] = Form.useForm();
     const { userLogin } = useContext(UserContext)
     const [openModalEdit, setOpenModalEdit] = useState(false);
-
+    const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
-
+    const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
     useEffect(() => {
         fetchProduct()
         fetchManufacture()
@@ -48,15 +49,25 @@ export default function Manufacture(props: IProps) {
     }
 
     const create = async (values: any) => {
+        if (selectedProducts.length === 0) {
+            messageApi.error('กรุณาเลือกรายการสินค้า');
+            return
+        }
+        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+            messageApi.error('กรุณากรอกจํานวนสินค้า');
+            return
+        }
         const res = await createManufacture({
             user_id: userLogin?.user?.id,
-            product_id: values.product_id,
-            amount: parseInt(values.manufacture_amount),
+            product_id: selectedProducts,
+            amount: selectedProductsAmount,
             date_time: new Date()
         })
         if (res.status === 201) {
             fetchManufacture()
             fetchProduct()
+            setSelectedProducts([])
+            setSelectedProductsAmount({})
             messageApi.success('สร้างข้อมูลการผลิตสําเร็จ');
         } else {
             messageApi.error('สร้างข้อมูลการผลิตไม่สําเร็จ');
@@ -72,18 +83,15 @@ export default function Manufacture(props: IProps) {
         },
         {
             title: 'จำนวน',
-            dataIndex: 'manufacture_details',
+            dataIndex: 'manufacture_amount',
             key: 'manufacture_amount',
-            render: (item: any) => {
-                const amount = item?.map((item: any) => item?.manufacture_amount)
-                return amount
-            },
+
         },
         {
             title: "ชื่อสินค้า",
-            dataIndex: "manufacture_details",
-            key: "product_name",
-            render: (item: any) => item[0]?.products?.name
+            dataIndex: "products",
+            key: "products",
+            render: (item: any) => item?.name
         },
         {
             title: "",
@@ -103,8 +111,8 @@ export default function Manufacture(props: IProps) {
                                 formEdit.setFieldsValue({
                                     id: item?.id,
                                     date_time: moment(newDate),
-                                    product_id: item?.manufacture_details[0]?.products[0]?.id,
-                                    manufacture_amount: item?.manufacture_details[0]?.manufacture_amount
+                                    product_id: item?.products.id,
+                                    manufacture_amount: item?.manufacture_amount
                                 });
                             }}
                         />
@@ -142,7 +150,7 @@ export default function Manufacture(props: IProps) {
             title: 'รหัสสินค้า',
             dataIndex: 'id',
             key: 'id',
-            render: (text: any, record: any, index: any) => index + 1
+            sx: { width: '10%' },
         },
         {
             title: 'ชื่อสินค้า',
@@ -160,6 +168,88 @@ export default function Manufacture(props: IProps) {
             dataIndex: 'amount',
             key: 'amount',
         },
+    ]
+    const ProductSelectColumns = [
+        {
+            title: 'เลือก',
+            dataIndex: 'id',
+            key: 'id',
+            width: "5%",
+            render: (item: any) => {
+                return (
+                    <Checkbox
+                        key={item}
+                        checked={selectedProducts.includes(item)}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setSelectedProducts([...selectedProducts, item]);
+                            } else {
+                                setSelectedProducts(
+                                    selectedProducts.filter((id) => id !== item)
+                                );
+                                setSelectedProductsAmount((prevAmounts) => {
+                                    const newAmounts = { ...prevAmounts };
+                                    delete newAmounts[item];
+                                    return newAmounts;
+                                });
+                            }
+                        }}
+                    />
+                );
+            }
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
+            key: 'product_name',
+        },
+        {
+            title: "จำนวน",
+            dataIndex: "",
+            key: "action",
+            width: 160,
+            render: (item: any) => {
+                const isSelected = selectedProducts.includes(item.id);
+                return (
+                    <div className='flex justify-center'>
+                        <Button
+                            disabled={!isSelected}
+                            onClick={() => {
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
+                                }));
+                            }}
+                        >
+                            -
+                        </Button>
+                        <Input
+                            className='w-[50px] text-center'
+                            value={selectedProductsAmount[item.id] || 0}
+                            onChange={(e) => {
+                                const newAmount = parseInt(e.target.value) || 0;
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: newAmount,
+                                }));
+                            }}
+                            disabled={!isSelected}
+                        />
+                        <Button
+                            disabled={!isSelected}
+                            onClick={() => {
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
+                                }));
+                            }}
+                        >
+                            +
+                        </Button>
+                    </div>
+                );
+            }
+        }
     ]
 
     const onDelete = async (id: number) => {
@@ -211,22 +301,25 @@ export default function Manufacture(props: IProps) {
                     <Col span={8} className='pl-2'>
                         <Card className='w-full' title="เพิ่มข้อมูลการผลิต">
                             <Form layout='vertical' onFinish={create} form={form}>
-                                <Form.Item name={"product_id"} className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
-                                    <Select className='w-full' >
+                                {/* <Card className='w-full' title="สินค้าในคลัง"> */}
+
+                                <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                                {/* </Card> */}
+                                {/* <Form.Item key={"product_id"} name={"product_id"} hidden className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
+                                    <Select className='w-full' mode='multiple' >
                                         {productData.map((item: any) =>
                                             <Select.Option key={item.id} value={item.id}>
                                                 {item.name}
                                             </Select.Option>
                                         )}
-
                                     </Select>
-                                </Form.Item>
+                                </Form.Item> */}
                                 {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
                                     <DatePicker className='w-full' format={'DD/MM/YYYY'} />
                                 </Form.Item> */}
-                                <Form.Item name={"manufacture_amount"} className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
+                                {/* <Form.Item name={"manufacture_amount"} hidden className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                                     <Input className='w-full' />
-                                </Form.Item>
+                                </Form.Item> */}
                                 <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
                             </Form>
                         </Card>

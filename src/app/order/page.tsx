@@ -6,7 +6,7 @@ import { createOrder, findAllOrder, findAllOrderWithDay } from '@/utils/orderSer
 import { findAllProductDrowdown } from '@/utils/productService';
 import { findAllCar, findAllTransportationLine } from '@/utils/transpotationService';
 import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
+import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
 import { format } from 'date-fns';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
@@ -24,6 +24,8 @@ const Order = () => {
     const [openModalEdit, setOpenModalEdit] = useState(false);
     const [carData, setCarData] = useState([]);
     const [lineData, setLineData] = useState([])
+    const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+    const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
 
     const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
 
@@ -57,15 +59,26 @@ const Order = () => {
     }
 
     const create = async (values: any) => {
+        if (selectedProducts.length === 0) {
+            messageApi.error('กรุณาเลือกรายการสินค้า');
+            return
+        }
+        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+            messageApi.error('กรุณากรอกจํานวนสินค้า');
+            return
+        }
         const res = await createOrder({
             user_id: userLogin?.user?.id,
-            product_id: values.product_id,
-            amount: parseInt(values.amount),
+            product_id: selectedProducts,
+            amount: selectedProductsAmount,
             car_id: values.car_id
         })
         if (res.data.success === true) {
             fetchWithdrawData()
             fetchProduct()
+            setSelectedProducts([])
+            setSelectedProductsAmount({})
+            form.resetFields()
             messageApi.success('เบิกสินค้าสําเร็จ');
         } else if (res.status === 201 && res.data.success === false) {
             messageApi.warning('จำนวนสินค้ามีไม่พอ!');
@@ -115,56 +128,6 @@ const Order = () => {
                 );
             },
         },
-        // {
-        //     title: "",
-        //     dataIndex: "",
-        //     key: "action",
-        //     width: 100,
-        //     render: (item: any) => {
-        //         return (
-        //             <>
-        //                 <Button
-        //                     type="primary"
-        //                     className="!bg-yellow-300 mr-1"
-        //                     icon={<ToolOutlined />}
-        //                     onClick={() => {
-        //                         setOpenModalEdit(true);
-        //                         const newDate = new Date();
-        //                         formEdit.setFieldsValue({
-        //                             id: item?.id,
-        //                             date_time: moment(newDate),
-        //                             product_id: item?.manufacture_details[0]?.products[0]?.id,
-        //                             manufacture_amount: item?.manufacture_details[0]?.manufacture_amount
-        //                         });
-        //                     }}
-        //                 />
-        //                 <Popconfirm
-        //                     key={item.id}
-        //                     title="ลบข้อมูลการผลิต"
-        //                     description="คุณต้องการลบข้อมูลการผลิตหรือไม่"
-        //                     onConfirm={() => onDelete(item.id)}
-        //                     okText="Yes"
-        //                     cancelText="No"
-        //                     open={openConfirmUuid === item.id}
-        //                     onOpenChange={(newOpen) => {
-        //                         if (newOpen) {
-        //                             setOpenConfirmUuid(item.id);
-        //                         } else {
-        //                             setOpenConfirmUuid(null);
-        //                         }
-        //                     }}
-        //                 >
-        //                     <Button
-        //                         type="primary"
-        //                         className="!bg-red-500"
-        //                         key={item.id}
-        //                         icon={<RestOutlined />}
-        //                     />
-        //                 </Popconfirm>
-        //             </>
-        //         )
-        //     }
-        // }
     ]
 
     const ProductColumns = [
@@ -190,6 +153,89 @@ const Order = () => {
             dataIndex: 'amount',
             key: 'amount',
         },
+    ]
+
+    const ProductSelectColumns = [
+        {
+            title: 'เลือก',
+            dataIndex: 'id',
+            key: 'id',
+            width: "5%",
+            render: (item: any) => {
+                return (
+                    <Checkbox
+                        key={item}
+                        checked={selectedProducts.includes(item)}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setSelectedProducts([...selectedProducts, item]);
+                            } else {
+                                setSelectedProducts(
+                                    selectedProducts.filter((id) => id !== item)
+                                );
+                                setSelectedProductsAmount((prevAmounts) => {
+                                    const newAmounts = { ...prevAmounts };
+                                    delete newAmounts[item];
+                                    return newAmounts;
+                                });
+                            }
+                        }}
+                    />
+                );
+            }
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
+            key: 'product_name',
+        },
+        {
+            title: "จำนวน",
+            dataIndex: "",
+            key: "action",
+            width: 160,
+            render: (item: any) => {
+                const isSelected = selectedProducts.includes(item.id);
+                return (
+                    <div className='flex justify-center'>
+                        <Button
+                            disabled={!isSelected}
+                            onClick={() => {
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
+                                }));
+                            }}
+                        >
+                            -
+                        </Button>
+                        <Input
+                            className='text-center'
+                            value={selectedProductsAmount[item.id] || 0}
+                            onChange={(e) => {
+                                const newAmount = parseInt(e.target.value) || 0;
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: newAmount,
+                                }));
+                            }}
+                            disabled={!isSelected}
+                        />
+                        <Button
+                            disabled={!isSelected}
+                            onClick={() => {
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
+                                }));
+                            }}
+                        >
+                            +
+                        </Button>
+                    </div>
+                );
+            }
+        }
     ]
 
     const onDelete = async (id: number) => {
@@ -236,10 +282,9 @@ const Order = () => {
                         <Row className='mt-5'>
 
                             <Card className='w-full pt-5' title="การเบิกสินค้า">
-                                <div className='mb-2 float-end'>
+                                {/* <div className='mb-2 float-end'>
                                     <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchWithdrawData(date)} />
-
-                                </div>
+                                </div> */}
                                 <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
                             </Card>
                         </Row>
@@ -270,23 +315,7 @@ const Order = () => {
 
                                     </Select>
                                 </Form.Item>
-                                <Form.Item name={"product_id"} className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
-                                    <Select className='w-full' >
-                                        {productData.map((item: any) =>
-                                            <Select.Option key={item.id} value={item.id}>
-                                                {item.name}
-                                            </Select.Option>
-                                        )}
-
-                                    </Select>
-                                </Form.Item>
-
-                                {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
-                                    <DatePicker className='w-full' format={'DD/MM/YYYY'} />
-                                </Form.Item> */}
-                                <Form.Item name={"amount"} className='w-full' label="จำนวน" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
-                                    <Input className='w-full' />
-                                </Form.Item>
+                                <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
                                 <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
                             </Form>
                         </Card>
