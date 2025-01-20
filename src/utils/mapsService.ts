@@ -10,7 +10,6 @@ export async function getTrueLocation(lat: number, long: number) {
                 key: "2ba9a608e02eda6c9ec146d9f2e97fdc"  // Replace with your actual API key
             }
         });
-        console.log(response.data); // Handle the response here
         return response.data
     } catch (error) {
         console.error('Error fetching address:', error);

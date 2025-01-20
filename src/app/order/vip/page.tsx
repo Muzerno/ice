@@ -1,226 +1,408 @@
+// src/components/carManagement.tsx
 'use client';
-import LayoutComponent from '@/components/Layout';
-import { UserContext } from '@/context/userContext';
-import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
-import { createOrder, findAllOrder } from '@/utils/orderService';
-import { findAllProductDrowdown } from '@/utils/productService';
-import { findAllCar } from '@/utils/transpotationService';
-import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
-import { format } from 'date-fns';
-import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import LayoutComponent from "@/components/Layout";
+import LongdoMap from "@/components/LongdoMap";
+import { findAllCustomer } from "@/utils/customerService";
+import { createOrderVip, findAllOrderVip, removeOrderVip } from "@/utils/orderService";
+import { findAllProductDrowdown } from "@/utils/productService";
+import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
+import { findAllUser, findAllUserDeliver } from "@/utils/userService";
+import { DeleteOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
+import { Button, Card, Checkbox, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
+import TextArea from "antd/es/input/TextArea";
+import useMessage from "antd/es/message/useMessage";
+import { UUID } from "crypto";
+import { useEffect, useState } from "react";
+import { render } from "react-dom";
 
 const OrderVip = () => {
+    const [carData, setCarData] = useState<any[]>([]);
 
-
-    const [productData, setProductData] = useState([]);
-    const [data, setData] = useState([]);
-    const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
     const [formEdit] = Form.useForm();
-    const { userLogin } = useContext(UserContext)
-    const [openModalEdit, setOpenModalEdit] = useState(false);
-    const [carData, setCarData] = useState([]);
+    const [messageApi, contextHolder] = useMessage();
 
-    const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
-
-    useEffect(() => {
-        fetchProduct()
-        fetchWithdrawData()
-        fetchCarData()
-    }, [])
-
-    const fetchProduct = async () => {
-        const res = await findAllProductDrowdown()
-        if (res.status === 200) {
-            setProductData(res.data);
-        }
-
-    }
-
-    const fetchWithdrawData = async () => {
-        const res = await findAllOrder()
-        if (res.status === 200) {
-            setData(res.data.data);
-        }
-    }
-
-    const create = async (values: any) => {
-        const res = await createOrder({
-            user_id: userLogin?.user?.id,
-            product_id: values.product_id,
-            amount: parseInt(values.amount),
-            car_id: values.car_id
-        })
-        if (res.data.success === true) {
-            fetchWithdrawData()
-            messageApi.success('เบิกสินค้าสําเร็จ');
-        } else {
-            messageApi.error('เบิกสินค้าไม่สําเร็จ');
-        }
-    }
-    const fetchCarData = async () => {
-        const res = await findAllCar();
-        if (res.success === true) {
-            setCarData(res.data);
-        }
-    };
+    const [selectedCar, setSelectedCar] = useState<number | null>();
+    const [customerData, setCustomerData] = useState<any>([]);
+    const [transportationData, setTransportationData] = useState<any>([]);
+    const [selectCustomer, setSelectCustomer] = useState([]);
+    const [openModalCustomer, setOpenModalCustomer] = useState(false);
+    const [rowSelectList, setRowSelectList] = useState<any[]>([]);
+    const [trueAddress, setTrueAddress] = useState();
+    const [productData, setProductData] = useState([]);
+    const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+    const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
+    const [orderVip, setOrderVip] = useState<any>([])
+    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const columns = [
+        {
+            title: "ลำดับ",
+            dataIndex: "id",
+            key: "id",
+            render: (text: any, record: any, index: any) => index + 1
+        },
+        {
+            title: "ชื่อลูกค้า",
+            dataIndex: "name",
+            key: "name",
+        },
+        {
+            title: "เบอร์โทรศัพท์",
+            dataIndex: "telephone",
+            key: "telephone",
+        },
+        {
+            title: 'ที่อยู่',
+            dataIndex: 'address',
+            key: 'address',
+            render: (address: any) => {
+                if (address === null) return null
+                const parsedAddress = JSON.parse(address);
+                return (
+                    <div>
+                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                    </div>
+                )
+            }
+        },
+        {
+            title: "",
+            key: "button",
+            render: (item: any) => (
+                <div className="flex justify-end">
+                    <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>สินค้าที่สั่ง</Button>
+                    <Popconfirm
+                        title="Delete the car"
+                        description="แน่ใจหรือไม่"
+                        onConfirm={() => deleteOrder(item.id)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button danger type="primary" icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                </div>
+            ),
+        },
+
+    ];
+
+    const customerColumns = [
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
+        },
+        {
+            title: 'ชื่อ',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: 'เบอร์โทรศัพท์',
+            dataIndex: 'telephone',
+            key: 'telephone',
+        },
+        {
+            title: 'ที่อยู่',
+            dataIndex: 'address',
+            key: 'address',
+            render: (address: any) => {
+                const parsedAddress = JSON.parse(address);
+                return (
+                    <div>
+                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                    </div>
+                )
+            }
+        },
+
+
+    ];
+
+    const ProductSelectColumns = [
+        {
+            title: 'เลือก',
+            dataIndex: 'id',
+            key: 'id',
+            width: "5%",
+            render: (item: any) => {
+                return (
+                    <Checkbox
+                        key={item}
+                        checked={selectedProducts.includes(item)}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setSelectedProducts([...selectedProducts, item]);
+                            } else {
+                                setSelectedProducts(
+                                    selectedProducts.filter((id) => id !== item)
+                                );
+                                setSelectedProductsAmount((prevAmounts) => {
+                                    const newAmounts = { ...prevAmounts };
+                                    delete newAmounts[item];
+                                    return newAmounts;
+                                });
+                            }
+                        }}
+                    />
+                );
+            }
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
+            key: 'product_name',
+        },
+        {
+            title: "จำนวน",
+            dataIndex: "",
+            key: "action",
+            width: 160,
+            render: (item: any) => {
+                const isSelected = selectedProducts.includes(item.id);
+                return (
+                    <div className='flex justify-center'>
+                        <Button
+                            disabled={!isSelected}
+                            onClick={() => {
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
+                                }));
+                            }}
+                        >
+                            -
+                        </Button>
+                        <Input
+                            className='text-center'
+                            value={selectedProductsAmount[item.id] || 0}
+                            onChange={(e) => {
+                                const newAmount = parseInt(e.target.value) || 0;
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: newAmount,
+                                }));
+                            }}
+                            disabled={!isSelected}
+                        />
+                        <Button
+                            disabled={!isSelected}
+                            onClick={() => {
+                                setSelectedProductsAmount((prevAmounts) => ({
+                                    ...prevAmounts,
+                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
+                                }));
+                            }}
+                        >
+                            +
+                        </Button>
+                    </div>
+                );
+            }
+        }
+    ]
+
+    const productSelect = [
         {
             title: 'ลำดับ',
             dataIndex: 'id',
             key: 'id',
         },
         {
-            title: 'ทะเบียนรถ',
-            dataIndex: 'transportation_car',
-            key: 'transportation_car',
-            render: (item: any) => item.car_number
+            title: 'สินค้า',
+            dataIndex: 'product',
+            key: 'product_name',
+            render: (item: any) => item.name
         },
-        {
-            title: 'วันที่เบิก',
-            dataIndex: 'data_time',
-            key: 'data_time',
-            render: (item: any) => moment(item).format('DD/MM/YYYY'),
-        },
-        {
-            title: 'รายละเอียดการเบิก',
-            dataIndex: 'withdraw_details',
-            key: 'withdraw_details',
-            render: (item: any) => {
-                return (
-                    <p>
-                        {item?.map((item: any) => (
-                            <p>
-                                สินค้า {item?.product?.name} : จำนวน {item?.amount}
-                            </p>
-                        ))}
-                    </p>
-                );
-            },
-        },
-        // {
-        //     title: "",
-        //     dataIndex: "",
-        //     key: "action",
-        //     width: 100,
-        //     render: (item: any) => {
-        //         return (
-        //             <>
-        //                 <Button
-        //                     type="primary"
-        //                     className="!bg-yellow-300 mr-1"
-        //                     icon={<ToolOutlined />}
-        //                     onClick={() => {
-        //                         setOpenModalEdit(true);
-        //                         const newDate = new Date();
-        //                         formEdit.setFieldsValue({
-        //                             id: item?.id,
-        //                             date_time: moment(newDate),
-        //                             product_id: item?.manufacture_details[0]?.products[0]?.id,
-        //                             manufacture_amount: item?.manufacture_details[0]?.manufacture_amount
-        //                         });
-        //                     }}
-        //                 />
-        //                 <Popconfirm
-        //                     key={item.id}
-        //                     title="ลบข้อมูลการผลิต"
-        //                     description="คุณต้องการลบข้อมูลการผลิตหรือไม่"
-        //                     onConfirm={() => onDelete(item.id)}
-        //                     okText="Yes"
-        //                     cancelText="No"
-        //                     open={openConfirmUuid === item.id}
-        //                     onOpenChange={(newOpen) => {
-        //                         if (newOpen) {
-        //                             setOpenConfirmUuid(item.id);
-        //                         } else {
-        //                             setOpenConfirmUuid(null);
-        //                         }
-        //                     }}
-        //                 >
-        //                     <Button
-        //                         type="primary"
-        //                         className="!bg-red-500"
-        //                         key={item.id}
-        //                         icon={<RestOutlined />}
-        //                     />
-        //                 </Popconfirm>
-        //             </>
-        //         )
-        //     }
-        // }
-    ]
 
-    const onDelete = async (id: number) => {
-        const res = await deleteManufacture(id)
+        {
+            title: 'จำนวน',
+            dataIndex: 'amount',
+            key: 'amount',
+
+        },
+    ];
+
+    const fetchProduct = async () => {
+        const res = await findAllProductDrowdown()
         if (res.status === 200) {
-            messageApi.success('ลบข้อมูลสำเร็จ');
-            fetchWithdrawData()
-        } else {
-            messageApi.error('ลบข้อมูลไม่สำเร็จ');
+            setProductData(res.data);
         }
     }
 
-    const onUpdate = async (values: any) => {
-        const res = await updateManufacture(values.id, values)
+    const onFinish = async (values: any) => {
+        if (selectedProducts.length === 0) {
+            messageApi.error("กรุณาเลือกสินค้า");
+            return;
+        }
+        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+            messageApi.error("กรุณากรอกจํานวนสินค้า");
+            return;
+        }
+        const res = await createOrderVip({
+            ...values,
+            product_id: selectedProducts,
+            amount: selectedProductsAmount,
+        })
+
+        if (res.status === 201) {
+            messageApi.success("สร้างสําเร็จ!");
+            form.resetFields();
+            setSelectedProducts([])
+            setSelectedProductsAmount({})
+            fetchProduct()
+        }
+    };
+
+
+
+    const deleteOrder = async (id: number) => {
+        const res = await removeOrderVip(id);
         if (res.status === 200) {
-            messageApi.success('แก้ไขข้อมูลสำเร็จ');
-            setOpenModalEdit(false)
-            fetchWithdrawData()
-        } else {
-            messageApi.error('แก้ไขข้อมูลไม่สำเร็จ');
+            messageApi.success("ลบสําเร็จ!");
+            fetchLine()
+
+        }
+    };
+    const getCustomer = async () => {
+        const res = await findAllCustomer();
+        if (res.success === true) {
+            setCustomerData(res.data);
+        }
+    };
+    const fetchCarData = async () => {
+        const res = await findAllCar();
+        if (res.success === true) {
+            setCarData(res.data);
+        }
+    };
+
+    const deliverLine = async () => {
+        const res = await findAllTransportationLine()
+        if (res) {
+            setTransportationData(res)
         }
     }
+
+    const handleOpenModalCustomer = (value: any) => {
+        setOpenModalCustomer(true)
+        setSelectCustomer(value.order_customer_details)
+    }
+
+    useEffect(() => {
+        getCustomer()
+        fetchCarData();
+        deliverLine()
+        fetchLine()
+        fetchProduct()
+    }, []);
+
+    const fetchLine = async () => {
+        const res = await findAllOrderVip()
+        if (res.data) {
+            setOrderVip(res.data.data)
+        }
+    }
+
+    useEffect(() => {
+        if (location) {
+            form.setFieldsValue({ latitude: location.lat, longitude: location.lon, address: JSON.stringify(trueAddress) });
+        }
+    }, [location, trueAddress])
+
     return (
         <LayoutComponent>
             {contextHolder}
-            <div className='w-full'>
-                <Row className='mt-5'>
-                    <Col span={16}>
-                        <Card className='w-full' title="การเบิกสินค้า">
-                            <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+            <Card className='w-full h-fit' title={[<h1>สั่งสินค้าพิเศษ</h1>]}>
+                <div>
+                    <Row>
+                        <Col span={16}>
+                            <Row>
 
+                                <Col span={12} className='pr-2'>
+                                    <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true} />
+                                </Col>
+                                <Col span={12} className="pr-2" >
+                                    <Card className='w-full' title="สินค้าในคลัง">
+                                        <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 3 }} />
+                                    </Card>
+                                </Col>
+
+
+                                <Col span={24} className="mt-5 pr-2" >
+                                    <Card title="ข้อมูลคำสั่งซื้อ" className="w-full">
+                                        <Table columns={columns} className="h-fit" pagination={{ pageSize: 5 }} dataSource={orderVip} />
+                                    </Card>
+                                </Col >
+                            </Row >
+                        </Col>
+                        <Col span={8}>
+                            <Row>
+                                <Card title="เพิ่มคำสั่งซื้อ" className="w-full">
+                                    <Form form={form} layout="vertical" onFinish={onFinish}>
+                                        {/* <Form.Item name={"line_id"} key={"line_id"} className='w-full' label="สายการเดินรถ" rules={[{ required: true, message: "กรุณาเลือกสาย" }]}>
+                                            <Select className='w-full' onChange={(e) => handleChangeLine(e)}>
+                                                {lineData.map((item: any) =>
+                                                    <Select.Option key={item.id} value={item.id}>
+                                                        {item.line_name}
+                                                    </Select.Option>
+                                                )}
+
+                                            </Select>
+                                        </Form.Item> */}
+                                        <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
+                                            <Select className='w-full' >
+                                                {carData.map((item: any) =>
+                                                    <Select.Option key={item.id} value={item.id}>
+                                                        {item.car_number}
+                                                    </Select.Option>
+                                                )}
+
+                                            </Select>
+                                        </Form.Item>
+                                        <Form.Item key={"customer_name"} name={"customer_name"} className='w-full' label="ชื่อลูกค้า" rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}>
+                                            <Input />
+                                        </Form.Item>
+                                        <Form.Item key={"telephone"} name={"telephone"} className='w-full' label="เบอร์โทร" rules={[{ required: true, message: "กรุณากรอกเบอร์" }]}>
+                                            <Input />
+                                        </Form.Item>
+                                        <Form.Item key={"lat"} name={"latitude"} className='w-full' label="ละติจูด" rules={[{ required: true, message: "กรุณากรอกตำแหน่ง" }]} initialValue={location?.lat}>
+                                            <Input value={location?.lat} disabled />
+                                        </Form.Item>
+                                        <Form.Item key={"lon"} name={"longitude"} className='w-full' label="ลองจิจูด" rules={[{ required: true, message: "กรุณากรอกตำแหน่ง" }]} initialValue={location?.lon}>
+                                            <Input value={location?.lon} disabled />
+                                        </Form.Item>
+                                        <Form.Item key={"address"} name={"address"} className='w-full' label="ที่อยู่" rules={[{ required: true, message: "กรุณากรอกที่อยู่" }]}>
+                                            <TextArea value={trueAddress} rows={4} disabled />
+                                        </Form.Item>
+
+                                        <Form.Item className="w-full">
+                                            <Button type="primary" className="w-full" htmlType="submit">
+                                                บันทึก
+                                            </Button>
+                                        </Form.Item>
+                                    </Form>
+                                </Card>
+
+
+
+                            </Row>
+                        </Col>
+                    </Row>
+
+                    <Modal width={1000} open={openModalCustomer} onCancel={() => setOpenModalCustomer(false)} footer={[]}>
+                        <Card title="รายการสินค้า">
+                            <Table columns={productSelect} className="h-fit" dataSource={selectCustomer} />
                         </Card>
-                    </Col>
-                    <Col span={8} className='pl-2'>
-                        <Card className='w-full' title="เบิกสินค้า">
-                            <Form layout='vertical' onFinish={create} form={form}>
-                                <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
-                                    <Select className='w-full' >
-                                        {carData.map((item: any) =>
-                                            <Select.Option key={item.id} value={item.id}>
-                                                {item.car_number}
-                                            </Select.Option>
-                                        )}
+                    </Modal>
+                </div>
+            </Card>
 
-                                    </Select>
-                                </Form.Item>
-                                <Form.Item name={"product_id"} className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
-                                    <Select className='w-full' >
-                                        {productData.map((item: any) =>
-                                            <Select.Option key={item.id} value={item.id}>
-                                                {item.name}
-                                            </Select.Option>
-                                        )}
-
-                                    </Select>
-                                </Form.Item>
-
-                                {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
-                                    <DatePicker className='w-full' format={'DD/MM/YYYY'} />
-                                </Form.Item> */}
-                                <Form.Item name={"amount"} className='w-full' label="จำนวน" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
-                                    <Input className='w-full' />
-                                </Form.Item>
-                                <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
-                            </Form>
-                        </Card>
-                    </Col>
-                </Row>
-            </div>
         </LayoutComponent>
+
+
     );
-}
+};
 
 export default OrderVip;

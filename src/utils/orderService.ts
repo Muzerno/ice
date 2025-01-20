@@ -50,3 +50,30 @@ export async function deleteOrder(id: number) {
         return Promise.reject(error)
     }
 }
+
+export async function createOrderVip(data: any) {
+    try {
+        const withdraw = await AxiosInstances.post('/withdraw/vip', data)
+        return Promise.resolve(withdraw)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+export async function findAllOrderVip() {
+    try {
+        const withdraw = await AxiosInstances.get('/withdraw/vip')
+        return Promise.resolve(withdraw)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+export async function removeOrderVip(id: number) {
+    try {
+        const withdraw = await AxiosInstances.delete(`/withdraw/vip/${id}`)
+        return Promise.resolve(withdraw)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}

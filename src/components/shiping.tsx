@@ -239,7 +239,7 @@ const Shipping = () => {
 
             <Row  >
                 {contextHolder}
-                <Col span={18} className="pr-2" >
+                <Col span={16} className="pr-2" >
                     <Row>
                         <Col >
                             <div>
@@ -266,7 +266,7 @@ const Shipping = () => {
                         </Col>
                     </Row>
                 </Col >
-                <Col span={6} className="pl-2">
+                <Col span={8} className="pl-2">
                     <Card className=" !bg-slate-100" title="เพิ่มสายการเดินรถ">
                         <Form form={form} layout="vertical" onFinish={onFinish}>
                             <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ">

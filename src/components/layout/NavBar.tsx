@@ -101,6 +101,12 @@ const NavBarComponent = (props: IProps) => {
                         label: 'แดชบอร์ดการขนส่ง',
 
                     } : null,
+                    role.roleKey === 'admin' ? {
+                        key: 'order/vip',
+                        icon: <CarOutlined />,
+                        label: 'คำสั่งซื้อพิเศษ',
+
+                    } : null,
                 ]}
             />
         </Sider>
