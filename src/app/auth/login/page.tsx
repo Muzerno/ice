@@ -23,7 +23,7 @@ const LoginPage = () => {
             if (user.role.role_key === 'admin' || user.role.role_key === 'owner') {
                 router.push('/dashboard');
             } if (user.role.role_key === 'deliver') {
-                router.push('/deliverDashboard');
+                router.push('/delivery');
             }
 
         } else {

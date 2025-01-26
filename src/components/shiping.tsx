@@ -144,7 +144,10 @@ const Shipping = () => {
     ];
 
     const onFinish = async (values: any) => {
-
+        if (rowSelectList.length <= 0) {
+            messageApi.error("กรุณาเลือกลูกค้า");
+            return
+        }
         const res = await createTransportationLine(values);
         if (res.status === 201) {
             messageApi.success("บันทึกสําเร็จ!");

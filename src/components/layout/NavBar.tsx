@@ -95,17 +95,22 @@ const NavBarComponent = (props: IProps) => {
                         label: 'การเบิกสินค้า',
 
                     } : null,
-                    role.roleKey === 'deliver' ? {
-                        key: 'deliverDashboard',
-                        icon: <CarOutlined />,
-                        label: 'แดชบอร์ดการขนส่ง',
+                    // role.roleKey === 'deliver' ? {
+                    //     key: 'deliverDashboard',
+                    //     icon: <CarOutlined />,
+                    //     label: 'แดชบอร์ดการขนส่ง',
 
-                    } : null,
+                    // } : null,
                     role.roleKey === 'admin' ? {
                         key: 'order/vip',
                         icon: <CarOutlined />,
                         label: 'คำสั่งซื้อพิเศษ',
 
+                    } : null,
+                    role.roleKey === 'deliver' ? {
+                        key: 'delivery',
+                        icon: <CarOutlined />,
+                        label: 'การจัดส่ง',
                     } : null,
                 ]}
             />

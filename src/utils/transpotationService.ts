@@ -83,3 +83,23 @@ export async function deleteTransportationLine(id: number) {
         return Promise.reject(error)
     }
 }
+
+export async function getDeliveryByCarId(carId: number) {
+    try {
+        const delivery = await AxiosInstances.get(`/transportation/line/byCar/${carId}`)
+        return Promise.resolve(delivery.data)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+export async function updateDaliveryStatus(id: number, params: any) {
+    try {
+        const delivery = await AxiosInstances.patch(`/transportation/update/DaliveryStatus/${id}`, params)
+        return Promise.resolve(delivery)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+
+
+}

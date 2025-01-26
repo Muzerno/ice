@@ -106,21 +106,49 @@ interface LongdoMapProps {
     setMarker?: any
     setTrueAddress?: any
     isOpenButton?: boolean
+    customerLocation?: any[]
 }
 
-const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px', setMarker, setTrueAddress, isOpenButton }) => {
+const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px', setMarker, setTrueAddress, isOpenButton, customerLocation }) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<any | null>(null);
+    const [locations, setLocations] = useState<{ lon: number, lat: number }[]>([]);
+
 
     useEffect(() => {
         if (window.longdo) {
             mapInstance.current = new window.longdo.Map({
                 placeholder: mapRef.current,
+            });
 
-            })
+            if (customerLocation) {
+                customerLocation.forEach((location) => {
+                    const lon = parseFloat(location.longitude);
+                    const lat = parseFloat(location.latitude);
+
+                    if (!isNaN(lon) && !isNaN(lat)) {
+                        const address = JSON.parse(location.customer.address)
+
+                        const marker = new window.longdo.Marker({
+                            lon,
+                            lat
+                        }, {
+                            title: location.customer.name,
+                            detail: `${address.road} ${address.subdistrict} ${address.district} ${address.province} ${address.country} ${address.postcode}`,
+                            size: { width: 200, height: 100 }
+                        });
+                        mapInstance.current.Overlays.add(marker);
+                    } else {
+                        console.error('Invalid coordinates:', location);
+                    }
+                });
+            } else {
+                console.error('No customerLocation data provided');
+            }
+        } else {
+            console.error('Longdo Map library not loaded');
         }
-    }, []);
-
+    }, [customerLocation]);
 
 
     const setLocation = () => {
