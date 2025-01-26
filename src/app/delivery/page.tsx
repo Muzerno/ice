@@ -1,11 +1,12 @@
 'use client'
 import LayoutComponent from '@/components/Layout';
 import LongdoMap from '@/components/LongdoMap';
+import { UserContext } from '@/context/userContext';
 import { getDeliveryByCarId, updateDaliveryStatus } from '@/utils/transpotationService';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, Card, message, Popconfirm, Table } from 'antd';
 import { title } from 'process';
-import { useEffect, useState } from 'react';
+import { use, useContext, useEffect, useState } from 'react';
 
 const DeliveryPage = () => {
 
@@ -14,12 +15,13 @@ const DeliveryPage = () => {
     const [dropOrder, setDropOrder] = useState<any>([]);
     const [dataInMap, setDataInMap] = useState<any>([]);
     const [messageApi, contextHolder] = message.useMessage();
+    const { userLogin } = useContext(UserContext);
 
     useEffect(() => {
         fetchDataDelivery();
     }, []);
     const fetchDataDelivery = async () => {
-        const res = await getDeliveryByCarId(1);
+        const res = await getDeliveryByCarId(userLogin.car_id);
         if (res) {
             setDropDayly(res.drop_dayly)
             setDropOrder(res.drop_order)
@@ -29,7 +31,7 @@ const DeliveryPage = () => {
 
     useEffect(() => {
         if (data) {
-            console.log(data);
+
             const dataMerge: any = [];
             if (Array.isArray(data.drop_dayly)) {
                 data.drop_dayly.forEach((item: any) => {
