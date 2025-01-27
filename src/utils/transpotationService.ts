@@ -103,3 +103,12 @@ export async function updateDaliveryStatus(id: number, params: any) {
 
 
 }
+
+export async function updateLocation(id: number, params: any) {
+    try {
+        const delivery = await AxiosInstances.patch(`/transportation/update/location/${id}`, params)
+        return Promise.resolve(delivery)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}

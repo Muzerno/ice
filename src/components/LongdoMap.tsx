@@ -127,13 +127,17 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
                     const lat = parseFloat(location.latitude);
 
                     if (!isNaN(lon) && !isNaN(lat)) {
-                        const address = JSON.parse(location.customer.address)
-
+                        let address
+                        if (location.customer) {
+                            address = JSON.parse(location.customer.address)
+                        } else if (location.customer_order) {
+                            address = JSON.parse(location.customer_order.address)
+                        }
                         const marker = new window.longdo.Marker({
                             lon,
                             lat
                         }, {
-                            title: location.customer.name,
+                            title: location?.customer?.name || location?.customer_order?.name,
                             detail: `${address.road} ${address.subdistrict} ${address.district} ${address.province} ${address.country} ${address.postcode}`,
                             size: { width: 200, height: 100 }
                         });

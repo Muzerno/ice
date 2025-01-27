@@ -4,7 +4,7 @@ import LongdoMap from '@/components/LongdoMap';
 import { UserContext } from '@/context/userContext';
 import { getDeliveryByCarId, updateDaliveryStatus } from '@/utils/transpotationService';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button, Card, message, Popconfirm, Table } from 'antd';
+import { Button, Card, Col, message, Popconfirm, Row, Table } from 'antd';
 import { title } from 'process';
 import { use, useContext, useEffect, useState } from 'react';
 
@@ -22,15 +22,20 @@ const DeliveryPage = () => {
     }, [userLogin]);
     const fetchDataDelivery = async () => {
         const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id);
+        console.log(res)
         if (res) {
             setDropDayly(res.drop_dayly)
             setDropOrder(res.drop_order)
             setData(res)
         }
     }
-
+    // const updateLocation = async () => {
+    //     navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    //         const { latitude, longitude } = coords;
+    //         const res = await 
+    //     })
+    // }
     useEffect(() => {
-
         if (data) {
             const dataMerge: any = [];
             if (Array.isArray(data.drop_dayly)) {
@@ -38,7 +43,6 @@ const DeliveryPage = () => {
                     dataMerge.push(item);
                 });
             }
-
             if (Array.isArray(data.drop_order)) {
                 data.drop_order.forEach((item: any) => {
                     dataMerge.push(item);
@@ -52,7 +56,6 @@ const DeliveryPage = () => {
         }
     }, [data]);
     const handleSuccess = async (id: number) => {
-
         const res = await updateDaliveryStatus(id, { status: "success" });
         if (res) {
             fetchDataDelivery();
@@ -85,8 +88,7 @@ const DeliveryPage = () => {
             dataIndex: 'customer',
             key: 'customer',
             render: (item: any) => {
-                // return item.address
-                const parsedAddress = JSON.parse(item.address);
+                let parsedAddress = JSON.parse(item.address);
                 return (
                     <div>
                         {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
@@ -114,7 +116,7 @@ const DeliveryPage = () => {
             title: "อัพเดตสถานะ",
             key: "action",
             render: (item: any) => (
-                <div>
+                <div className='flex'>
                     <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
                         <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
                     </Popconfirm>
@@ -126,6 +128,65 @@ const DeliveryPage = () => {
         }
     ]
 
+    const columnDropOrder = [
+        {
+            title: 'ชื่อลูกค้า',
+            dataIndex: 'customer_order',
+            key: 'customer_order',
+            render: (item: any) => item?.name,
+        },
+        {
+            title: 'เบอร์โทรศัพท์',
+            dataIndex: 'customer_order',
+            key: 'customer_order',
+            render: (item: any) => item?.telephone,
+        },
+        {
+            title: 'ที่อยู่',
+            dataIndex: 'customer_order',
+            key: 'customer_order',
+            render: (item: any) => {
+                let parsedAddress = JSON.parse(item.address);
+                return (
+                    <div>
+                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                    </div>
+                )
+            }
+        },
+        {
+            title: 'สถานะการจัดส่ง',
+            dataIndex: 'drop_status',
+            key: 'drop_status',
+            render: (item: any) => {
+                if (item === "inprocess" || item === "inprogress") {
+                    return <span className='text-orange-300'>กําลังจัดส่ง</span>
+                }
+                if (item === "success") {
+                    return <span className='text-green-400'>สําเร็จ</span>
+                }
+                if (item === "cancel") {
+                    return <span className='text-red-400'>ยกเลิก</span>
+                }
+            }
+        },
+        {
+            title: "อัพเดตสถานะ",
+            key: "action",
+            render: (item: any) => (
+                <div className='flex'>
+                    <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
+                        <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
+                    </Popconfirm>
+                    <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
+                        <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
+                    </Popconfirm>
+                </div>
+            )
+        }
+    ]
+
+
     return (
         <LayoutComponent>
             <div>
@@ -135,9 +196,20 @@ const DeliveryPage = () => {
                         <LongdoMap customerLocation={dataInMap} />
                     </Card>
                 </div>
-                <div className='mt-5'>
-                    <Table columns={columnDropDayly} dataSource={dropDayly} pagination={{ pageSize: 5 }}></Table>
-                </div>
+                <Row className='mt-5'>
+                    <Col span={12}>
+                        <Card className='w-full' title="จัดส่งประจําวัน">
+                            <Table columns={columnDropDayly} dataSource={dropDayly} pagination={{ pageSize: 5 }}></Table>
+                        </Card>
+                    </Col>
+                    <Col span={12} className='pl-2' >
+                        <Card className='w-full' title='จุดจัดส่งพิเศษ'>
+                            <Table columns={columnDropOrder} dataSource={dropOrder} pagination={{ pageSize: 5 }}></Table>
+                        </Card>
+                    </Col>
+                </Row>
+
+
             </div>
         </LayoutComponent>
     );
