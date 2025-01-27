@@ -138,7 +138,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
                             lat
                         }, {
                             title: location?.customer?.name || location?.customer_order?.name,
-                            detail: `${address.road} ${address.subdistrict} ${address.district} ${address.province} ${address.country} ${address.postcode}`,
+                            detail: `${address.road ? address.road : ''} ${address?.subdistrict ? address.subdistrict : ''} ${address.district} ${address.province} ${address.country} ${address.postcode}`,
                             size: { width: 200, height: 100 }
                         });
                         mapInstance.current.Overlays.add(marker);
