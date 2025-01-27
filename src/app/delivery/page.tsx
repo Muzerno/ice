@@ -19,7 +19,7 @@ const DeliveryPage = () => {
 
     useEffect(() => {
         fetchDataDelivery();
-    }, []);
+    }, [userLogin]);
     const fetchDataDelivery = async () => {
         const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id);
         if (res) {
@@ -30,8 +30,8 @@ const DeliveryPage = () => {
     }
 
     useEffect(() => {
-        if (data) {
 
+        if (data) {
             const dataMerge: any = [];
             if (Array.isArray(data.drop_dayly)) {
                 data.drop_dayly.forEach((item: any) => {
@@ -52,6 +52,7 @@ const DeliveryPage = () => {
         }
     }, [data]);
     const handleSuccess = async (id: number) => {
+
         const res = await updateDaliveryStatus(id, { status: "success" });
         if (res) {
             fetchDataDelivery();
