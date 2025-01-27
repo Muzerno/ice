@@ -1,14 +1,18 @@
 import { Button, Layout, theme } from 'antd';
-import React from 'react';
+import React, { useContext } from 'react';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
+    UserAddOutlined,
+    UserOutlined,
 } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
+import { UserContext } from '@/context/userContext';
 
 const { Header } = Layout
 const HeaderDefault = (props: any) => {
     const router = useRouter()
+    const { userLogin } = useContext(UserContext)
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
@@ -25,12 +29,15 @@ const HeaderDefault = (props: any) => {
                     height: 64,
                 }}
             />
-            <Button type="primary" className='float-right m-5' danger onClick={() => {
-                localStorage.removeItem('payload')
-                router.push('/auth/login')
-            }}>
-                ออกจากระบบ
-            </Button>
+            <span className='float-right'>
+                <span className='text-lg mr-5  '> <UserOutlined /> {userLogin?.user?.firstname}  {userLogin?.user?.lastname}</span>
+                <Button type="primary" className='' danger onClick={() => {
+                    localStorage.removeItem('payload')
+                    router.push('/auth/login')
+                }}>
+                    ออกจากระบบ
+                </Button>
+            </span>
         </Header>
     );
 }

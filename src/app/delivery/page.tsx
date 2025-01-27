@@ -22,7 +22,6 @@ const DeliveryPage = () => {
     }, [userLogin]);
     const fetchDataDelivery = async () => {
         const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id);
-        console.log(res)
         if (res) {
             setDropDayly(res.drop_dayly)
             setDropOrder(res.drop_order)
@@ -208,8 +207,6 @@ const DeliveryPage = () => {
                         </Card>
                     </Col>
                 </Row>
-
-
             </div>
         </LayoutComponent>
     );
