@@ -21,7 +21,7 @@ const DeliveryPage = () => {
         fetchDataDelivery();
     }, []);
     const fetchDataDelivery = async () => {
-        const res = await getDeliveryByCarId(userLogin.car_id);
+        const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id);
         if (res) {
             setDropDayly(res.drop_dayly)
             setDropOrder(res.drop_order)
@@ -51,7 +51,6 @@ const DeliveryPage = () => {
             console.error('Data is not provided or invalid:', data);
         }
     }, [data]);
-    console.log(dataInMap)
     const handleSuccess = async (id: number) => {
         const res = await updateDaliveryStatus(id, { status: "success" });
         if (res) {
