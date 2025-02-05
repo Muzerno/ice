@@ -79,7 +79,8 @@ const Order = () => {
             user_id: userLogin?.user?.id,
             product_id: selectedProducts,
             amount: selectedProductsAmount,
-            car_id: values.car_id
+            car_id: values.car_id,
+            line_id: values.line_id
         })
         if (res.data.success === true) {
             fetchWithdrawData()
@@ -109,15 +110,16 @@ const Order = () => {
             render: (text: any, record: any, index: any) => currentIndex2 + index + 1
         },
         {
-            title: 'ทะเบียนรถ',
-            dataIndex: 'transportation_car',
-            key: 'transportation_car',
-            render: (item: any) => item.car_number
+            title: 'สายการเดินรถ',
+            dataIndex: 'line',
+            key: 'line_name',
+            render: (item: any) => item?.line_name
+
         },
         {
             title: 'วันที่เบิก',
-            dataIndex: 'data_time',
-            key: 'data_time',
+            dataIndex: 'date_time',
+            key: 'date_time',
             render: (item: any) => moment(item).format('DD/MM/YYYY'),
         },
         {
@@ -245,7 +247,7 @@ const Order = () => {
             }
         }
     ]
-
+    console.log(data)
     const onDelete = async (id: number) => {
         const res = await deleteManufacture(id)
         if (res.status === 200) {
