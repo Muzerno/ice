@@ -34,12 +34,20 @@ const OrderVip = () => {
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
     const [orderVip, setOrderVip] = useState<any>([])
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex2, setCurrentIndex2] = useState(0);
+    const handlePaginationChange = (pagination: any) => {
+        setCurrentIndex((pagination.current - 1) * pagination.pageSize);
+    };
+    const handlePaginationChange2 = (pagination: any) => {
+        setCurrentIndex2((pagination.current - 1) * pagination.pageSize);
+    };
     const columns = [
         {
             title: "ลำดับ",
             dataIndex: "id",
             key: "id",
-            render: (text: any, record: any, index: any) => index + 1
+            render: (text: any, record: any, index: any) => currentIndex + index + 1
         },
         {
             title: "ชื่อลูกค้า",
@@ -118,6 +126,26 @@ const OrderVip = () => {
         },
 
 
+    ];
+
+    const productInStoreColumns = [
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => currentIndex2 + index + 1
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'name',
+            key: 'name',
+        },
+        {
+            title: "จำนวน",
+            dataIndex: "amount",
+            key: "amount",
+            render: (text: any, record: any) => record.amount
+        },
     ];
 
     const ProductSelectColumns = [
@@ -317,22 +345,28 @@ const OrderVip = () => {
             <Card className='w-full h-fit' title={[<h1>สั่งสินค้าพิเศษ</h1>]}>
                 <div>
                     <Row>
+
+
                         <Col span={16}>
                             <Row>
-
+                                <Col span={24} className="pr-2" >
+                                    <Card className='w-full' title="สินค้าในคลัง">
+                                        <Table columns={productInStoreColumns} onChange={handlePaginationChange2} dataSource={productData} pagination={{ pageSize: 3 }} />
+                                    </Card>
+                                </Col>
+                            </Row>
+                            <Row className="mt-5">
                                 <Col span={12} className='pr-2'>
                                     <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true} />
                                 </Col>
                                 <Col span={12} className="pr-2" >
-                                    <Card className='w-full' title="สินค้าในคลัง">
+                                    <Card className='w-full' title="สินค้าที่เลือก">
                                         <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 3 }} />
                                     </Card>
                                 </Col>
-
-
                                 <Col span={24} className="mt-5 pr-2" >
                                     <Card title="ข้อมูลคำสั่งซื้อ" className="w-full">
-                                        <Table columns={columns} className="h-fit" pagination={{ pageSize: 5 }} dataSource={orderVip} />
+                                        <Table columns={columns} className="h-fit" onChange={handlePaginationChange} pagination={{ pageSize: 5 }} dataSource={orderVip} />
                                     </Card>
                                 </Col >
                             </Row >
@@ -378,9 +412,14 @@ const OrderVip = () => {
                                         </Form.Item>
 
                                         <Form.Item className="w-full">
-                                            <Button type="primary" className="w-full" htmlType="submit">
-                                                บันทึก
-                                            </Button>
+                                            <Popconfirm title="ยืนยันการสั่งสินค้า" description="แน่ใจหรือไม่" onConfirm={() => form.submit()} >
+                                                <Button type="primary" className="w-full">
+                                                    บันทึก
+                                                </Button>
+                                            </Popconfirm>
+
+
+
                                         </Form.Item>
                                     </Form>
                                 </Card>

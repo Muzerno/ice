@@ -26,6 +26,14 @@ const Order = () => {
     const [lineData, setLineData] = useState([])
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex2, setCurrentIndex2] = useState(0);
+    const handlePaginationChange = (pagination: any) => {
+        setCurrentIndex((pagination.current - 1) * pagination.pageSize);
+    };
+    const handlePaginationChange2 = (pagination: any) => {
+        setCurrentIndex2((pagination.current - 1) * pagination.pageSize);
+    };
 
     const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
 
@@ -95,10 +103,10 @@ const Order = () => {
     };
     const columns = [
         {
-            title: 'ลำดับ',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: any, record: any, index: any) => index + 1
+            title: "ลำดับ",
+            dataIndex: "id",
+            key: "id",
+            render: (text: any, record: any, index: any) => currentIndex2 + index + 1
         },
         {
             title: 'ทะเบียนรถ',
@@ -132,10 +140,10 @@ const Order = () => {
 
     const ProductColumns = [
         {
-            title: 'รหัสสินค้า',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: any, record: any, index: any) => index + 1
+            title: "ลำดับ",
+            dataIndex: "id",
+            key: "id",
+            render: (text: any, record: any, index: any) => currentIndex + index + 1
         },
         {
             title: 'ชื่อสินค้า',
@@ -275,7 +283,7 @@ const Order = () => {
                     <Col span={16}>
                         <Row>
                             <Card className='w-full' title="สินค้าในคลัง">
-                                <Table columns={ProductColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                                <Table columns={ProductColumns} dataSource={productData} onChange={handlePaginationChange} pagination={{ pageSize: 5 }} />
                             </Card>
                         </Row>
 
@@ -285,7 +293,7 @@ const Order = () => {
                                 {/* <div className='mb-2 float-end'>
                                     <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchWithdrawData(date)} />
                                 </div> */}
-                                <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+                                <Table columns={columns} dataSource={data} onChange={handlePaginationChange2} pagination={{ pageSize: 5 }} />
                             </Card>
                         </Row>
 

@@ -1,7 +1,7 @@
 'use client';
 import { updateProduct } from '@/utils/productService';
 import { updateUser } from '@/utils/userService';
-import { Button, Card, Col, Form, FormInstance, Input, Modal, Row } from 'antd';
+import { Button, Card, Col, Form, FormInstance, Input, Modal, Popconfirm, Row } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
 import { UUID } from 'crypto';
 import React from 'react';
@@ -19,7 +19,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ openModalEdit, setO
     const onFinish = async (values: any) => {
         const res = await updateProduct(values.id, values)
         if (res.status === 200) {
-            messageApi.success('Product updated successfully!');
+            messageApi.success('แก้ไขสินค้าสําเร็จ');
             setOpenModalEdit(false)
         }
     }
@@ -41,13 +41,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ openModalEdit, setO
                     rules={[{ required: true, message: "Price is required" }]}>
                     <Input type='number' />
                 </Form.Item>
-                <Form.Item name={"amount"} key={"amount"} label="จำนวน"
+                {/* <Form.Item name={"amount"} key={"amount"} label="จำนวน"
                     rules={[{ required: true, message: "Amount is required" }]}>
                     <Input type='number' />
-                </Form.Item>
+                </Form.Item> */}
                 <Row>
                     <Col span={24} className=''>
-                        <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                        <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()} >
+                            <Button type="primary" className=' w-full'>บันทึก</Button>
+                        </Popconfirm>
 
                     </Col>
                 </Row>

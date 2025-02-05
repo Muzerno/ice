@@ -26,7 +26,7 @@ const ProdectManagement = () => {
         const res = await createProduct(values)
         if (res.status === 201) {
             fetchProductData()
-            messageApi.success('Product created successfully!')
+            messageApi.success('สินค้าเพิ่มสําเร็จ');
             form.resetFields();
         }
     }
@@ -44,7 +44,7 @@ const ProdectManagement = () => {
     const removeProduct = async (id: number) => {
         const product = await deleteProduct(id)
         if (product.status === 200) {
-            messageApi.success('Product deleted successfully!')
+            messageApi.success('ลบสินค้าสําเร็จ');
             fetchProductData()
         }
     }
@@ -52,11 +52,7 @@ const ProdectManagement = () => {
         setOpenModalEdit(true)
         setProductEdit(item.id)
         formEdit.setFieldsValue({
-            id: item.id,
-            product_number: item.product_number,
-            product_name: item.product_name,
-            price: item.price,
-            stock: item.stock,
+            ...item
         })
     }
 
@@ -83,6 +79,28 @@ const ProdectManagement = () => {
             title: 'จำนวน',
             dataIndex: 'amount',
             key: 'amount',
+        },
+        {
+            title: 'จัดการ',
+            dataIndex: 'action',
+            key: 'action',
+            render: (text: any, record: any) => (
+                <div className='flex justify-center'>
+                    <Button type='primary' className='mr-2  !bg-yellow-300' onClick={() => handleEdit(record)}>
+                        <ToolOutlined />
+                    </Button>
+                    <Popconfirm
+                        title="ยืนยันการลบ"
+                        onConfirm={() => removeProduct(record.id)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button type='primary' danger>
+                            <RestOutlined />
+                        </Button>
+                    </Popconfirm>
+                </div>
+            )
         },
     ]
 

@@ -37,9 +37,9 @@ export async function findOneCustomer(id: number) {
     }
 }
 
-export async function updateCustomer(id: number, params: any) {
+export async function updateCustomer(id?: number | null | undefined, params?: any) {
     try {
-        const customer = await AxiosInstances.put(`/customer/${id}`, params)
+        const customer = await AxiosInstances.patch(`/customer/${id}`, params)
         return Promise.resolve(customer)
     } catch (error) {
         return Promise.reject(error)

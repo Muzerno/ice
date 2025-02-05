@@ -31,10 +31,12 @@ const CarManagement: React.FC = () => {
             title: "",
             key: "button",
             render: (item: any) => (
-                <>
+                <>  <Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ ...item }); setSelectedCar(item.id) }}>
+
+                </Button>
                     <Popconfirm
-                        title="Delete the car"
-                        description="Are you sure to delete this car?"
+                        title="ต้องการลบข้อมูลใช่หรือไม่?"
+                        description="ลบข้อมูล!"
                         onConfirm={() => deleteCars(item.id)}
                         okText="Yes"
                         cancelText="No"
@@ -49,7 +51,7 @@ const CarManagement: React.FC = () => {
     const onFinish = async (values: any) => {
         const res = await createCar(values);
         if (res.status === 201) {
-            messageApi.success("Car created successfully!");
+            messageApi.success("บันทึกสําเร็จ!");
             form.resetFields();
             fetchCarData();
         }
@@ -58,16 +60,17 @@ const CarManagement: React.FC = () => {
     const onFinishEdit = async (values: any) => {
         const res = await updateCar(selectedCar, values);
         if (res.status === 200) {
-            messageApi.success("Car updated successfully!");
+            messageApi.success("อัพเดทสําเร็จ!");
             formEdit.resetFields();
             fetchCarData();
+            setOpenModalEdit(false);
         }
     };
 
     const deleteCars = async (id: number) => {
         const res = await deleteCar(id);
         if (res.status === 200) {
-            messageApi.success("Car deleted successfully!");
+            messageApi.success("ลบสําเร็จ!");
             fetchCarData();
         }
     };
@@ -106,18 +109,20 @@ const CarManagement: React.FC = () => {
             <Col span={6} className="pl-2">
                 <Card className="w-full !bg-slate-100">
                     <Form form={form} layout="vertical" onFinish={onFinish}>
-                        <Form.Item name="car_number" label="เลขทะเบียนรถ">
+                        <Form.Item name="car_number" label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณากรอกเลขทะเบียนรถ" }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="user_id" label="ผู้ใช้">
+                        <Form.Item name="user_id" label="ผู้ใช้" rules={[{ required: true, message: "กรุณาเลือกผู้ใช้" }]}>
                             <Select>
                                 {userData.map((item: any) => <Select.Option value={item.id}>{item.firstname} {item.lastname}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>
-                            <Button type="primary" htmlType="submit">
-                                บันทึก
-                            </Button>
+                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()}>
+                                <Button type="primary" >
+                                    บันทึก
+                                </Button>
+                            </Popconfirm>
                         </Form.Item>
                     </Form>
                     <Modal
@@ -128,18 +133,20 @@ const CarManagement: React.FC = () => {
                             <Button key="back" onClick={() => setOpenModalEdit(false)}>
                                 ปิด
                             </Button>,
-                            <Button key="submit" type="primary" onClick={onFinishEdit}>
-                                บันทึก
-                            </Button>,
+                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()} >
+                                <Button type="primary">
+                                    บันทึก
+                                </Button>,
+                            </Popconfirm>
                         ]}
                     >
-                        <Form form={formEdit} onFinish={onFinishEdit}>
+                        <Form form={formEdit} onFinish={onFinishEdit} layout="vertical">
                             <Form.Item name="car_number" label="เลขทะเบียนรถ">
                                 <Input />
                             </Form.Item>
                             <Form.Item name="user_id" label="ผู้ใช้">
                                 <Select>
-                                    {userData.map((item: any) => <Select.Option value={item.id}>{item.name} {item.role.role_name}</Select.Option>)}
+                                    {userData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname}</Select.Option>)}
                                 </Select>
                             </Form.Item>
                         </Form>

@@ -1,13 +1,15 @@
 'use client';
-import { Button, Card, Col, Form, Input, Popconfirm, Row, Table } from 'antd';
+import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Table } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
 import { useEffect, useState } from 'react';
 
 import LayoutComponent from '@/components/Layout';
 import LongdoMap from '@/components/LongdoMap';
-import { createCustomer, deleteCustomer, findAllCustomer } from '@/utils/customerService';
-import { RestOutlined } from '@ant-design/icons';
+import { createCustomer, deleteCustomer, findAllCustomer, updateCustomer } from '@/utils/customerService';
+import { RestOutlined, ToolOutlined } from '@ant-design/icons';
 import TextArea from 'antd/es/input/TextArea';
+import { render } from 'react-dom';
+import EditUserModal from '@/components/editUserModal';
 
 const CustomerManagement = () => {
     const [customerData, setCustomerData] = useState<any>();
@@ -16,13 +18,20 @@ const CustomerManagement = () => {
     const [form] = Form.useForm();
     const [formEdit] = Form.useForm();
     const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
+    const [seleteUUid, setSeleteUUid] = useState<number | null>();
     const [trueAddress, setTrueAddress] = useState();
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const [locationEdit, setLocationEdit] = useState<{ lat: number; lon: number } | null>(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const handlePaginationChange = (pagination: any) => {
+        setCurrentIndex((pagination.current - 1) * pagination.pageSize);
+    };
     const columns = [
         {
             title: 'ลำดับ',
             dataIndex: 'id',
             key: 'id',
+            render: (text: any, record: any, index: any) => currentIndex + index + 1
         },
         {
             title: 'ชื่อ',
@@ -52,24 +61,22 @@ const CustomerManagement = () => {
             key: 'button',
             render: (item: any) => (
                 <>
-                    {/* <Button
+                    <Button
                         type="primary"
                         className="!bg-yellow-300 mr-1"
                         icon={<ToolOutlined />}
                         onClick={() => {
+                            setSeleteUUid(item.id);
                             setOpenModalEdit(true);
                             formEdit.setFieldsValue({
-                                id: item.id,
-                                name: item.name,
-                                email: item.email,
-                                phone: item.phone,
+                                ...item
                             });
                         }}
-                    /> */}
+                    />
                     <Popconfirm
                         key={item.id}
-                        title="Delete the task"
-                        description="Are you sure to delete this task?"
+                        title="ต้องการลบข้อมูลใช่หรือไม่?"
+                        description="ลบข้อมูล"
                         onConfirm={() => onDelete(item.id)}
                         okText="Yes"
                         cancelText="No"
@@ -100,6 +107,12 @@ const CustomerManagement = () => {
         }
     }, [location, trueAddress])
 
+    useEffect(() => {
+        if (locationEdit) {
+            formEdit.setFieldsValue({ latitude: locationEdit.lat, longitude: locationEdit.lon, address: JSON.stringify(trueAddress) });
+        }
+    }, [locationEdit, trueAddress])
+
     const fetchCustomerData = async () => {
         const res = await findAllCustomer();
         if (res.success === true) {
@@ -117,6 +130,18 @@ const CustomerManagement = () => {
             messageApi.error('สร้างลูกค้าไม่สําเร็จ!');
         }
 
+    }
+
+    const onUpdate = async (values: any) => {
+        const res = await updateCustomer(seleteUUid, values)
+
+        if (res.status === 200) {
+            messageApi.success('แก้ไขลูกค้าสําเร็จ!');
+            setOpenModalEdit(false)
+            fetchCustomerData()
+        } else {
+            messageApi.error('แก้ไขลูกค้าไม่สําเร็จ!');
+        }
     }
 
     const onDelete = async (id: number) => {
@@ -154,8 +179,8 @@ const CustomerManagement = () => {
                                 </Row>
                                 <Row>
                                     <Col span={24}>
-                                        <Form.Item name={"email"} key={"email"} label="อีเมล์"
-                                            rules={[{ required: true, message: "กรอกอีเมล์" }, { type: 'email', message: "กรอกอีเมล์ให้ถูกต้อง" }]} >
+                                        <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
+                                            rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
                                             <Input type='text' />
                                         </Form.Item>
                                     </Col>
@@ -172,14 +197,14 @@ const CustomerManagement = () => {
                                 <Row>
                                     <Col span={12} className='pr-1'>
                                         <Form.Item name={"latitude"} key={"lat"} label="ละติจูด"
-                                            rules={[{ required: true, message: "Latitude is required" }]} >
+                                            rules={[{ required: true, message: "ละติจูด" }]} >
                                             <Input type='text' value={location?.lat} />
                                         </Form.Item>
 
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด"
-                                            rules={[{ required: true, message: "Longitude is required" }]} >
+                                            rules={[{ required: true, message: "ลองจิจูด " }]} >
                                             <Input type='text' value={location?.lon} />
                                         </Form.Item>
                                     </Col>
@@ -187,21 +212,21 @@ const CustomerManagement = () => {
                                 <Row>
                                     <Col span={24}>
                                         <Form.Item name={"address"} key={"address"} label="ที่อยู่"
-                                            rules={[{ required: true, message: "Address is required" }]} >
+                                            rules={[{ required: true, message: "กรอกที่อยู่" }]} >
                                             <TextArea rows={2} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={12} className='pr-1'>
-                                        <Button type="default" danger className='w-full ' htmlType='reset'>Reset</Button>
+                                        <Button type="default" danger className='w-full ' htmlType='reset'>ล้างค่า</Button>
                                     </Col>
                                     <Col span={12}>
-                                        <Button type="primary" className='w-full' htmlType='submit'>Submit</Button>
+                                        <Popconfirm title="คุณแน่ใจหรือไม่" onConfirm={() => form.submit()}>
+                                            <Button type="primary" className='w-full'>บันทึก</Button>
+                                        </Popconfirm>
                                     </Col>
                                 </Row>
-
-
                             </Form>
                         </Card>
                     </Col>
@@ -209,13 +234,76 @@ const CustomerManagement = () => {
                 <Row className=" w-full mt-5">
                     <Col span={24} className='pr-2'>
                         <Card className="w-full  !bg-slate-100" >
-                            <Table columns={columns} dataSource={customerData} pagination={{ pageSize: 5 }} />
+                            <Table columns={columns} dataSource={customerData} onChange={handlePaginationChange} pagination={{ pageSize: 5 }} />
                         </Card>
                     </Col>
 
                 </Row>
-
             </Card>
+            <Modal title="แก้ไขลูกค้า" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
+                <Form layout='vertical' title='Add Customer' form={formEdit} onFinish={(e) => onUpdate(e)} >
+                    <Row >
+                        <Col span={24}>
+                            <Form.Item name={"name"} key={"name"} label="ชื่อลูกค้า"
+                                rules={[{ required: true, message: "กรอกชื่อลูกค้า" }]} >
+                                <Input type='text' />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span={24}>
+                            <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
+                                rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
+                                <Input type='text' />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span={24}>
+                            <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
+                                rules={[{ required: true, message: "กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "กรอกเบอร์โทรศัพท์ให้ถูกต้อง" }]} >
+                                <Input type='text' />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span={24}>
+                            <LongdoMap setMarker={setLocationEdit} setTrueAddress={setTrueAddress} isOpenButton={true} />
+                        </Col>
+                    </Row>
+                    <Row className='mt-2'>
+                        <Col span={12} className='pr-1'>
+                            <Form.Item name={"latitude"} key={"lat"} label="ละติจูด"
+                                rules={[{ required: true, message: "ละติจูด" }]} >
+                                <Input type='text' value={location?.lat} readOnly />
+                            </Form.Item>
+
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด"
+                                rules={[{ required: true, message: "ลองจิจูด " }]} >
+                                <Input type='text' value={location?.lon} readOnly />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span={24}>
+                            <Form.Item name={"address"} key={"address"} label="ที่อยู่"
+                                rules={[{ required: true, message: "กรอกที่อยู่" }]} >
+                                <TextArea rows={2} readOnly />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row className='mt-2'>
+                        <Col span={24}>
+                            <Popconfirm title="คุณแน่ใจหรือไม่" onConfirm={() => formEdit.submit()}>
+                                <Button type="primary" className='w-full'>บันทึก</Button>
+                            </Popconfirm>
+                        </Col>
+                    </Row>
+                </Form>
+            </Modal>
 
         </LayoutComponent>
     );

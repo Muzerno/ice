@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { createRole, findAllRole } from '@/utils/roleService';
 import { format } from 'date-fns';
 import TextArea from 'antd/es/input/TextArea';
+import { fi, ro } from 'date-fns/locale';
 
 export default function userManagement() {
     const [userData, setUserData] = useState<any>()
@@ -55,11 +56,10 @@ export default function userManagement() {
             title: "",
             key: "button",
             render: (item: any) => {
-                return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ id: item.id, username: item.username, telephone: item.telephone, name: item.name, role_id: item.role.id }); setSeleteUUid(item.id) }}></Button>
+                return <><Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ ...item, role_id: item.role.id }); setSeleteUUid(item.id) }}></Button>
                     <Popconfirm
                         key={item.id}
-                        title="Delete the task"
-                        description="Are you sure to delete this task?"
+                        title="ต้องการลบข้อมูลใช่หรือไม่?"
                         onConfirm={() => removeUser(item.id)}
                         okText="Yes"
                         cancelText="No"
@@ -120,7 +120,6 @@ export default function userManagement() {
             <Col span={14} className='pr-2'>
                 <Card key={"cardTableUser"} className='w-full !bg-slate-100'>
                     <Table columns={columns} dataSource={userData} pagination={{ pageSize: 5 }}>
-
                     </Table>
                 </Card>
             </Col>
@@ -160,7 +159,7 @@ export default function userManagement() {
                             <Row>
                                 <Col span={24}>
                                     <Form.Item name={"address"} key={"address"} label="ที่อยู่"
-                                        rules={[{ required: true, message: "Address is required" }]} >
+                                        rules={[{ required: true, message: "กรอกที่อยู่" }]} >
                                         <TextArea rows={2}></TextArea>
                                     </Form.Item>
                                 </Col>
@@ -169,7 +168,7 @@ export default function userManagement() {
                             <Row>
                                 <Col span={24}>
                                     <Form.Item name={"role_id"} key={"role_id"} label="ระดับผู้ใช้"
-                                        rules={[{ required: true, message: "Role is required" }]}>
+                                        rules={[{ required: true, message: "กรุณาเลือกระดับผู้ใช้" }]}>
                                         <Select defaultActiveFirstOption>
                                             {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
                                         </Select>
@@ -180,7 +179,9 @@ export default function userManagement() {
 
                             <Row>
                                 <Col span={12} className='mr-1'>
-                                    <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                                    <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
+                                        <Button type="primary" className=' w-full'>บันทึก</Button>
+                                    </Popconfirm>
 
                                 </Col>
                                 <Col span={11}>
@@ -217,9 +218,9 @@ export default function userManagement() {
                 </Card>
             </Col>
             <Col span={6}>
-                <Card key={"cardAddRole"} className='w-full !bg-slate-100' title="Add Roles">
+                <Card key={"cardAddRole"} className='w-full !bg-slate-100' title="เพิ่ม ระดับผู้ใช้งาน">
                     <div>
-                        <Form layout='vertical' title='Add Roles' form={formRole} onFinish={(e) => createRoles(e)}>
+                        <Form layout='vertical' title='เพิ่ม ระดับผู้ใช้งาน' form={formRole} onFinish={(e) => createRoles(e)}>
                             <Form.Item name={"role_name"} key={"role_name"} label="Role Name"
                                 rules={[{ required: true, message: "Name is required" }]} >
                                 <Input type='text' />
@@ -230,11 +231,13 @@ export default function userManagement() {
                             </Form.Item>
                             <Row>
                                 <Col span={12} className='mr-1'>
-                                    <Button type="primary" className=' w-full' htmlType='submit'>Submit</Button>
+                                    <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formRole.submit()} >
+                                        <Button type="primary" className=' w-full' >บันทึก</Button>
+                                    </Popconfirm>
 
                                 </Col>
                                 <Col span={11}>
-                                    <Button type="default" className='w-full' htmlType='reset'>Reset</Button>
+                                    <Button type="default" className='w-full' htmlType='reset'>ล้างค่า</Button>
                                 </Col>
                             </Row>
                         </Form>

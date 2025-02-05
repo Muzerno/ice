@@ -2,10 +2,11 @@
 import { findAllCustomer } from "@/utils/customerService";
 import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
 import { findAllUser, findAllUserDeliver } from "@/utils/userService";
-import { DeleteOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
+import { DeleteOutlined, PlusCircleOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import useMessage from "antd/es/message/useMessage";
 import { UUID } from "crypto";
+import { ca } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { render } from "react-dom";
 
@@ -21,12 +22,39 @@ const Shipping = () => {
     const [selectCustomer, setSelectCustomer] = useState([]);
     const [openModalCustomer, setOpenModalCustomer] = useState(false);
     const [rowSelectList, setRowSelectList] = useState<any[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex2, setCurrentIndex2] = useState(0);
+    const handlePaginationChange = (pagination: any) => {
+        setCurrentIndex((pagination.current - 1) * pagination.pageSize);
+    };
+    const handlePaginationChange2 = (pagination: any) => {
+        setCurrentIndex2((pagination.current - 1) * pagination.pageSize);
+    }
+
+    const handleUpdate = async (item: any) => {
+        if (rowSelectList.length <= 0) {
+            messageApi.error("กรุณาเลือกลูกค้า");
+            return
+        }
+        const res = await createTransportationLine({
+            line_name: item.line_name,
+            car_id: item.car_id,
+            customer_id: rowSelectList,
+        });
+        if (res.status === 201) {
+            messageApi.success("บันทึกสําเร็จ!");
+            form.resetFields();
+            deliverLine();
+            setRowSelectList([])
+        }
+    };
+
     const columns = [
         {
             title: "ลำดับ",
             dataIndex: "id",
             key: "id",
-            render: (text: any, record: any, index: any) => index + 1
+            render: (text: any, record: any, index: any) => currentIndex + index + 1
         },
         {
             title: "ขื่อสายการเดินรถ",
@@ -44,6 +72,9 @@ const Shipping = () => {
             key: "button",
             render: (item: any) => (
                 <div className="flex justify-end">
+                    <Popconfirm title="ต้องการเพิ่มข้อมูลใช่หรือไม่?" description="เพิ่มข้อมูล" onConfirm={() => handleUpdate(item)}>
+                        <Button type="primary" className="mr-2 !bg-green-400" icon={<PlusCircleOutlined />}></Button>
+                    </Popconfirm>
                     <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>ข้อมูลลูกค้า</Button>
                     <Popconfirm
                         title="Delete the car"
@@ -59,13 +90,12 @@ const Shipping = () => {
         },
 
     ];
-
     const customerColumns = [
         {
             title: 'ลำดับ',
             dataIndex: 'id',
             key: 'id',
-            render: (text: any, record: any, index: any) => index + 1
+            render: (text: any, record: any, index: any) => currentIndex2 + index + 1
         },
         {
             title: 'ชื่อ',
@@ -254,6 +284,7 @@ const Shipping = () => {
                                         }}
                                         rowKey={(id: any) => id.id}
                                         className="h-fit"
+                                        onChange={handlePaginationChange2}
                                         dataSource={customerData}
                                         pagination={{ pageSize: 5 }}
 
@@ -263,7 +294,7 @@ const Shipping = () => {
                             </div>
                             <div className="mt-5 w-full">
                                 <Card title="ข้อมูลสายการเดินรถ" className="w-full">
-                                    <Table columns={columns} className="h-fit" dataSource={transportationData} />
+                                    <Table columns={columns} className="h-fit" onChange={handlePaginationChange} dataSource={transportationData} />
                                 </Card>
                             </div>
                         </Col>
@@ -286,9 +317,11 @@ const Shipping = () => {
                                 </Select>
                             </Form.Item>
                             <Form.Item className="w-full">
-                                <Button type="primary" className="w-full" htmlType="submit">
-                                    บันทึก
-                                </Button>
+                                <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
+                                    <Button type="primary" className="w-full" htmlType="submit">
+                                        บันทึก
+                                    </Button>
+                                </Popconfirm>
                             </Form.Item>
                         </Form>
 
