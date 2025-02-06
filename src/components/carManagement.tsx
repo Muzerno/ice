@@ -114,7 +114,7 @@ const CarManagement: React.FC = () => {
                         </Form.Item>
                         <Form.Item name="user_id" label="ผู้ใช้" rules={[{ required: true, message: "กรุณาเลือกผู้ใช้" }]}>
                             <Select>
-                                {userData.map((item: any) => <Select.Option value={item.id}>{item.firstname} {item.lastname}</Select.Option>)}
+                                {userData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {`[${item.role.role_name}]`}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>
@@ -146,7 +146,7 @@ const CarManagement: React.FC = () => {
                             </Form.Item>
                             <Form.Item name="user_id" label="ผู้ใช้">
                                 <Select>
-                                    {userData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname}</Select.Option>)}
+                                    {userData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {item.role.role_name}</Select.Option>)}
                                 </Select>
                             </Form.Item>
                         </Form>

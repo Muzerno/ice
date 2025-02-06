@@ -3,7 +3,7 @@ import { findAllCustomer } from "@/utils/customerService";
 import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
 import { findAllUser, findAllUserDeliver } from "@/utils/userService";
 import { DeleteOutlined, PlusCircleOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
+import { Button, Card, Col, Form, Input, Modal, Pagination, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import useMessage from "antd/es/message/useMessage";
 import { UUID } from "crypto";
 import { ca } from "date-fns/locale";
@@ -26,8 +26,10 @@ const Shipping = () => {
     const [currentIndex2, setCurrentIndex2] = useState(0);
     const handlePaginationChange = (pagination: any) => {
         setCurrentIndex((pagination.current - 1) * pagination.pageSize);
+
     };
     const handlePaginationChange2 = (pagination: any) => {
+        console.log(pagination.current, pagination.pageSize)
         setCurrentIndex2((pagination.current - 1) * pagination.pageSize);
     }
 
@@ -276,25 +278,27 @@ const Shipping = () => {
                     <Row>
                         <Col >
                             <div>
-                                <Card title="ข้อมูลลูกค้า" className="w-full">
+                                <Card title="ข้อมูลลูกค้า" className="w-full " style={{ height: 600 }}>
                                     <Table columns={customerColumns}
                                         rowSelection={{
                                             type: "checkbox",
                                             ...rowSelection,
                                         }}
-                                        rowKey={(id: any) => id.id}
-                                        className="h-fit"
-                                        onChange={handlePaginationChange2}
-                                        dataSource={customerData}
-                                        pagination={{ pageSize: 5 }}
 
-                                    />
+                                        rowKey={(id: any) => id.id}
+                                        pagination={{ pageSize: 5 }}
+                                        dataSource={customerData}
+
+                                        onChange={handlePaginationChange2}
+                                    >
+
+                                    </Table>
                                 </Card>
 
                             </div>
                             <div className="mt-5 w-full">
-                                <Card title="ข้อมูลสายการเดินรถ" className="w-full">
-                                    <Table columns={columns} className="h-fit" onChange={handlePaginationChange} dataSource={transportationData} />
+                                <Card title="ข้อมูลสายการเดินรถ" className="w-full h-full">
+                                    <Table columns={columns} pagination={{ pageSize: 5 }} className="h-full" style={{ height: "400px", overflow: 'auto' }} onChange={handlePaginationChange} dataSource={transportationData} />
                                 </Card>
                             </div>
                         </Col>
@@ -318,7 +322,7 @@ const Shipping = () => {
                             </Form.Item>
                             <Form.Item className="w-full">
                                 <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
-                                    <Button type="primary" className="w-full" htmlType="submit">
+                                    <Button type="primary" className="w-full">
                                         บันทึก
                                     </Button>
                                 </Popconfirm>
@@ -331,7 +335,7 @@ const Shipping = () => {
 
             <Modal width={1000} open={openModalCustomer} onCancel={() => setOpenModalCustomer(false)} footer={[]}>
                 <Card title="ข้อมูลลูกค้า">
-                    <Table columns={customerModalColumns} className="h-fit" dataSource={selectCustomer} />
+                    <Table columns={customerModalColumns} pagination={{ pageSize: 5 }} dataSource={selectCustomer} />
                 </Card>
             </Modal>
         </div>

@@ -34,6 +34,11 @@ const CustomerManagement = () => {
             render: (text: any, record: any, index: any) => currentIndex + index + 1
         },
         {
+            title: 'รหัสลูกค้า',
+            dataIndex: 'customer_code',
+            key: 'customer_code',
+        },
+        {
             title: 'ชื่อ',
             dataIndex: 'name',
             key: 'name',
@@ -234,7 +239,7 @@ const CustomerManagement = () => {
                 <Row className=" w-full mt-5">
                     <Col span={24} className='pr-2'>
                         <Card className="w-full  !bg-slate-100" >
-                            <Table columns={columns} dataSource={customerData} onChange={handlePaginationChange} pagination={{ pageSize: 5 }} />
+                            <Table columns={columns} dataSource={customerData} onChange={handlePaginationChange} pagination={{ pageSize: 5, position: ["bottomCenter"] }} />
                         </Card>
                     </Col>
 

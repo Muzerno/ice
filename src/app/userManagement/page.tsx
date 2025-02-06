@@ -119,8 +119,7 @@ export default function userManagement() {
         return <Row className='w-full  '>
             <Col span={14} className='pr-2'>
                 <Card key={"cardTableUser"} className='w-full !bg-slate-100'>
-                    <Table columns={columns} dataSource={userData} pagination={{ pageSize: 5 }}>
-                    </Table>
+                    <Table columns={columns} dataSource={userData} style={{ height: "460px" }} pagination={{ pageSize: 5 }} />
                 </Card>
             </Col>
             <Col span={10}>
