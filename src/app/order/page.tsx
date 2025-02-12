@@ -120,7 +120,7 @@ const Order = () => {
             title: 'วันที่เบิก',
             dataIndex: 'date_time',
             key: 'date_time',
-            render: (item: any) => moment(item).format('DD/MM/YYYY'),
+            render: (item: any) => format(item, 'yyyy-MM-dd')
         },
         {
             title: 'รายละเอียดการเบิก',
@@ -234,10 +234,13 @@ const Order = () => {
                         <Button
                             disabled={!isSelected}
                             onClick={() => {
-                                setSelectedProductsAmount((prevAmounts) => ({
-                                    ...prevAmounts,
-                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
-                                }));
+                                setSelectedProductsAmount((prevAmounts) => {
+                                    const newAmount = (prevAmounts[item.id] || 0) + 1;
+                                    return {
+                                        ...prevAmounts,
+                                        [item.id]: Math.min(newAmount, item.amount),
+                                    };
+                                });
                             }}
                         >
                             +

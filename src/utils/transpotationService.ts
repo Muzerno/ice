@@ -93,9 +93,9 @@ export async function getDeliveryByCarId(carId: number, date: string) {
     }
 }
 
-export async function updateDaliveryStatus(id: number, params: any) {
+export async function updateDaliveryStatus(id: number, body: any) {
     try {
-        const delivery = await AxiosInstances.patch(`/transportation/update/DaliveryStatus/${id}`, params)
+        const delivery = await AxiosInstances.patch(`/transportation/update/DaliveryStatus/${id}`, body)
         return Promise.resolve(delivery)
     } catch (error) {
         return Promise.reject(error)

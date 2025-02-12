@@ -67,3 +67,13 @@ export async function countProduct() {
     }
 }
 
+export async function StockInCar(car_id: number) {
+    try {
+        const product = await AxiosInstances.get(`/product/stock/${car_id}`)
+        return Promise.resolve(product.data)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+
+}
+

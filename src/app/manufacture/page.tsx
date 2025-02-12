@@ -6,11 +6,12 @@ import { findAllProduct, findAllProductDrowdown } from '@/utils/productService';
 import { BoxPlotOutlined, DeleteOutlined, RestOutlined, StockOutlined, ToolOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Table } from "antd";
 import FormItem from 'antd/es/form/FormItem';
-import { format, isValid, set } from 'date-fns';
+import { format, isValid, parseISO, set } from 'date-fns';
 import { useContext, useEffect, useState } from 'react';
 import { render } from 'react-dom';
 import moment from 'moment';
 import { se } from 'date-fns/locale';
+import dayjs from 'dayjs';
 
 interface IProps {
     navBarMenu: number
@@ -42,7 +43,7 @@ export default function Manufacture(props: IProps) {
     }
 
     const fetchManufacture = async (date: any = new Date()) => {
-        const res = await findAllManufacture(date)
+        const res = await findAllManufacture(date.toISOString())
         if (res.status === 200) {
             setData(res.data);
         }
@@ -107,10 +108,10 @@ export default function Manufacture(props: IProps) {
                             icon={<ToolOutlined />}
                             onClick={() => {
                                 setOpenModalEdit(true);
-                                const newDate = new Date();
+
                                 formEdit.setFieldsValue({
                                     id: item?.id,
-                                    date_time: moment(newDate),
+                                    date_time: dayjs(new Date()),
                                     product_id: item?.products.id,
                                     manufacture_amount: item?.manufacture_amount
                                 });
@@ -290,7 +291,7 @@ export default function Manufacture(props: IProps) {
                                     <StockOutlined /> จำนวนทั้งหมดของวันนี้ {data.length} รายการ
                                 </div>
                                 <div className='mb-2 float-end'>
-                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
+                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
                                 </div>
                                 <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
                             </Card>

@@ -24,8 +24,9 @@ const LayoutComponent = ({ children }: React.PropsWithChildren) => {
 
     useEffect(() => {
         const storageUserLogin = localStorage.getItem('payload')
-
-        setUserLogin(JSON.parse(storageUserLogin!))
+        if (storageUserLogin) {
+            setUserLogin(JSON.parse(storageUserLogin!))
+        }
         if (!storageUserLogin) {
             router.push('/auth/login')
         }

@@ -2,11 +2,14 @@
 import LayoutComponent from '@/components/Layout';
 import LongdoMap from '@/components/LongdoMap';
 import { UserContext } from '@/context/userContext';
+import { StockInCar } from '@/utils/productService';
 import { getDeliveryByCarId, updateDaliveryStatus } from '@/utils/transpotationService';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Col, DatePicker, Input, message, Popconfirm, Row, Table } from 'antd';
-import { format } from 'date-fns';
+import { format, parseISO, set } from 'date-fns';
+import moment from 'moment';
 import { title } from 'process';
+import dayjs from 'dayjs';
 import { use, useContext, useEffect, useState } from 'react';
 import { render } from 'react-dom';
 
@@ -21,21 +24,35 @@ const DeliveryPage = () => {
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
-    const [selectDate, setSelectDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-
+    const [selectDate, setSelectDate] = useState<any>(dayjs(new Date()));
+    const [stock, setStock] = useState<any>([]);
     useEffect(() => {
-        if (userLogin) {
-            console.log(userLogin)
+        if (userLogin && userLogin?.user?.transportation_car?.id) {
             fetchDataDelivery();
+            fetchStock();
         }
     }, [userLogin]);
+
     const fetchDataDelivery = async () => {
-        const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id, selectDate);
-        console.log(res)
+        const userId = userLogin?.user?.transportation_car?.id
+        if (userId) {
+            const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id, dayjs(new Date()).format('YYYY-MM-DD'));
+            if (res) {
+                setDropDayly(res.drop_dayly)
+                setDropOrder(res.drop_order)
+                setData(res)
+            }
+        }
+    }
+
+    useEffect(() => {
+        fetchDataDelivery()
+    }, [selectDate])
+
+    const fetchStock = async () => {
+        const res = await StockInCar(userLogin?.user?.transportation_car?.id)
         if (res) {
-            setDropDayly(res.drop_dayly)
-            setDropOrder(res.drop_order)
-            setData(res)
+            setStock(res)
         }
     }
     // const updateLocation = async () => {
@@ -65,9 +82,16 @@ const DeliveryPage = () => {
         }
     }, [data]);
     const handleSuccess = async (id: number) => {
-        const res = await updateDaliveryStatus(id, { status: "success" });
+        if (selectedProducts.length < 0) {
+            return messageApi.error("กรุณาเลือกรายการสินค้า");
+        }
+        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+            return messageApi.error("กรุณากรอกจํานวนสินค้า");
+        }
+        const res = await updateDaliveryStatus(id, { products: selectedProducts, product_amount: selectedProductsAmount, status: "success" });
         if (res) {
             fetchDataDelivery();
+            fetchStock();
             messageApi.success("บันทึกสําเร็จ");
         }
     }
@@ -126,12 +150,17 @@ const DeliveryPage = () => {
             key: "action",
             render: (item: any) => (
                 <div className='flex'>
-                    <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
-                        <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
-                    </Popconfirm>
-                    <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
-                        <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
-                    </Popconfirm>
+                    {item.drop_status === "inprogress" &&
+                        <>
+                            <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
+                                <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
+                            </Popconfirm>
+                            <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
+                                <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
+                            </Popconfirm>
+                        </>
+                    }
+
                 </div>
             )
         }
@@ -232,20 +261,21 @@ const DeliveryPage = () => {
         },
         {
             title: 'ชื่อสินค้า',
-            dataIndex: 'product',
-            key: 'product',
-            render: (item: any) => item?.name,
+            dataIndex: 'product_name',
+            key: 'product_name',
+
         },
         {
             title: 'ราคา',
-            dataIndex: 'product',
-            key: 'product',
-            render: (item: any) => item?.price,
+            dataIndex: 'product_price',
+            key: 'product_price',
+
         },
         {
             title: 'สินค้าคงเหลือ',
-            dataIndex: 'amount',
-            key: 'amount',
+            dataIndex: 'stock_amount',
+            key: 'stock_amount',
+
         },
         {
             title: "เลือกจำนวน",
@@ -282,10 +312,13 @@ const DeliveryPage = () => {
                         <Button
                             disabled={!isSelected}
                             onClick={() => {
-                                setSelectedProductsAmount((prevAmounts) => ({
-                                    ...prevAmounts,
-                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
-                                }));
+                                setSelectedProductsAmount((prevAmounts) => {
+                                    const newAmount = (prevAmounts[item.id] || 0) + 1;
+                                    return {
+                                        ...prevAmounts,
+                                        [item.id]: Math.min(newAmount, item.stock_amount),
+                                    };
+                                });
                             }}
                         >
                             +
@@ -306,7 +339,7 @@ const DeliveryPage = () => {
                         <Row>
                             <Col span={12} className='pr-2'>
                                 <Card className='w-full' title="สินค้าในรถ">
-                                    <Table columns={columnProductInCar} dataSource={[]} pagination={{ pageSize: 5 }}></Table>
+                                    <Table columns={columnProductInCar} dataSource={stock} pagination={{ pageSize: 5 }}></Table>
                                 </Card>
                             </Col>
                             <Col span={12}>
@@ -316,10 +349,16 @@ const DeliveryPage = () => {
 
                     </Card>
                 </div>
+
                 <Row className='mt-5'>
+                    <Col span={24}>   <div className='float-right p-2'>
+                        <DatePicker size='large' defaultValue={selectDate} format={"YYYY-MM-DD"} onChange={(value, dateString) => setSelectDate(dateString)} />
+                    </div>
+                    </Col>
                     <Col span={12}>
+
                         <Card className='w-full' title="จัดส่งประจําวัน" >
-                            <DatePicker onChange={(value) => console.log(value)} />
+
                             <Table columns={columnDropDayly} dataSource={dropDayly} pagination={{ pageSize: 5 }}></Table>
                         </Card>
                     </Col>
