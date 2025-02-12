@@ -145,7 +145,9 @@ const ProdectManagement = () => {
 
                                     <Row>
                                         <Col span={12} className='mr-1'>
-                                            <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
+                                                <Button type="primary" className=' w-full'>บันทึก</Button>
+                                            </Popconfirm>
 
                                         </Col>
                                         <Col span={11}>

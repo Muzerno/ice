@@ -320,7 +320,9 @@ export default function Manufacture(props: IProps) {
                                 {/* <Form.Item name={"manufacture_amount"} hidden className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                                     <Input className='w-full' />
                                 </Form.Item> */}
-                                <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                                <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()}>
+                                    <Button type="primary" className=' w-full' >บันทึก</Button>
+                                </Popconfirm>
                             </Form>
                         </Card>
                     </Col>
@@ -347,7 +349,9 @@ export default function Manufacture(props: IProps) {
                     <Form.Item name={"manufacture_amount"} className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                         <Input className='w-full' />
                     </Form.Item>
-                    <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                    <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()}>
+                        <Button type="primary" className=' w-full'>บันทึก</Button>
+                    </Popconfirm>
                 </Form>
             </Modal>
         </LayoutComponent>
