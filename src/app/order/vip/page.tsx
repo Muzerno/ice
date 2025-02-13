@@ -279,6 +279,10 @@ const OrderVip = () => {
             form.resetFields();
             setSelectedProducts([])
             setSelectedProductsAmount({})
+            getCustomer()
+            fetchCarData();
+            deliverLine()
+            fetchLine()
             fetchProduct()
         }
     };
