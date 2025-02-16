@@ -1,6 +1,7 @@
 'use client';
 import { getTrueLocation } from '@/utils/mapsService';
 import { Button } from 'antd';
+import { de } from 'date-fns/locale';
 import React, { useEffect, useRef, useState } from 'react';
 
 declare global {
@@ -107,9 +108,10 @@ interface LongdoMapProps {
     setTrueAddress?: any
     isOpenButton?: boolean
     customerLocation?: any[]
+    carLocation?: any[]
 }
 
-const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px', setMarker, setTrueAddress, isOpenButton, customerLocation }) => {
+const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px', setMarker, setTrueAddress, isOpenButton, customerLocation, carLocation }) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<any | null>(null);
     const [locations, setLocations] = useState<{ lon: number, lat: number }[]>([]);
@@ -146,8 +148,26 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
                         console.error('Invalid coordinates:', location);
                     }
                 });
-            } else {
-                console.error('No customerLocation data provided');
+            } else if (carLocation) {
+
+                carLocation.forEach((item) => {
+                    const lon = parseFloat(item.longitude);
+                    const lat = parseFloat(item.latitude);
+
+                    if (!isNaN(lon) && !isNaN(lat)) {
+                        const marker = new window.longdo.Marker({
+                            lon,
+                            lat
+                        }, {
+                            title: item.car_number,
+                            detail: `เลขทะเบียน ${item.car_number}`,
+                            size: { width: 200, height: 100 }
+                        });
+                        mapInstance.current.Overlays.add(marker);
+                    } else {
+                        console.error('Invalid coordinates:', location);
+                    }
+                });
             }
         } else {
             console.error('Longdo Map library not loaded');

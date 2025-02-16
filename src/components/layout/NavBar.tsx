@@ -1,10 +1,13 @@
 'use client';
 import { UserContext } from '@/context/userContext';
+import { updateLocaltion } from '@/utils/dashboardService';
+
 import {
     BarsOutlined,
     BoxPlotOutlined,
     CarOutlined,
     HomeOutlined,
+    MoneyCollectFilled,
     PaperClipOutlined,
     TagOutlined,
     UserOutlined
@@ -24,12 +27,30 @@ interface IProps {
 const NavBarComponent = (props: IProps) => {
     const { collapsed, setMenuSelect, menuSelect } = props
     const { userLogin } = useContext(UserContext)
+    const [localtion, setLocaltion] = useState<any>()
     const [role, setRole] = useState({
         roleName: null,
         roleKey: null
     })
+
     useEffect(() => {
-        console.log(userLogin)
+        if (!userLogin) return
+        if (userLogin?.user?.role?.role_key === 'deliver') {
+            fetchLocation();
+        }
+        const intervalId = setInterval(fetchLocation, 300000);
+        return () => clearInterval(intervalId);
+    }, [userLogin]);
+
+    const fetchLocation = () => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+                const { latitude, longitude } = coords;
+                await updateLocaltion(userLogin?.user?.transportation_car?.id, { latitude, longitude })
+            });
+        }
+    };
+    useEffect(() => {
         if (!userLogin) return
         setRole({
             roleName: userLogin.user?.role?.role_name,
@@ -109,7 +130,7 @@ const NavBarComponent = (props: IProps) => {
                     } : null,
                     role.roleKey === 'admin' ? {
                         key: 'money',
-                        icon: <CarOutlined />,
+                        icon: <MoneyCollectFilled />,
                         label: 'การเงิน',
 
                     } : null,
