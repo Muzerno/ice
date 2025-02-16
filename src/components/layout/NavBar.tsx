@@ -107,6 +107,12 @@ const NavBarComponent = (props: IProps) => {
                         label: 'คำสั่งซื้อพิเศษ',
 
                     } : null,
+                    role.roleKey === 'admin' ? {
+                        key: 'money',
+                        icon: <CarOutlined />,
+                        label: 'การเงิน',
+
+                    } : null,
                     role.roleKey === 'deliver' ? {
                         key: 'delivery',
                         icon: <CarOutlined />,

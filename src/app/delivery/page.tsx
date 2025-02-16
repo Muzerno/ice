@@ -5,7 +5,7 @@ import { UserContext } from '@/context/userContext';
 import { StockInCar } from '@/utils/productService';
 import { getDeliveryByCarId, updateDaliveryStatus } from '@/utils/transpotationService';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Col, DatePicker, Input, message, Popconfirm, Row, Table } from 'antd';
+import { Button, Card, Checkbox, Col, DatePicker, Input, message, Modal, Popconfirm, Row, Table } from 'antd';
 import { format, parseISO, set } from 'date-fns';
 import moment from 'moment';
 import { title } from 'process';
@@ -25,6 +25,9 @@ const DeliveryPage = () => {
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
     const [selectDate, setSelectDate] = useState<any>(dayjs(new Date()));
+    const [currentIndex3, setCurrentIndex3] = useState(0);
+    const [openDetail, setOpenDetail] = useState(false);
+    const [detailData, setDetailData] = useState<any>([]);
     const [stock, setStock] = useState<any>([]);
     useEffect(() => {
         if (userLogin && userLogin?.user?.transportation_car?.id) {
@@ -36,7 +39,7 @@ const DeliveryPage = () => {
     const fetchDataDelivery = async () => {
         const userId = userLogin?.user?.transportation_car?.id
         if (userId) {
-            const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id, dayjs(new Date()).format('YYYY-MM-DD'));
+            const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id, dayjs(selectDate).format('YYYY-MM-DD'));
             if (res) {
                 setDropDayly(res.drop_dayly)
                 setDropOrder(res.drop_order)
@@ -88,10 +91,12 @@ const DeliveryPage = () => {
         if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
             return messageApi.error("กรุณากรอกจํานวนสินค้า");
         }
-        const res = await updateDaliveryStatus(id, { products: selectedProducts, product_amount: selectedProductsAmount, status: "success" });
+        const res = await updateDaliveryStatus(id, { products: selectedProducts, product_amount: selectedProductsAmount, car_id: userLogin?.user?.transportation_car?.id, status: "success" });
         if (res) {
             fetchDataDelivery();
             fetchStock();
+            setSelectedProducts([])
+            setSelectedProductsAmount({})
             messageApi.success("บันทึกสําเร็จ");
         }
     }
@@ -213,6 +218,7 @@ const DeliveryPage = () => {
             key: "action",
             render: (item: any) => (
                 <div className='flex'>
+                    <Button type='primary' className='mr-2' onClick={() => { setOpenDetail(true), setDetailData(item.customer_order.order_customer_details) }} >ข้อมูลคำสั่งซื้อ</Button>
                     <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
                         <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
                     </Popconfirm>
@@ -328,6 +334,24 @@ const DeliveryPage = () => {
             }
         }
     ]
+    const orderColumn = [
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => currentIndex3 + index + 1
+        },
+        {
+            title: "ชื่อสินค้า",
+            dataIndex: "product",
+            key: "product",
+            render: (item: any) => item.name
+        }, {
+            title: "จำนวน",
+            dataIndex: "amount",
+            key: "amount",
+        }
+    ]
 
 
     return (
@@ -369,6 +393,11 @@ const DeliveryPage = () => {
                     </Col>
                 </Row>
             </div>
+            <Modal open={openDetail} onCancel={() => setOpenDetail(false)} footer={[]}>
+                <Table columns={orderColumn} dataSource={detailData} />
+
+
+            </Modal>
         </LayoutComponent>
     );
 };

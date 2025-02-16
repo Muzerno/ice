@@ -36,6 +36,7 @@ const OrderVip = () => {
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentIndex2, setCurrentIndex2] = useState(0);
+
     const handlePaginationChange = (pagination: any) => {
         setCurrentIndex((pagination.current - 1) * pagination.pageSize);
     };
@@ -252,6 +253,8 @@ const OrderVip = () => {
         },
     ];
 
+
+
     const fetchProduct = async () => {
         const res = await findAllProductDrowdown()
         if (res.status === 200) {
@@ -441,6 +444,7 @@ const OrderVip = () => {
                     </Modal>
                 </div>
             </Card>
+
 
         </LayoutComponent>
 
