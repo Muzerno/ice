@@ -98,19 +98,19 @@ const NavBarComponent = (props: IProps) => {
                         label: 'จัดการข้อมูลลูกค้า',
 
                     } : null,
-                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                    role.roleKey === 'admin' ? {
                         key: 'deliveryLine',
                         icon: <TagOutlined />,
                         label: 'จัดสายการเดินรถ',
 
                     } : null,
-                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                    role.roleKey === 'admin' ? {
                         key: 'manufacture',
                         icon: <HomeOutlined />,
                         label: 'การผลิตสินค้า',
 
                     } : null,
-                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                    role.roleKey === 'admin' ? {
                         key: 'order',
                         icon: <PaperClipOutlined />,
                         label: 'การเบิกสินค้า',
@@ -128,7 +128,7 @@ const NavBarComponent = (props: IProps) => {
                         label: 'คำสั่งซื้อพิเศษ',
 
                     } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'money',
                         icon: <MoneyCollectFilled />,
                         label: 'การเงิน',

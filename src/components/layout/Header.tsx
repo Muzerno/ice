@@ -30,7 +30,10 @@ const HeaderDefault = (props: any) => {
                 }}
             />
             <span className='float-right'>
-                <span className='text-lg mr-5  '> <UserOutlined /> {userLogin?.user?.firstname}  {userLogin?.user?.lastname}</span>
+                <span className='text-lg mr-5  ' style={{ border: "1px solid black", borderRadius: "5px", padding: "5px", background: "lightblue" }}>
+                    {userLogin?.user?.role?.role_name}
+                </span>
+                <span style={{ border: "1px solid black", borderRadius: "5px", padding: "5px", }} className='text-lg mr-5  '> <UserOutlined /> {userLogin?.user?.firstname}  {userLogin?.user?.lastname}</span>
                 <Button type="primary" className='' danger onClick={() => {
                     localStorage.removeItem('payload')
                     router.push('/auth/login')
