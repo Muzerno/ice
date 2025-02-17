@@ -219,7 +219,7 @@ const DeliveryPage = () => {
             render: (item: any) => (
                 <div className='flex'>
                     <Button type='primary' className='mr-2' onClick={() => { setOpenDetail(true), setDetailData(item.customer_order.order_customer_details) }} >ข้อมูลคำสั่งซื้อ</Button>
-                    {item.drop_status === "inprocess" &&
+                    {item.drop_status === "inprocess" || item === "inprogress" &&
                         <>
                             <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
                                 <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
