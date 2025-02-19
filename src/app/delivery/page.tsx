@@ -315,7 +315,7 @@ const DeliveryPage = () => {
                                 const newAmount = parseInt(e.target.value) || 0;
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: newAmount,
+                                    [item.id]: Math.min(newAmount, item.stock_amount),
                                 }));
                             }}
                             disabled={!isSelected}

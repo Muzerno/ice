@@ -226,9 +226,10 @@ const Order = () => {
                                 const newAmount = parseInt(e.target.value) || 0;
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: newAmount,
+                                    [item.id]: Math.min(newAmount, item.amount),
                                 }));
                             }}
+
                             disabled={!isSelected}
                         />
                         <Button
@@ -250,7 +251,6 @@ const Order = () => {
             }
         }
     ]
-    console.log(data)
     const onDelete = async (id: number) => {
         const res = await deleteManufacture(id)
         if (res.status === 200) {

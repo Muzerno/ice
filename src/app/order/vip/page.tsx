@@ -210,18 +210,22 @@ const OrderVip = () => {
                                 const newAmount = parseInt(e.target.value) || 0;
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: newAmount,
+                                    [item.id]: Math.min(newAmount, item.amount),
                                 }));
                             }}
+
                             disabled={!isSelected}
                         />
                         <Button
                             disabled={!isSelected}
                             onClick={() => {
-                                setSelectedProductsAmount((prevAmounts) => ({
-                                    ...prevAmounts,
-                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
-                                }));
+                                setSelectedProductsAmount((prevAmounts) => {
+                                    const newAmount = (prevAmounts[item.id] || 0) + 1;
+                                    return {
+                                        ...prevAmounts,
+                                        [item.id]: Math.min(newAmount, item.amount),
+                                    };
+                                });
                             }}
                         >
                             +
@@ -346,14 +350,13 @@ const OrderVip = () => {
         }
     }, [location, trueAddress])
 
+
     return (
         <LayoutComponent>
             {contextHolder}
             <Card className='w-full h-fit' title={[<h1>สั่งสินค้าพิเศษ</h1>]}>
                 <div>
                     <Row>
-
-
                         <Col span={16}>
                             <Row>
                                 <Col span={24} className="pr-2" >
@@ -392,6 +395,12 @@ const OrderVip = () => {
 
                                             </Select>
                                         </Form.Item> */}
+                                        <Form.Item key={"customer_name"} name={"customer_name"} className='w-full' label="ชื่อลูกค้า" rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}>
+                                            <Input />
+                                        </Form.Item>
+                                        <Form.Item key={"telephone"} name={"telephone"} className='w-full' label="เบอร์โทร" rules={[{ required: true, message: "กรุณากรอกเบอร์" }]}>
+                                            <Input />
+                                        </Form.Item>
                                         <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
                                             <Select className='w-full' >
                                                 {carData.map((item: any) =>
@@ -402,12 +411,7 @@ const OrderVip = () => {
 
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item key={"customer_name"} name={"customer_name"} className='w-full' label="ชื่อลูกค้า" rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}>
-                                            <Input />
-                                        </Form.Item>
-                                        <Form.Item key={"telephone"} name={"telephone"} className='w-full' label="เบอร์โทร" rules={[{ required: true, message: "กรุณากรอกเบอร์" }]}>
-                                            <Input />
-                                        </Form.Item>
+
                                         <Form.Item key={"lat"} name={"latitude"} className='w-full' label="ละติจูด" rules={[{ required: true, message: "กรุณากรอกตำแหน่ง" }]} initialValue={location?.lat}>
                                             <Input value={location?.lat} disabled />
                                         </Form.Item>
