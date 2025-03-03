@@ -93,6 +93,8 @@ const CustomerManagement = () => {
                                 setOpenConfirmUuid(null);
                             }
                         }}
+                        placement="left"
+
                     >
                         <Button
                             type="primary"
@@ -163,6 +165,28 @@ const CustomerManagement = () => {
         fetchCustomerData();
     }, [openModalEdit]);
 
+    const randomCustomerId = () => {
+        let text = "C-";
+        let possibleNumbers = "0123456789";
+        let possibleLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        // Add 2 random numbers
+        for (let i = 0; i < 2; i++) {
+            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
+        }
+
+        // Add 5 random letters
+        for (let i = 0; i < 5; i++) {
+            text += possibleLetters.charAt(Math.floor(Math.random() * possibleLetters.length));
+        }
+
+        for (let i = 0; i < 2; i++) {
+            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
+        }
+
+        return text;
+    }
+
     return (
         <LayoutComponent>
             {contextHolder}
@@ -174,6 +198,24 @@ const CustomerManagement = () => {
                     <Col span={8}>
                         <Card className="w-full !bg-slate-100">
                             <Form layout='vertical' title='Add Customer' form={form} onFinish={(e) => createCustomers(e)} >
+                                <Row>
+                                    <Col span={24}>
+                                        <Row>
+                                            <Col span={18}>
+                                                <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
+                                                    rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
+                                                    <Input type='text' disabled />
+                                                </Form.Item>
+                                            </Col>
+                                            <Col span={6} className='pt-8'>
+                                                <Button type='default' className='w-full' onClick={() => form.setFieldsValue({ customer_code: randomCustomerId() })}>Generate</Button>
+                                            </Col>
+                                        </Row>
+
+
+                                    </Col>
+
+                                </Row>
                                 <Row >
                                     <Col span={24}>
                                         <Form.Item name={"name"} key={"name"} label="ชื่อลูกค้า"
@@ -182,14 +224,7 @@ const CustomerManagement = () => {
                                         </Form.Item>
                                     </Col>
                                 </Row>
-                                <Row>
-                                    <Col span={24}>
-                                        <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
-                                            rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
-                                            <Input type='text' />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
+
                                 <Row>
                                     <Col span={24}>
                                         <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
@@ -203,14 +238,14 @@ const CustomerManagement = () => {
                                     <Col span={12} className='pr-1'>
                                         <Form.Item name={"latitude"} key={"lat"} label="ละติจูด"
                                             rules={[{ required: true, message: "ละติจูด" }]} >
-                                            <Input type='text' value={location?.lat} />
+                                            <Input type='text' value={location?.lat} disabled />
                                         </Form.Item>
 
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด"
                                             rules={[{ required: true, message: "ลองจิจูด " }]} >
-                                            <Input type='text' value={location?.lon} />
+                                            <Input type='text' value={location?.lon} disabled />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -218,7 +253,7 @@ const CustomerManagement = () => {
                                     <Col span={24}>
                                         <Form.Item name={"address"} key={"address"} label="ที่อยู่"
                                             rules={[{ required: true, message: "กรอกที่อยู่" }]} >
-                                            <TextArea rows={2} />
+                                            <TextArea rows={2} disabled />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -227,9 +262,9 @@ const CustomerManagement = () => {
                                         <Button type="default" danger className='w-full ' htmlType='reset'>ล้างค่า</Button>
                                     </Col>
                                     <Col span={12}>
-                                        <Popconfirm title="คุณแน่ใจหรือไม่" onConfirm={() => form.submit()}>
-                                            <Button type="primary" className='w-full'>บันทึก</Button>
-                                        </Popconfirm>
+
+                                        <Button type="primary" htmlType='submit' className='w-full'>บันทึก</Button>
+
                                     </Col>
                                 </Row>
                             </Form>
@@ -238,8 +273,8 @@ const CustomerManagement = () => {
                 </Row>
                 <Row className=" w-full mt-5">
                     <Col span={24} className='pr-2'>
-                        <Card className="w-full  !bg-slate-100" >
-                            <Table columns={columns} dataSource={customerData} onChange={handlePaginationChange} pagination={{ pageSize: 5, position: ["bottomCenter"] }} />
+                        <Card className="w-full h-[400px]" style={{ overflow: "auto" }} >
+                            <Table columns={columns} dataSource={customerData} pagination={false} />
                         </Card>
                     </Col>
 
@@ -280,14 +315,14 @@ const CustomerManagement = () => {
                         <Col span={12} className='pr-1'>
                             <Form.Item name={"latitude"} key={"lat"} label="ละติจูด"
                                 rules={[{ required: true, message: "ละติจูด" }]} >
-                                <Input type='text' value={location?.lat} readOnly />
+                                <Input type='text' value={location?.lat} readOnly disabled />
                             </Form.Item>
 
                         </Col>
                         <Col span={12}>
                             <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด"
                                 rules={[{ required: true, message: "ลองจิจูด " }]} >
-                                <Input type='text' value={location?.lon} readOnly />
+                                <Input type='text' value={location?.lon} readOnly disabled />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -295,16 +330,17 @@ const CustomerManagement = () => {
                         <Col span={24}>
                             <Form.Item name={"address"} key={"address"} label="ที่อยู่"
                                 rules={[{ required: true, message: "กรอกที่อยู่" }]} >
-                                <TextArea rows={2} readOnly />
+                                <TextArea rows={2} readOnly disabled />
                             </Form.Item>
                         </Col>
                     </Row>
 
                     <Row className='mt-2'>
                         <Col span={24}>
-                            <Popconfirm title="คุณแน่ใจหรือไม่" onConfirm={() => formEdit.submit()}>
-                                <Button type="primary" className='w-full'>บันทึก</Button>
+                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()} >
+                                <Button type="primary" className='w-full' >บันทึก</Button>
                             </Popconfirm>
+
                         </Col>
                     </Row>
                 </Form>

@@ -116,84 +116,7 @@ export default function userManagement() {
     };
 
     const userTabs = () => {
-        return <Row className='w-full  '>
-            <Col span={14} className='pr-2'>
-                <Card key={"cardTableUser"} className='w-full !bg-slate-100'>
-                    <Table columns={columns} dataSource={userData} style={{ height: "460px" }} pagination={{ pageSize: 5 }} />
-                </Card>
-            </Col>
-            <Col span={10}>
-                <Card key={"cardAddUser"} className='w-full !bg-slate-100' title="เพิ่มผู้ใช้">
-                    <div>
-                        <Form layout='vertical' title='Add User' form={form} onFinish={(e) => onFinish(e)}>
-                            <Row>
-                                <Col span={12} className='pr-1'>
-                                    <Form.Item name={"username"} key={"username"} label="ชื่อผู้ใช้"
-                                        rules={[{ required: true, message: "กรอกชื่อผู้ใช้" }]} >
-                                        <Input type='text' />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
-                                        rules={[{ required: true, message: " กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 ตัว" }]}>
-                                        <Input type='text' />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={12} className='pr-1'>
-                                    <Form.Item name={"firstname"} key={"firstname"} label="ชื่อ"
-                                        rules={[{ required: true, message: "กรอกชื่อ" }]}>
-                                        <Input type='text' />
-                                    </Form.Item>
-
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item name={"lastname"} key={"lastname"} label="นามสกุล"
-                                        rules={[{ required: true, message: "กรอกนามสกุล" }]}>
-                                        <Input type='text' />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={24}>
-                                    <Form.Item name={"address"} key={"address"} label="ที่อยู่"
-                                        rules={[{ required: true, message: "กรอกที่อยู่" }]} >
-                                        <TextArea rows={2}></TextArea>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
-                            <Row>
-                                <Col span={24}>
-                                    <Form.Item name={"role_id"} key={"role_id"} label="ระดับผู้ใช้"
-                                        rules={[{ required: true, message: "กรุณาเลือกระดับผู้ใช้" }]}>
-                                        <Select defaultActiveFirstOption>
-                                            {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
-
-                            <Row>
-                                <Col span={12} className='mr-1'>
-                                    <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
-                                        <Button type="primary" className=' w-full'>บันทึก</Button>
-                                    </Popconfirm>
-
-                                </Col>
-                                <Col span={11}>
-                                    <Button type="default" className='w-full' htmlType='reset'>ล้างค่า</Button>
-                                </Col>
-                            </Row>
-                        </Form>
-                    </div>
-                </Card>
-            </Col>
-
-
-        </Row>
+        return
 
     }
     const createRoles = async (params: any) => {
@@ -204,68 +127,83 @@ export default function userManagement() {
         }
     }
 
-    const roleTabs = () => {
-        const roleColumn = [
-            { title: 'Role Name', dataIndex: 'role_name', key: 'role_name' },
-        ]
-        return <Row className='w-full  '>
-            <Col span={18} className='pr-2'>
-                <Card key={"cardTableRole"} className='w-full !bg-slate-100'>
-                    <Table columns={roleColumn} dataSource={roleData} pagination={{ pageSize: 5 }}>
-
-                    </Table>
-                </Card>
-            </Col>
-            <Col span={6}>
-                <Card key={"cardAddRole"} className='w-full !bg-slate-100' title="เพิ่ม ระดับผู้ใช้งาน">
-                    <div>
-                        <Form layout='vertical' title='เพิ่ม ระดับผู้ใช้งาน' form={formRole} onFinish={(e) => createRoles(e)}>
-                            <Form.Item name={"role_name"} key={"role_name"} label="Role Name"
-                                rules={[{ required: true, message: "Name is required" }]} >
-                                <Input type='text' />
-                            </Form.Item>
-                            <Form.Item name={"role_key"} key={"role_key"} label="Role Key"
-                                rules={[{ required: true, message: "Key is required like role name" }]} >
-                                <Input type='text' />
-                            </Form.Item>
-                            <Row>
-                                <Col span={12} className='mr-1'>
-                                    <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formRole.submit()} >
-                                        <Button type="primary" className=' w-full' >บันทึก</Button>
-                                    </Popconfirm>
-
-                                </Col>
-                                <Col span={11}>
-                                    <Button type="default" className='w-full' htmlType='reset'>ล้างค่า</Button>
-                                </Col>
-                            </Row>
-                        </Form>
-                    </div>
-                </Card>
-            </Col>
-
-
-        </Row>
-    }
-
     return (
         <LayoutComponent>
             {contextHolder}
             <Card key={"cardUser"} className="w-full" title={[
                 <h1>จัดการข้อมูลผู้ใช้งาน</h1>
             ]}>
-                <Tabs defaultActiveKey="1" items={[
-                    {
-                        key: '1',
-                        label: 'User',
-                        children: userTabs()
-                    },
-                    // {
-                    //     key: '2',
-                    //     label: 'Role',
-                    //     children: roleTabs()
-                    // },
-                ]} />
+                <Row className='w-full  '>
+                    <Col span={14} className='pr-2'>
+                        <Card key={"cardTableUser"} className='w-full h-[500px]' style={{ overflowY: "scroll" }}>
+                            <Table columns={columns} dataSource={userData} pagination={false} />
+                        </Card>
+                    </Col>
+                    <Col span={10}>
+                        <Card key={"cardAddUser"} className='w-full !bg-slate-100' title="เพิ่มผู้ใช้">
+                            <div>
+                                <Form layout='vertical' title='Add User' form={form} onFinish={(e) => onFinish(e)}>
+                                    <Row>
+                                        <Col span={12} className='pr-1'>
+                                            <Form.Item name={"username"} key={"username"} label="ชื่อผู้ใช้"
+                                                rules={[{ required: true, message: "กรอกชื่อผู้ใช้" }]} >
+                                                <Input type='text' />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
+                                                rules={[{ required: true, message: " กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 ตัว" }]}>
+                                                <Input type='text' />
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col span={12} className='pr-1'>
+                                            <Form.Item name={"firstname"} key={"firstname"} label="ชื่อ"
+                                                rules={[{ required: true, message: "กรอกชื่อ" }]}>
+                                                <Input type='text' />
+                                            </Form.Item>
+
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item name={"lastname"} key={"lastname"} label="นามสกุล"
+                                                rules={[{ required: true, message: "กรอกนามสกุล" }]}>
+                                                <Input type='text' />
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col span={24}>
+                                            <Form.Item name={"address"} key={"address"} label="ที่อยู่"
+                                                rules={[{ required: true, message: "กรอกที่อยู่" }]} >
+                                                <TextArea rows={2}></TextArea>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+
+                                    <Row>
+                                        <Col span={24}>
+                                            <Form.Item name={"role_id"} key={"role_id"} label="ระดับผู้ใช้"
+                                                rules={[{ required: true, message: "กรุณาเลือกระดับผู้ใช้" }]}>
+                                                <Select defaultActiveFirstOption>
+                                                    {roleData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.role_name}</Select.Option>)}
+                                                </Select>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col span={12} className='mr-1'>
+                                            <Button type="primary" className=' w-full' htmlType='submit'>บันทึก</Button>
+                                        </Col>
+                                        <Col span={11}>
+                                            <Button type="default" className='w-full' htmlType='reset'>ล้างค่า</Button>
+                                        </Col>
+                                    </Row>
+                                </Form>
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
             </Card>
 
             <EditUserModal openModalEdit={openModalEdit} setOpenModalEdit={setOpenModalEdit} userEdit={seleteUUid ?? null} formEdit={formEdit} roleData={roleData} />

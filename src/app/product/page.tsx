@@ -117,8 +117,8 @@ const ProdectManagement = () => {
             ]}>
                 <Row className='w-full  '>
                     <Col span={18} className='pr-2'>
-                        <Card key={"tableProduct"} className='w-full !bg-slate-100'>
-                            <Table columns={columns} dataSource={data}>
+                        <Card key={"tableProduct"} className='w-full h-[500px] ' style={{ overflowY: "scroll" }}>
+                            <Table columns={columns} dataSource={data} pagination={false}>
                             </Table>
                         </Card>
                     </Col>
@@ -131,11 +131,11 @@ const ProdectManagement = () => {
                                         <Input type='text' />
                                     </Form.Item> */}
                                     <Form.Item name={"name"} key={"product_name"} label="ชื่อสินค้า"
-                                        rules={[{ required: true, message: "Name is required" }]} >
+                                        rules={[{ required: true, message: "กรุณากรอกชื่อสินค้า" }]} >
                                         <Input type='text' />
                                     </Form.Item>
                                     <Form.Item name={"price"} key={"price"} label="ราคา"
-                                        rules={[{ required: true, message: "Price is required" }]}>
+                                        rules={[{ required: true, message: "กรุณากรอกราคา" }]}>
                                         <Input type='number' />
                                     </Form.Item>
                                     {/* <Form.Item name={"amount"} key={"amount"} label="จำนวน"
@@ -145,9 +145,9 @@ const ProdectManagement = () => {
 
                                     <Row>
                                         <Col span={12} className='mr-1'>
-                                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
-                                                <Button type="primary" className=' w-full'>บันทึก</Button>
-                                            </Popconfirm>
+
+                                            <Button type="primary" htmlType="submit" className=' w-full'>บันทึก</Button>
+
 
                                         </Col>
                                         <Col span={11}>

@@ -29,6 +29,9 @@ const DeliveryPage = () => {
     const [openDetail, setOpenDetail] = useState(false);
     const [detailData, setDetailData] = useState<any>([]);
     const [stock, setStock] = useState<any>([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [productSelect, setProductSelect] = useState<any>([]);
+    const [totalPrice, setTotalPrice] = useState(0);
     useEffect(() => {
         if (userLogin && userLogin?.user?.transportation_car?.id) {
             fetchDataDelivery();
@@ -85,7 +88,7 @@ const DeliveryPage = () => {
         }
     }, [data]);
     const handleSuccess = async (id: number) => {
-        if (selectedProducts.length < 0) {
+        if (selectedProducts.length <= 0) {
             return messageApi.error("กรุณาเลือกรายการสินค้า");
         }
         if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
@@ -98,14 +101,47 @@ const DeliveryPage = () => {
             setSelectedProducts([])
             setSelectedProductsAmount({})
             messageApi.success("บันทึกสําเร็จ");
+        } else {
+            messageApi.error("บันทึกไม่สําเร็จ");
         }
     }
+    const handleOpenModal = (item: any) => {
+        setProductSelect(item)
+        setOpenModal(true);
+        let totalPrice = 0;
+        for (const product of item) {
+            totalPrice += product.price * product.amount;
+        }
+        setTotalPrice(totalPrice);
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
+    };
+
+    const handleOpenModalDetail = (item: any) => {
+        // setProductSelect(item)
+        setDetailData(item.customer_order.order_customer_details)
+        setOpenDetail(true);
+        let totalPrice = 0;
+
+        for (const product of item.customer_order.order_customer_details) {
+            totalPrice += product.product.price * product.amount;
+        }
+        setTotalPrice(totalPrice);
+    };
+
+    const handleCloseModalDetail = () => {
+        setOpenDetail(false);
+    };
 
     const handleFail = async (id: number) => {
         const res = await updateDaliveryStatus(id, { status: "cancel" });
         if (res) {
             fetchDataDelivery();
             messageApi.success("บันทึกสําเร็จ");
+        } else {
+            messageApi.error("บันทึกไม่สําเร็จ");
         }
     }
     const columnDropDayly = [
@@ -155,12 +191,15 @@ const DeliveryPage = () => {
             key: "action",
             render: (item: any) => (
                 <div className='flex'>
+                    {item.drop_status === "success" &&
+                        <Button type='primary' className='!bg-green-300' onClick={() => handleOpenModal(item.delivery_details)} >รายการจัดส่ง</Button>
+                    }
                     {item.drop_status === "inprogress" &&
                         <>
-                            <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
+                            <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง">
                                 <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
                             </Popconfirm>
-                            <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
+                            <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง">
                                 <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
                             </Popconfirm>
                         </>
@@ -218,18 +257,17 @@ const DeliveryPage = () => {
             key: "action",
             render: (item: any) => (
                 <div className='flex'>
-                    <Button type='primary' className='mr-2' onClick={() => { setOpenDetail(true), setDetailData(item.customer_order.order_customer_details) }} >ข้อมูลคำสั่งซื้อ</Button>
-
-                    <>
-                        <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
-                            <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
-                        </Popconfirm>
-                        <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
-                            <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
-                        </Popconfirm>
-                    </>
-
-
+                    <Button type='primary' className='mr-2' onClick={() => { handleOpenModalDetail(item) }} >ข้อมูลคำสั่งซื้อ</Button>
+                    {item.drop_status === "inprogress" || item.drop_status === "inprocess" &&
+                        <>
+                            <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
+                                <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
+                            </Popconfirm>
+                            <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
+                                <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
+                            </Popconfirm>
+                        </>
+                    }
                 </div>
             )
         }
@@ -277,13 +315,13 @@ const DeliveryPage = () => {
 
         },
         {
-            title: 'ราคา',
+            title: 'ราคา (บาท)',
             dataIndex: 'product_price',
             key: 'product_price',
 
         },
         {
-            title: 'สินค้าคงเหลือ',
+            title: 'สินค้าคงเหลือ (ถุง)',
             dataIndex: 'stock_amount',
             key: 'stock_amount',
 
@@ -352,11 +390,42 @@ const DeliveryPage = () => {
             key: "product",
             render: (item: any) => item.name
         }, {
-            title: "จำนวน",
+            title: "จำนวน(ถุง)",
             dataIndex: "amount",
             key: "amount",
+        },
+        {
+            title: "ราคา(บาท)/ถุง",
+            dataIndex: "product",
+            key: "product",
+            render: (item: any) => item.price
         }
     ]
+    const productDeliveryColumn = [
+        {
+            title: 'ลำดับ',
+            dataIndex: 'id',
+            key: 'id',
+            render: (text: any, record: any, index: any) => index + 1
+        },
+        {
+            title: "ชื่อสินค้า",
+            dataIndex: "product",
+            key: "product",
+            render: (item: any) => item.name
+        }, {
+            title: "จำนวน(ถุง)",
+            dataIndex: "amount",
+            key: "amount",
+        },
+        {
+            title: "ราคา(บาท)/ถุง",
+            dataIndex: "price",
+            key: "price",
+        }
+    ]
+
+
 
 
     return (
@@ -385,7 +454,6 @@ const DeliveryPage = () => {
                     </div>
                     </Col>
                     <Col span={12}>
-
                         <Card className='w-full' title="จัดส่งประจําวัน" >
 
                             <Table columns={columnDropDayly} dataSource={dropDayly} pagination={{ pageSize: 5 }}></Table>
@@ -398,10 +466,22 @@ const DeliveryPage = () => {
                     </Col>
                 </Row>
             </div>
-            <Modal open={openDetail} onCancel={() => setOpenDetail(false)} footer={[]}>
-                <Table columns={orderColumn} dataSource={detailData} />
+            <Modal open={openDetail} onCancel={() => handleCloseModalDetail()} footer={[
+                <div key={"detail-footer"}>
+                    ยอดรวม <span className='text-blue-500 text-2xl'>{totalPrice}</span> บาท
+                </div>
+            ]}>
+                <Table columns={orderColumn} dataSource={detailData} pagination={false} />
 
 
+            </Modal>
+            <Modal title="รายการจัดส่ง" open={openModal} onCancel={() => handleCloseModal()}
+                footer={[
+                    <div key={"daly-footer"}>
+                        ยอดรวม <span className='text-blue-500 text-2xl'>{totalPrice}</span> บาท
+                    </div>
+                ]}>
+                <Table columns={productDeliveryColumn} dataSource={productSelect} pagination={false} />
             </Modal>
         </LayoutComponent>
     );

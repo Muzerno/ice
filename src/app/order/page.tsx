@@ -8,9 +8,9 @@ import { findAllCar, findAllTransportationLine } from '@/utils/transpotationServ
 import { RestOutlined, ToolOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
 import { format } from 'date-fns';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import React, { useContext, useEffect, useState } from 'react';
-import { render } from 'react-dom';
+
 
 const Order = () => {
 
@@ -288,17 +288,23 @@ const Order = () => {
                     <Col span={16}>
                         <Row>
                             <Card className='w-full' title="สินค้าในคลัง">
-                                <Table columns={ProductColumns} dataSource={productData} onChange={handlePaginationChange} pagination={{ pageSize: 5 }} />
+                                <div className='w-full h-[300px] overflow-y-scroll'>
+                                    <Table columns={ProductColumns} dataSource={productData} onChange={handlePaginationChange} pagination={false} />
+                                </div>
+
                             </Card>
                         </Row>
 
                         <Row className='mt-5'>
 
                             <Card className='w-full pt-5' title="การเบิกสินค้า">
-                                {/* <div className='mb-2 float-end'>
-                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={moment(new Date())} onChange={(date, dateString) => fetchWithdrawData(date)} />
-                                </div> */}
-                                <Table columns={columns} dataSource={data} onChange={handlePaginationChange2} pagination={{ pageSize: 5 }} />
+                                <div className='mb-2 float-end'>
+                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} onChange={(date, dateString) => fetchWithdrawData(date)} />
+                                </div>
+                                <div className='w-full h-[300px] overflow-y-scroll'>
+                                    <Table columns={columns} dataSource={data} onChange={handlePaginationChange2} pagination={false} />
+                                </div>
+
                             </Card>
                         </Row>
 
@@ -329,9 +335,9 @@ const Order = () => {
                                     </Select>
                                 </Form.Item>
                                 <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
-                                <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()}>
-                                    <Button type="primary" className=' w-full'>บันทึก</Button>
-                                </Popconfirm>
+
+                                <Button type="primary" className=' w-full' htmlType="submit">บันทึก</Button>
+
                             </Form>
                         </Card>
                     </Col>

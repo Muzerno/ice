@@ -350,6 +350,27 @@ const OrderVip = () => {
         }
     }, [location, trueAddress])
 
+    const randomCustomerId = () => {
+        let text = "CV-";
+        let possibleNumbers = "0123456789";
+        let possibleLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        // Add 2 random numbers
+        for (let i = 0; i < 2; i++) {
+            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
+        }
+
+        // Add 5 random letters
+        for (let i = 0; i < 5; i++) {
+            text += possibleLetters.charAt(Math.floor(Math.random() * possibleLetters.length));
+        }
+
+        for (let i = 0; i < 2; i++) {
+            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
+        }
+
+        return text;
+    }
 
     return (
         <LayoutComponent>
@@ -361,7 +382,10 @@ const OrderVip = () => {
                             <Row>
                                 <Col span={24} className="pr-2" >
                                     <Card className='w-full' title="สินค้าในคลัง">
-                                        <Table columns={productInStoreColumns} onChange={handlePaginationChange2} dataSource={productData} pagination={{ pageSize: 3 }} />
+                                        <div className="w-full h-[250px] overflow-y-scroll">
+                                            <Table columns={productInStoreColumns} onChange={handlePaginationChange2} dataSource={productData} pagination={false} />
+                                        </div>
+
                                     </Card>
                                 </Col>
                             </Row>
@@ -371,12 +395,17 @@ const OrderVip = () => {
                                 </Col>
                                 <Col span={12} className="pr-2" >
                                     <Card className='w-full' title="สินค้าที่เลือก">
-                                        <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 3 }} />
+                                        <div className="w-full h-[330px] overflow-y-scroll">
+                                            <Table columns={ProductSelectColumns} dataSource={productData} pagination={false} />
+                                        </div>
+
                                     </Card>
                                 </Col>
                                 <Col span={24} className="mt-5 pr-2" >
                                     <Card title="ข้อมูลคำสั่งซื้อ" className="w-full">
-                                        <Table columns={columns} className="h-fit" onChange={handlePaginationChange} pagination={{ pageSize: 5 }} dataSource={orderVip} />
+                                        <div className="w-full h-[300px] overflow-y-scroll">
+                                            <Table columns={columns} onChange={handlePaginationChange} pagination={false} dataSource={orderVip} />
+                                        </div>
                                     </Card>
                                 </Col >
                             </Row >
@@ -395,6 +424,14 @@ const OrderVip = () => {
 
                                             </Select>
                                         </Form.Item> */}
+                                        <Row>
+
+                                            <Form.Item key={"customer_code"} name={"customer_code"} className='w-2/3' label="รหัสลูกค้า" rules={[{ required: true, message: "กรุณากรอกรหัส" }]}>
+                                                <Input disabled />
+                                            </Form.Item>
+
+                                            <Button type='default' className='w-1/3  mt-8' onClick={() => form.setFieldsValue({ customer_code: randomCustomerId() })}>Generate</Button>
+                                        </Row>
                                         <Form.Item key={"customer_name"} name={"customer_name"} className='w-full' label="ชื่อลูกค้า" rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}>
                                             <Input />
                                         </Form.Item>
@@ -423,11 +460,11 @@ const OrderVip = () => {
                                         </Form.Item>
 
                                         <Form.Item className="w-full">
-                                            <Popconfirm title="ยืนยันการสั่งสินค้า" description="แน่ใจหรือไม่" onConfirm={() => form.submit()} >
-                                                <Button type="primary" className="w-full">
-                                                    บันทึก
-                                                </Button>
-                                            </Popconfirm>
+
+                                            <Button type="primary" className="w-full" htmlType="submit">
+                                                บันทึก
+                                            </Button>
+
 
 
 

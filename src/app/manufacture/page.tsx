@@ -281,19 +281,34 @@ export default function Manufacture(props: IProps) {
                     <Col span={16}>
                         <Row>
                             <Card className='w-full' title="สินค้าในคลัง">
+                                <div className='h-[350px] overflow-y-scroll'>
+                                    <Table columns={ProductColumns} dataSource={productData} pagination={false} />
+                                </div>
 
-                                <Table columns={ProductColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
                             </Card>
                         </Row>
                         <Row className='mt-5'>
                             <Card className='w-full' title="จัดการข้อมูลการผลิต" >
-                                <div className='mb-2 float-start'>
-                                    <StockOutlined /> จำนวนทั้งหมดของวันนี้ {data.length} รายการ
-                                </div>
-                                <div className='mb-2 float-end'>
-                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
-                                </div>
-                                <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+                                <Row >
+                                    <Col span={12}>
+                                        <div className='mb-2 float-start'>
+                                            <StockOutlined /> จำนวนทั้งหมดของวันนี้ {data.length} รายการ
+                                        </div>
+                                    </Col>
+                                    <Col span={12}>
+                                        <div className='mb-2 float-end'>
+                                            <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
+                                        </div>
+                                    </Col>
+
+
+                                </Row>
+                                <Row>
+                                    <div className='w-full h-[350px] overflow-y-scroll'>
+                                        <Table columns={columns} dataSource={data} pagination={false} />
+                                    </div>
+                                </Row>
+
                             </Card>
                         </Row>
 
@@ -321,9 +336,9 @@ export default function Manufacture(props: IProps) {
                                 {/* <Form.Item name={"manufacture_amount"} hidden className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                                     <Input className='w-full' />
                                 </Form.Item> */}
-                                <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()}>
-                                    <Button type="primary" className=' w-full' >บันทึก</Button>
-                                </Popconfirm>
+
+                                <Button type="primary" className=' w-full' htmlType="submit" >บันทึก</Button>
+
                             </Form>
                         </Card>
                     </Col>
@@ -351,7 +366,7 @@ export default function Manufacture(props: IProps) {
                         <Input className='w-full' />
                     </Form.Item>
                     <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()}>
-                        <Button type="primary" className=' w-full'>บันทึก</Button>
+                        <Button type="primary" className=' w-full' >บันทึก</Button>
                     </Popconfirm>
                 </Form>
             </Modal>

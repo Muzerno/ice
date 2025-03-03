@@ -15,6 +15,7 @@ const CarManagement: React.FC = () => {
     const [messageApi, contextHolder] = useMessage();
     const [selectedCar, setSelectedCar] = useState<number | null>();
     const [userData, setUserData] = useState<any>([]);
+    const [userFilter, setUserFilter] = useState<any>([]);
     const columns = [
         {
             title: "เลขทะเบียนรถ",
@@ -47,6 +48,14 @@ const CarManagement: React.FC = () => {
             ),
         },
     ];
+
+    useEffect(() => {
+
+        const userFilters = userData.filter((item: any) => item.role?.role_key === 'deliver');
+        setUserFilter(userFilters);
+
+
+    }, [userData]);
 
     const onFinish = async (values: any) => {
         const res = await createCar(values);
@@ -98,10 +107,13 @@ const CarManagement: React.FC = () => {
         <Row className="w-full">
             {contextHolder}
             <Col span={18} className="pr-2">
-                <Card className="w-full !bg-slate-100">
+                <Card className="w-full ">
                     <Row>
                         <Col span={24}>
-                            <Table columns={columns} className="h-fit" dataSource={carData} />
+                            <div className="w-full h-[70vh]" style={{ overflowY: "scroll" }}>
+                                <Table columns={columns} dataSource={carData} pagination={false} />
+                            </div>
+
                         </Col>
                     </Row>
                 </Card>
@@ -114,15 +126,15 @@ const CarManagement: React.FC = () => {
                         </Form.Item>
                         <Form.Item name="user_id" label="ผู้ใช้" rules={[{ required: true, message: "กรุณาเลือกผู้ใช้" }]}>
                             <Select>
-                                {userData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {`[${item.role.role_name}]`}</Select.Option>)}
+                                {userFilter.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {`[${item.role.role_name}]`}</Select.Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item>
-                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()}>
-                                <Button type="primary" >
-                                    บันทึก
-                                </Button>
-                            </Popconfirm>
+
+                            <Button type="primary" htmlType="submit" >
+                                บันทึก
+                            </Button>
+
                         </Form.Item>
                     </Form>
                     <Modal
@@ -146,7 +158,7 @@ const CarManagement: React.FC = () => {
                             </Form.Item>
                             <Form.Item name="user_id" label="ผู้ใช้">
                                 <Select>
-                                    {userData.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {item.role.role_name}</Select.Option>)}
+                                    {userFilter.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {item.role.role_name}</Select.Option>)}
                                 </Select>
                             </Form.Item>
                         </Form>

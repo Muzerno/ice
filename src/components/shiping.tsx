@@ -278,27 +278,34 @@ const Shipping = () => {
                     <Row>
                         <Col >
                             <div>
-                                <Card title="ข้อมูลลูกค้า" className="w-full " style={{ height: 600 }}>
-                                    <Table columns={customerColumns}
-                                        rowSelection={{
-                                            type: "checkbox",
-                                            ...rowSelection,
-                                        }}
+                                <Card title="ข้อมูลลูกค้า" className="w-full  " >
+                                    <div className="h-[300px] overflow-y-scroll">
+                                        <Table columns={customerColumns}
+                                            rowSelection={{
+                                                type: "checkbox",
+                                                ...rowSelection,
+                                            }}
+                                            style={{ overflowY: "scroll" }}
+                                            rowKey={(id: any) => id.id}
+                                            pagination={false}
+                                            dataSource={customerData}
 
-                                        rowKey={(id: any) => id.id}
-                                        pagination={{ pageSize: 5 }}
-                                        dataSource={customerData}
+                                            onChange={handlePaginationChange2}
+                                        >
 
-                                        onChange={handlePaginationChange2}
-                                    >
+                                        </Table>
+                                    </div>
 
-                                    </Table>
                                 </Card>
 
                             </div>
                             <div className="mt-5 w-full">
                                 <Card title="ข้อมูลสายการเดินรถ" className="w-full h-full">
-                                    <Table columns={columns} pagination={{ pageSize: 5 }} className="h-full" style={{ height: "400px", overflow: 'auto' }} onChange={handlePaginationChange} dataSource={transportationData} />
+                                    <div className=" h-[300px] overflow-y-scroll">
+                                        <Table columns={columns} pagination={false}
+                                            className="h-full" onChange={handlePaginationChange} dataSource={transportationData} />
+                                    </div>
+
                                 </Card>
                             </div>
                         </Col>
@@ -307,10 +314,10 @@ const Shipping = () => {
                 <Col span={8} className="pl-2">
                     <Card className=" !bg-slate-100" title="เพิ่มสายการเดินรถ">
                         <Form form={form} layout="vertical" onFinish={onFinish}>
-                            <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ">
+                            <Form.Item name={"line_name"} label="ชื่อสายการเดินรถ" rules={[{ required: true, message: "กรุณากรอกชื่อสายการเดินรถ" }]}>
                                 <Input type="text" />
                             </Form.Item>
-                            <Form.Item name="car_id" label="เลขทะเบียนรถ">
+                            <Form.Item name="car_id" label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณากรอกเลขทะเบียนรถ" }]}>
                                 <Select >
                                     {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number}</Select.Option>)}
                                 </Select>
@@ -321,11 +328,11 @@ const Shipping = () => {
                                 </Select>
                             </Form.Item>
                             <Form.Item className="w-full">
-                                <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => form.submit()} >
-                                    <Button type="primary" className="w-full">
-                                        บันทึก
-                                    </Button>
-                                </Popconfirm>
+
+                                <Button type="primary" className="w-full" htmlType="submit">
+                                    บันทึก
+                                </Button>
+
                             </Form.Item>
                         </Form>
 

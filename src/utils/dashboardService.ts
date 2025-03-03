@@ -10,9 +10,13 @@ export async function findAllDashboard() {
     }
 }
 
-export async function moneyPage() {
+export async function moneyPage(date: string) {
     try {
-        const dashboard = await AxiosInstances.get('/dashboard/money')
+        const dashboard = await AxiosInstances.get(`/dashboard/money`, {
+            params: {
+                date_time: date
+            }
+        })
         return Promise.resolve(dashboard.data)
     } catch (error) {
         return Promise.reject(error)

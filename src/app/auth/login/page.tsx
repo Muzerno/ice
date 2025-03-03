@@ -16,7 +16,7 @@ const LoginPage = () => {
         const res = await login(values)
         if (res.status === 200) {
             localStorage.setItem('payload', JSON.stringify(res.data.payload));
-            messageApi.success('Login successful!');
+            messageApi.success('เข้าสู่ระบบสําเร็จ!');
             const user = res.data.payload.user
             console.log(user.role.role_key)
             console.log(user.role.role_key === 'deviler')
@@ -27,7 +27,7 @@ const LoginPage = () => {
             }
 
         } else {
-            messageApi.error('Login failed!');
+            messageApi.error('เข้าสู่ระบบไม่สําเร็จ!');
         }
     };
     const onFinishFailed = (errorInfo: any) => {
@@ -49,14 +49,14 @@ const LoginPage = () => {
                             className='w-full'
                             name="username"
                             vertical={false}
-                            rules={[{ required: true, message: 'Please input your username!' }]}
+                            rules={[{ required: true, message: 'กรุณากรอก ชื่อผู้ใช้งาน' }]}
                         >
                             <Input placeholder='Username' style={{ width: '100%' }} type="text" size={size} value={username} onChange={(e) => setUsername(e.target.value)} />
                         </Form.Item>
 
                         <Form.Item
                             name="password"
-                            rules={[{ required: true, message: 'Please input your password!' }]}
+                            rules={[{ required: true, message: 'กรุณากรอก รหัสผ่าน' }]}
                         >
                             <Input.Password value={password} placeholder='Password' size={size} onChange={(e) => setPassword(e.target.value)} />
                         </Form.Item>
