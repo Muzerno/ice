@@ -69,12 +69,12 @@ const NavBarComponent = (props: IProps) => {
                 selectedKeys={[menuSelect]}
                 items={[
 
-                    role.roleKey === 'owner' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'dashboard',
                         icon: <BarsOutlined />,
                         label: 'รายงาน',
                     } : null,
-                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                    role.roleKey === 'owner' ? {
                         key: 'userManagement',
                         icon: <UserOutlined />,
                         label: 'จัดการข้อมูลผู้ใช้งาน',

@@ -1,5 +1,6 @@
 'use client';
 import { login } from '@/utils/authService';
+import { SettingTwoTone } from '@ant-design/icons';
 import { Button, Card, Form, Input } from 'antd';
 import useMessage from 'antd/es/message/useMessage';
 import { useRouter } from 'next/navigation';
@@ -18,8 +19,6 @@ const LoginPage = () => {
             localStorage.setItem('payload', JSON.stringify(res.data.payload));
             messageApi.success('เข้าสู่ระบบสําเร็จ!');
             const user = res.data.payload.user
-            console.log(user.role.role_key)
-            console.log(user.role.role_key === 'deviler')
             if (user.role.role_key === 'admin' || user.role.role_key === 'owner') {
                 router.push('/dashboard');
             } if (user.role.role_key === 'deliver') {
@@ -34,42 +33,49 @@ const LoginPage = () => {
         console.log('Failed:', errorInfo);
     };
     return (
-        <div className='w-full justify-center flex flex-row-reverse mt-[10%]'>
-            {contextHolder}
-            <Card title="เข้าสู่ระบบ" className='mt-50 w-[300px] justify-center text-center !bg-blue-100'>
-                <div className='w-full'>
-                    <Form
-                        name="basic"
-                        initialValues={{ remember: true }}
-                        onFinish={onFinish}
-                        onFinishFailed={onFinishFailed}
-                        autoComplete={"off"}
-                    >
-                        <Form.Item
-                            className='w-full'
-                            name="username"
-                            vertical={false}
-                            rules={[{ required: true, message: 'กรุณากรอก ชื่อผู้ใช้งาน' }]}
+        <div className='flex flex-row h-screen'>
+            <div className='bg-blue-400 h-screen w-full opacity-1'>
+                <h1 className='text-white  text-[100px] font-semibold text-center mt-[30%]'><SettingTwoTone /></h1>
+                <h1 className='text-white text-4xl font-semibold text-center mt-[10%]'>ระบบจัดการ</h1>
+                <h1 className='text-white text-4xl font-semibold text-center mt-[2%]'> โรงงานน้ำแข็ง</h1>
+            </div>
+            <div className='w-full justify-center flex mt-[20%] h-fit'>
+                {contextHolder}
+                <Card title="เข้าสู่ระบบ" className='mt-50 w-[300px] justify-center text-center !bg-blue-100'>
+                    <div className='w-full'>
+                        <Form
+                            name="basic"
+                            initialValues={{ remember: true }}
+                            onFinish={onFinish}
+                            onFinishFailed={onFinishFailed}
+                            autoComplete={"off"}
                         >
-                            <Input placeholder='Username' style={{ width: '100%' }} type="text" size={size} value={username} onChange={(e) => setUsername(e.target.value)} />
-                        </Form.Item>
+                            <Form.Item
+                                className='w-full'
+                                name="username"
+                                vertical={false}
+                                rules={[{ required: true, message: 'กรุณากรอก ชื่อผู้ใช้งาน' }]}
+                            >
+                                <Input placeholder='Username' style={{ width: '100%' }} type="text" size={size} value={username} onChange={(e) => setUsername(e.target.value)} />
+                            </Form.Item>
 
-                        <Form.Item
-                            name="password"
-                            rules={[{ required: true, message: 'กรุณากรอก รหัสผ่าน' }]}
-                        >
-                            <Input.Password value={password} placeholder='Password' size={size} onChange={(e) => setPassword(e.target.value)} />
-                        </Form.Item>
+                            <Form.Item
+                                name="password"
+                                rules={[{ required: true, message: 'กรุณากรอก รหัสผ่าน' }]}
+                            >
+                                <Input.Password value={password} placeholder='Password' size={size} onChange={(e) => setPassword(e.target.value)} />
+                            </Form.Item>
 
 
-                        <Button type="primary" className='w-full' size={size} htmlType="submit">
-                            เข้าสู่ระบบ
-                        </Button>
+                            <Button type="primary" className='w-full' size={size} htmlType="submit">
+                                เข้าสู่ระบบ
+                            </Button>
 
-                    </Form>
+                        </Form>
 
-                </div>
-            </Card>
+                    </div>
+                </Card>
+            </div>
         </div>
     );
 };
