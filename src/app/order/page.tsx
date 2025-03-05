@@ -6,7 +6,7 @@ import { createOrder, findAllOrder, findAllOrderWithDay } from '@/utils/orderSer
 import { findAllProductDrowdown } from '@/utils/productService';
 import { findAllCar, findAllTransportationLine } from '@/utils/transpotationService';
 import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table } from 'antd';
+import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table, TableProps } from 'antd';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import React, { useContext, useEffect, useState } from 'react';
@@ -166,34 +166,34 @@ const Order = () => {
     ]
 
     const ProductSelectColumns = [
-        {
-            title: 'เลือก',
-            dataIndex: 'id',
-            key: 'id',
-            width: "5%",
-            render: (item: any) => {
-                return (
-                    <Checkbox
-                        key={item}
-                        checked={selectedProducts.includes(item)}
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setSelectedProducts([...selectedProducts, item]);
-                            } else {
-                                setSelectedProducts(
-                                    selectedProducts.filter((id) => id !== item)
-                                );
-                                setSelectedProductsAmount((prevAmounts) => {
-                                    const newAmounts = { ...prevAmounts };
-                                    delete newAmounts[item];
-                                    return newAmounts;
-                                });
-                            }
-                        }}
-                    />
-                );
-            }
-        },
+        // {
+        //     title: 'เลือก',
+        //     dataIndex: 'id',
+        //     key: 'id',
+        //     width: "5%",
+        //     render: (item: any) => {
+        //         return (
+        //             <Checkbox
+        //                 key={item}
+        //                 checked={selectedProducts.includes(item)}
+        //                 onChange={(e) => {
+        //                     if (e.target.checked) {
+        //                         setSelectedProducts([...selectedProducts, item]);
+        //                     } else {
+        //                         setSelectedProducts(
+        //                             selectedProducts.filter((id) => id !== item)
+        //                         );
+        //                         setSelectedProductsAmount((prevAmounts) => {
+        //                             const newAmounts = { ...prevAmounts };
+        //                             delete newAmounts[item];
+        //                             return newAmounts;
+        //                         });
+        //                     }
+        //                 }}
+        //             />
+        //         );
+        //     }
+        // },
         {
             title: 'ชื่อสินค้า',
             dataIndex: 'name',
@@ -280,6 +280,22 @@ const Order = () => {
             })
         }
     }
+
+
+    const rowSelection: TableProps<any>['rowSelection'] = {
+        selectedRowKeys: selectedProducts,
+        onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+            const customerArray = []
+            for (const row of selectedRows) {
+                customerArray.push(row.id)
+            }
+            setSelectedProducts([...customerArray])
+        },
+        // getCheckboxProps: (record: any) => ({
+        //     name: record.name,
+        // }),
+
+    };
     return (
         <LayoutComponent>
             {contextHolder}
@@ -334,7 +350,7 @@ const Order = () => {
 
                                     </Select>
                                 </Form.Item>
-                                <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                                <Table rowKey={(id: any) => id.id} rowSelection={{ ...rowSelection }} columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
 
                                 <Button type="primary" className=' w-full' htmlType="submit">บันทึก</Button>
 

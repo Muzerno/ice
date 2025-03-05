@@ -294,7 +294,7 @@ const CustomerManagement = () => {
                         <Col span={24}>
                             <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
                                 rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
-                                <Input type='text' />
+                                <Input type='text' disabled />
                             </Form.Item>
                         </Col>
                     </Row>

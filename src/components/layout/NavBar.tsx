@@ -69,7 +69,7 @@ const NavBarComponent = (props: IProps) => {
                 selectedKeys={[menuSelect]}
                 items={[
 
-                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                    role.roleKey === 'owner' ? {
                         key: 'dashboard',
                         icon: <BarsOutlined />,
                         label: 'รายงาน',
@@ -98,31 +98,30 @@ const NavBarComponent = (props: IProps) => {
                         label: 'จัดการข้อมูลลูกค้า',
 
                     } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'deliveryLine',
                         icon: <TagOutlined />,
                         label: 'จัดสายการเดินรถ',
 
                     } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'manufacture',
                         icon: <HomeOutlined />,
                         label: 'การผลิตสินค้า',
 
                     } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'order',
                         icon: <PaperClipOutlined />,
                         label: 'การเบิกสินค้า',
 
                     } : null,
-                    // role.roleKey === 'deliver' ? {
-                    //     key: 'deliverDashboard',
-                    //     icon: <CarOutlined />,
-                    //     label: 'แดชบอร์ดการขนส่ง',
-
-                    // } : null,
-                    role.roleKey === 'admin' ? {
+                    role.roleKey === 'deliver' ? {
+                        key: 'delivery',
+                        icon: <CarOutlined />,
+                        label: 'การจัดส่ง',
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' || role.roleKey === 'deliver' ? {
                         key: 'order/vip',
                         icon: <CarOutlined />,
                         label: 'คำสั่งซื้อพิเศษ',
@@ -134,11 +133,7 @@ const NavBarComponent = (props: IProps) => {
                         label: 'การเงิน',
 
                     } : null,
-                    role.roleKey === 'deliver' ? {
-                        key: 'delivery',
-                        icon: <CarOutlined />,
-                        label: 'การจัดส่ง',
-                    } : null,
+
                 ]}
             />
         </Sider>

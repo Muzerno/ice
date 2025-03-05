@@ -48,6 +48,8 @@ const Shipping = () => {
             form.resetFields();
             deliverLine();
             setRowSelectList([])
+        } else {
+            messageApi.error("บันทึกไม่สําเร็จ!");
         }
     };
 
@@ -186,7 +188,10 @@ const Shipping = () => {
             form.resetFields();
             deliverLine();
             setRowSelectList([])
+        } if (res.status === 204) {
+            messageApi.error("สายรถซ้ําหรือเลขรถไม่ถูกต้อง");
         }
+
     };
 
     const onFinishEdit = async (values: any) => {
@@ -205,6 +210,8 @@ const Shipping = () => {
             deliverLine();
             getCustomer()
             setOpenModalCustomer(false)
+        } else {
+            messageApi.error("ลบไม่สําเร็จ!");
         }
     };
 
@@ -215,6 +222,8 @@ const Shipping = () => {
             deliverLine();
             getCustomer()
 
+        } else {
+            messageApi.error("ลบไม่สําเร็จ!");
         }
     };
     const getCustomer = async () => {

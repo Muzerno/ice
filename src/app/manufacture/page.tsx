@@ -4,7 +4,7 @@ import { UserContext } from '@/context/userContext';
 import { createManufacture, deleteManufacture, findAllManufacture, updateManufacture } from '@/utils/manufactureService';
 import { findAllProduct, findAllProductDrowdown } from '@/utils/productService';
 import { BoxPlotOutlined, DeleteOutlined, RestOutlined, StockOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Table } from "antd";
+import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import FormItem from 'antd/es/form/FormItem';
 import { format, isValid, parseISO, set } from 'date-fns';
 import { useContext, useEffect, useState } from 'react';
@@ -171,34 +171,34 @@ export default function Manufacture(props: IProps) {
         },
     ]
     const ProductSelectColumns = [
-        {
-            title: 'เลือก',
-            dataIndex: 'id',
-            key: 'id',
-            width: "5%",
-            render: (item: any) => {
-                return (
-                    <Checkbox
-                        key={item}
-                        checked={selectedProducts.includes(item)}
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setSelectedProducts([...selectedProducts, item]);
-                            } else {
-                                setSelectedProducts(
-                                    selectedProducts.filter((id) => id !== item)
-                                );
-                                setSelectedProductsAmount((prevAmounts) => {
-                                    const newAmounts = { ...prevAmounts };
-                                    delete newAmounts[item];
-                                    return newAmounts;
-                                });
-                            }
-                        }}
-                    />
-                );
-            }
-        },
+        // {
+        //     title: 'เลือก',
+        //     dataIndex: 'id',
+        //     key: 'id',
+        //     width: "5%",
+        //     render: (item: any) => {
+        //         return (
+        //             <Checkbox
+        //                 key={item}
+        //                 checked={selectedProducts.includes(item)}
+        //                 onChange={(e) => {
+        //                     if (e.target.checked) {
+        //                         setSelectedProducts([...selectedProducts, item]);
+        //                     } else {
+        //                         setSelectedProducts(
+        //                             selectedProducts.filter((id) => id !== item)
+        //                         );
+        //                         setSelectedProductsAmount((prevAmounts) => {
+        //                             const newAmounts = { ...prevAmounts };
+        //                             delete newAmounts[item];
+        //                             return newAmounts;
+        //                         });
+        //                     }
+        //                 }}
+        //             />
+        //         );
+        //     }
+        // },
         {
             title: 'ชื่อสินค้า',
             dataIndex: 'name',
@@ -273,6 +273,23 @@ export default function Manufacture(props: IProps) {
             messageApi.error('แก้ไขข้อมูลการผลิตไม่สําเร็จ');
         }
     }
+
+
+    const rowSelection: TableProps<any>['rowSelection'] = {
+        selectedRowKeys: selectedProducts,
+        onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+            const customerArray = []
+            for (const row of selectedRows) {
+                customerArray.push(row.id)
+            }
+            setSelectedProducts([...customerArray])
+        },
+        // getCheckboxProps: (record: any) => ({
+        //     name: record.name,
+        // }),
+
+    };
+
     return (
         <LayoutComponent >
             {contextHolder}
@@ -319,7 +336,7 @@ export default function Manufacture(props: IProps) {
                             <Form layout='vertical' onFinish={create} form={form}>
                                 {/* <Card className='w-full' title="สินค้าในคลัง"> */}
 
-                                <Table columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                                <Table rowKey={(id: any) => id.id} rowSelection={{ type: 'checkbox', ...rowSelection }} columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
                                 {/* </Card> */}
                                 {/* <Form.Item key={"product_id"} name={"product_id"} hidden className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
                                     <Select className='w-full' mode='multiple' >

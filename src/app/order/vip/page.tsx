@@ -27,7 +27,6 @@ const OrderVip = () => {
     const [transportationData, setTransportationData] = useState<any>([]);
     const [selectCustomer, setSelectCustomer] = useState([]);
     const [openModalCustomer, setOpenModalCustomer] = useState(false);
-    const [rowSelectList, setRowSelectList] = useState<any[]>([]);
     const [trueAddress, setTrueAddress] = useState();
     const [productData, setProductData] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
@@ -150,34 +149,34 @@ const OrderVip = () => {
     ];
 
     const ProductSelectColumns = [
-        {
-            title: 'เลือก',
-            dataIndex: 'id',
-            key: 'id',
-            width: "5%",
-            render: (item: any) => {
-                return (
-                    <Checkbox
-                        key={item}
-                        checked={selectedProducts.includes(item)}
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setSelectedProducts([...selectedProducts, item]);
-                            } else {
-                                setSelectedProducts(
-                                    selectedProducts.filter((id) => id !== item)
-                                );
-                                setSelectedProductsAmount((prevAmounts) => {
-                                    const newAmounts = { ...prevAmounts };
-                                    delete newAmounts[item];
-                                    return newAmounts;
-                                });
-                            }
-                        }}
-                    />
-                );
-            }
-        },
+        // {
+        //     title: 'เลือก',
+        //     dataIndex: 'id',
+        //     key: 'id',
+        //     width: "5%",
+        //     render: (item: any) => {
+        //         return (
+        //             <Checkbox
+        //                 key={item}
+        //                 checked={selectedProducts.includes(item)}
+        //                 onChange={(e) => {
+        //                     if (e.target.checked) {
+        //                         setSelectedProducts([...selectedProducts, item]);
+        //                     } else {
+        //                         setSelectedProducts(
+        //                             selectedProducts.filter((id) => id !== item)
+        //                         );
+        //                         setSelectedProductsAmount((prevAmounts) => {
+        //                             const newAmounts = { ...prevAmounts };
+        //                             delete newAmounts[item];
+        //                             return newAmounts;
+        //                         });
+        //                     }
+        //                 }}
+        //             />
+        //         );
+        //     }
+        // },
         {
             title: 'ชื่อสินค้า',
             dataIndex: 'name',
@@ -372,6 +371,21 @@ const OrderVip = () => {
         return text;
     }
 
+    const rowSelection: TableProps<any>['rowSelection'] = {
+        selectedRowKeys: selectedProducts,
+        onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+            const customerArray = []
+            for (const row of selectedRows) {
+                customerArray.push(row.id)
+            }
+            setSelectedProducts([...customerArray])
+        },
+        // getCheckboxProps: (record: any) => ({
+        //     name: record.name,
+        // }),
+
+    };
+
     return (
         <LayoutComponent>
             {contextHolder}
@@ -396,7 +410,7 @@ const OrderVip = () => {
                                 <Col span={12} className="pr-2" >
                                     <Card className='w-full' title="สินค้าที่เลือก">
                                         <div className="w-full h-[330px] overflow-y-scroll">
-                                            <Table columns={ProductSelectColumns} dataSource={productData} pagination={false} />
+                                            <Table rowSelection={{ ...rowSelection }} rowKey={(id: any) => id.id} columns={ProductSelectColumns} dataSource={productData} pagination={false} />
                                         </div>
 
                                     </Card>

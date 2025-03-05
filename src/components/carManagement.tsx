@@ -64,6 +64,9 @@ const CarManagement: React.FC = () => {
             form.resetFields();
             fetchCarData();
         }
+        if (res.status === 204) {
+            messageApi.error("เลขทะเบียนรถซ้ําหรือคนขับไม่ถูกต้อง");
+        }
     };
 
     const onFinishEdit = async (values: any) => {
@@ -74,6 +77,9 @@ const CarManagement: React.FC = () => {
             fetchCarData();
             setOpenModalEdit(false);
         }
+        if (res.status === 204) {
+            messageApi.error("เลขทะเบียนรถซ้ําหรือคนขับไม่ถูกต้อง");
+        }
     };
 
     const deleteCars = async (id: number) => {
@@ -81,7 +87,10 @@ const CarManagement: React.FC = () => {
         if (res.status === 200) {
             messageApi.success("ลบสําเร็จ!");
             fetchCarData();
+        } else {
+            messageApi.error("ลบไม่สําเร็จ!");
         }
+
     };
 
     const fetchCarData = async () => {

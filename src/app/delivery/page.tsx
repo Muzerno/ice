@@ -5,7 +5,7 @@ import { UserContext } from '@/context/userContext';
 import { StockInCar } from '@/utils/productService';
 import { getDeliveryByCarId, updateDaliveryStatus } from '@/utils/transpotationService';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Col, DatePicker, Input, message, Modal, Popconfirm, Row, Table } from 'antd';
+import { Button, Card, Checkbox, Col, DatePicker, Input, message, Modal, Popconfirm, Row, Table, TableProps } from 'antd';
 import { format, parseISO, set } from 'date-fns';
 import moment from 'moment';
 import { title } from 'process';
@@ -23,6 +23,7 @@ const DeliveryPage = () => {
     const { userLogin, setUserLogin } = useContext(UserContext);
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+    // const [rowSelectList, setRowSelectList] = useState<any[]>([]);
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
     const [selectDate, setSelectDate] = useState<any>(dayjs(new Date()));
     const [currentIndex3, setCurrentIndex3] = useState(0);
@@ -257,8 +258,9 @@ const DeliveryPage = () => {
             key: "action",
             render: (item: any) => (
                 <div className='flex'>
+
                     <Button type='primary' className='mr-2' onClick={() => { handleOpenModalDetail(item) }} >ข้อมูลคำสั่งซื้อ</Button>
-                    {item.drop_status === "inprogress" || item.drop_status === "inprocess" &&
+                    {item.drop_status === "inprogress" &&
                         <>
                             <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
                                 <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
@@ -274,34 +276,34 @@ const DeliveryPage = () => {
     ]
 
     const columnProductInCar = [
-        {
-            title: 'เลือก',
-            dataIndex: 'id',
-            key: 'id',
-            width: "5%",
-            render: (item: any) => {
-                return (
-                    <Checkbox
-                        key={item}
-                        checked={selectedProducts.includes(item)}
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setSelectedProducts([...selectedProducts, item]);
-                            } else {
-                                setSelectedProducts(
-                                    selectedProducts.filter((id) => id !== item)
-                                );
-                                setSelectedProductsAmount((prevAmounts) => {
-                                    const newAmounts = { ...prevAmounts };
-                                    delete newAmounts[item];
-                                    return newAmounts;
-                                });
-                            }
-                        }}
-                    />
-                );
-            }
-        },
+        // {
+        //     title: 'เลือก',
+        //     dataIndex: 'id',
+        //     key: 'id',
+        //     width: "5%",
+        //     render: (item: any) => {
+        //         return (
+        //             <Checkbox
+        //                 key={item}
+        //                 checked={selectedProducts.includes(item)}
+        //                 onChange={(e) => {
+        //                     if (e.target.checked) {
+        //                         setSelectedProducts([...selectedProducts, item]);
+        //                     } else {
+        //                         setSelectedProducts(
+        //                             selectedProducts.filter((id) => id !== item)
+        //                         );
+        //                         setSelectedProductsAmount((prevAmounts) => {
+        //                             const newAmounts = { ...prevAmounts };
+        //                             delete newAmounts[item];
+        //                             return newAmounts;
+        //                         });
+        //                     }
+        //                 }}
+        //             />
+        //         );
+        //     }
+        // },
         {
             title: 'ลำดับ',
             dataIndex: 'id',
@@ -426,6 +428,21 @@ const DeliveryPage = () => {
     ]
 
 
+    const rowSelection: TableProps<any>['rowSelection'] = {
+        selectedRowKeys: selectedProducts,
+        onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+            const rowArray = []
+            for (const row of selectedRows) {
+                rowArray.push(row.id)
+                console.log(row)
+            }
+            setSelectedProducts([...rowArray])
+        },
+        getCheckboxProps: (record: any) => ({
+            name: record.name,
+        }),
+
+    };
 
 
     return (
@@ -437,7 +454,13 @@ const DeliveryPage = () => {
                         <Row>
                             <Col span={12} className='pr-2'>
                                 <Card className='w-full' title="สินค้าในรถ">
-                                    <Table columns={columnProductInCar} dataSource={stock} pagination={{ pageSize: 5 }}></Table>
+                                    <Table
+                                        rowSelection={{
+                                            type: "checkbox",
+                                            ...rowSelection,
+                                        }}
+                                        rowKey={(id: any) => id.id}
+                                        columns={columnProductInCar} dataSource={stock} pagination={{ pageSize: 5 }}></Table>
                                 </Card>
                             </Col>
                             <Col span={12}>
