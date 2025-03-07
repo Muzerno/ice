@@ -1,12 +1,13 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { Card, Col, Progress, Row, Spin, Statistic, Table, Button } from "antd";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import LayoutComponent from '@/components/Layout';
-import LongdoMap from '@/components/LongdoMap';
-import { ArrowUpOutlined, BankOutlined, BoxPlotOutlined, CarOutlined, DownSquareOutlined, HomeOutlined, MoneyCollectFilled, MoneyCollectOutlined, StockOutlined, TeamOutlined } from '@ant-design/icons';
-import { findAllDashboard, getLocationCar } from '@/utils/dashboardService';
+import { findAllDashboard } from '@/utils/dashboardService';
+import { BankOutlined, CarOutlined, DownSquareOutlined, HomeOutlined, StockOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Card, DatePicker, Modal, Select, Spin, Statistic } from "antd";
+import axios from 'axios';
+import { format } from 'date-fns';
+import { da } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
+
 
 interface IProps {
     navBarMenu: number;
@@ -24,66 +25,56 @@ interface DashboardData {
 
 export default function Dashboard(props: IProps) {
     const [data, setData] = useState<DashboardData | null>(null);
-    const [carLocation, setCarLocation] = useState<any>([]);
+    const [openModalEdit, setOpenModalEdit] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [dateFrom, setDateFrom] = useState<string>('');
+    const [dateTo, setDateTo] = useState<string>('');
+    const [exportType, setExportType] = useState<string>('manufacture');
     useEffect(() => {
         fetchDashboard();
-        fetchCarLocation();
+
     }, []);
 
     const fetchDashboard = async () => {
         const res = await findAllDashboard();
         setData(res);
+        setIsLoading(true)
     };
 
-    const fetchCarLocation = async () => {
-        const res = await getLocationCar();
-        if (res) {
-            setCarLocation(res);
-        }
-        setIsLoading(true);
-    };
 
-    const exportPDF = () => {
-        const input = document.getElementById('dashboard-content');
-        if (input) {
-            html2canvas(input, { useCORS: true }).then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgWidth = 210; // A4 width in mm
-                const pageHeight = 295; // A4 height in mm
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+    const exportPDF = async () => {
+        try {
+            setOpenModalEdit(false);
+            setIsLoading(false);
+            const response = await axios.get('/api/exportPdf', {
+                params: {
+                    type: exportType,
+                    date_from: dateFrom,
+                    date_to: dateTo,
                 }
-
-                pdf.save("dashboard.pdf");
             });
+            if (response.data.pdfPath) {
+                const pdfPath = `/report.pdf`
+                const link = document.createElement('a');
+                link.href = pdfPath;
+
+                link.download = 'report.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setIsLoading(true);
+            }
+        } catch (error) {
+            console.error('Failed to export PDF', error);
         }
     };
-
-    if (!isLoading) {
-        return (
-            <div className='flex justify-center items-center h-screen'>
-                <h1>กําลังโหลดข้อมูล...</h1>
-            </div>
-        );
-    }
 
     return (
         <Spin tip="Loading..." spinning={!isLoading}>
             <LayoutComponent>
                 <div>
                     <div className='flex justify-end'>
-                        <Button type="primary" className=' !bg-yellow-300' onClick={exportPDF}>Export to PDF</Button>
+                        <Button type="primary" className=' !bg-yellow-300' onClick={() => setOpenModalEdit(true)}>Export to PDF</Button>
                     </div>
                     <div className='w-full' id="dashboard-content">
                         <div className='flex flex-row justify-center'>
@@ -180,14 +171,51 @@ export default function Dashboard(props: IProps) {
                                 </div>
                             </div>
                         </div>
-                        <div className='mt-1 w-full'>
-                            <Card className='w-full' title="ตำแหน่งรถ">
-                                <LongdoMap width='100%' height='400px' isOpenButton={false} carLocation={carLocation} />
-                            </Card>
-                        </div>
+
                     </div>
                 </div>
+                <Modal title="Export PDF" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
+                    <div className='flex justify-center '>
+                        <div className='pr-2 text-md'>ประเภทรายงาน</div>
+                        <div>
+                            <Select title='Export Type' onChange={(value) => setExportType(value)} defaultValue='manufacture' style={{ width: 220 }} size='large'>
+                                <Select.Option key='1' value='manufacture'>รายการผลิต</Select.Option>
+                                <Select.Option key='2' value='withdraw'>รายการเบิก</Select.Option>
+                                <Select.Option key='3' value='money'>รายการเงิน</Select.Option>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className='flex mt-5 justify-center'>
+                        <div className='pr-5'>
+                            <span className='pr-2'>วันที่</span>
+                            <DatePicker
+                                format={'YYYY-MM-DD'}
+                                onChange={(value, dateString) => {
+                                    if (typeof dateString === 'string') {
+                                        setDateFrom(format(new Date(dateString), 'yyyy-MM-dd'))
+                                    }
+                                }}
+                                size='large'
+                            />
+                        </div>
+                        <div>
+                            <span className='pr-2'>ถึง</span>
+                            <DatePicker
+                                format={'YYYY-MM-DD'}
+                                onChange={(value, dateString) => {
+                                    if (typeof dateString === 'string') {
+                                        setDateTo(format(new Date(dateString), 'yyyy-MM-dd'))
+                                    }
+                                }}
+                                size='large'
+                            />
+                        </div>
 
+                    </div>
+                    <div className='flex justify-center mt-5' >
+                        <Button disabled={!dateFrom || !dateTo} type="primary" className=' !bg-green-300' onClick={exportPDF}>Export</Button>
+                    </div>
+                </Modal>
 
             </LayoutComponent>
         </Spin>

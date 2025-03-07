@@ -1,14 +1,10 @@
 // src/components/carManagement.tsx
 import { findAllCustomer } from "@/utils/customerService";
-import { createCar, createTransportationLine, deleteCar, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
-import { findAllUser, findAllUserDeliver } from "@/utils/userService";
-import { DeleteOutlined, PlusCircleOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Form, Input, Modal, Pagination, Popconfirm, Row, Select, Table, TableProps } from "antd";
+import { createTransportationLine, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
+import { DeleteOutlined, PlusCircleOutlined, TeamOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import useMessage from "antd/es/message/useMessage";
-import { UUID } from "crypto";
-import { ca } from "date-fns/locale";
 import { useEffect, useState } from "react";
-import { render } from "react-dom";
 
 const Shipping = () => {
     const [carData, setCarData] = useState<any[]>([]);

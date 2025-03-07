@@ -101,7 +101,7 @@ export default function userManagement() {
     const removeUser = async (id: number) => {
         const user = await deleteUser(id)
         if (user.status === 200) {
-            messageApi.success('User deleted successfully!');
+            messageApi.success('ลบข้อมูลสําเร็จ!');
             fetchUserdata()
         }
     }
@@ -109,16 +109,15 @@ export default function userManagement() {
     const onFinish = async (values: any) => {
         const res = await createUser(values)
         if (res.status === 201) {
-            messageApi.success('User created successfully!');
+            messageApi.success('เพิ่มข้อมูลสําเร็จ!');
             fetchUserdata()
             form.resetFields();
+        } else if (res.status === 204) {
+            messageApi.error('username ซ้ำ!');
         }
     };
 
-    const userTabs = () => {
-        return
 
-    }
     const createRoles = async (params: any) => {
         const res = await createRole(params)
         if (res.status === 201) {

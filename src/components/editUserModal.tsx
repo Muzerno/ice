@@ -21,12 +21,16 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ openModalEdit, setOpenMod
         const res = await updateUser(id, params)
         return res
     }
-    console.log(formEdit)
+
     const onFinish = async (values: any) => {
         const res = await editUser(values.id, values)
         if (res.status === 200) {
-            messageApi.success('User updated successfully!');
+            messageApi.success('แก้ไขข้อมูลสําเร็จ!');
             setOpenModalEdit(false)
+        } else if (res.status === 204) {
+            messageApi.error('username ซ้ำ!');
+        } else {
+            messageApi.error('แก้ไขข้อมูลไม่สําเร็จ');
         }
     }
     return (

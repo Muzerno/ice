@@ -78,7 +78,7 @@ const OrderVip = () => {
             key: "button",
             render: (item: any) => (
                 <div className="flex justify-end">
-                    <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>สินค้าที่สั่ง</Button>
+                    {/* <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>สินค้าที่สั่ง</Button> */}
                     <Popconfirm
                         title="Delete the car"
                         description="แน่ใจหรือไม่"
@@ -266,18 +266,18 @@ const OrderVip = () => {
     }
 
     const onFinish = async (values: any) => {
-        if (selectedProducts.length === 0) {
-            messageApi.error("กรุณาเลือกสินค้า");
-            return;
-        }
-        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
-            messageApi.error("กรุณากรอกจํานวนสินค้า");
-            return;
-        }
+        // if (selectedProducts.length === 0) {
+        //     messageApi.error("กรุณาเลือกสินค้า");
+        //     return;
+        // }
+        // if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+        //     messageApi.error("กรุณากรอกจํานวนสินค้า");
+        //     return;
+        // }
         const res = await createOrderVip({
             ...values,
-            product_id: selectedProducts,
-            amount: selectedProductsAmount,
+            // product_id: selectedProducts,
+            // amount: selectedProductsAmount,
         })
 
         if (res.status === 201) {
@@ -404,17 +404,17 @@ const OrderVip = () => {
                                 </Col>
                             </Row>
                             <Row className="mt-5">
-                                <Col span={12} className='pr-2'>
+                                <Col span={24} className='pr-2'>
                                     <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true} />
                                 </Col>
-                                <Col span={12} className="pr-2" >
+                                {/* <Col span={12} className="pr-2" >
                                     <Card className='w-full' title="สินค้าที่เลือก">
                                         <div className="w-full h-[330px] overflow-y-scroll">
                                             <Table rowSelection={{ ...rowSelection }} rowKey={(id: any) => id.id} columns={ProductSelectColumns} dataSource={productData} pagination={false} />
                                         </div>
 
                                     </Card>
-                                </Col>
+                                </Col> */}
                                 <Col span={24} className="mt-5 pr-2" >
                                     <Card title="ข้อมูลคำสั่งซื้อ" className="w-full">
                                         <div className="w-full h-[300px] overflow-y-scroll">
@@ -452,7 +452,7 @@ const OrderVip = () => {
                                         <Form.Item key={"telephone"} name={"telephone"} className='w-full' label="เบอร์โทร" rules={[{ required: true, message: "กรุณากรอกเบอร์" }]}>
                                             <Input />
                                         </Form.Item>
-                                        <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
+                                        <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถที่จัดส่ง" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
                                             <Select className='w-full' >
                                                 {carData.map((item: any) =>
                                                     <Select.Option key={item.id} value={item.id}>

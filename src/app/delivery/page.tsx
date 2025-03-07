@@ -259,7 +259,9 @@ const DeliveryPage = () => {
             render: (item: any) => (
                 <div className='flex'>
 
-                    <Button type='primary' className='mr-2' onClick={() => { handleOpenModalDetail(item) }} >ข้อมูลคำสั่งซื้อ</Button>
+                    {item.drop_status === "success" &&
+                        <Button type='primary' className='!bg-green-300' onClick={() => handleOpenModal(item.delivery_details)} >รายการจัดส่ง</Button>
+                    }
                     {item.drop_status === "inprogress" &&
                         <>
                             <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
@@ -443,13 +445,35 @@ const DeliveryPage = () => {
         }),
 
     };
-
+    console.log(dropOrder)
 
     return (
         <LayoutComponent>
             <div>
                 {contextHolder}
-                <div>
+
+                <Row className=''>
+                    <Col span={24}>   <div className='float-right p-2'>
+                        <DatePicker size='large' defaultValue={selectDate} format={"YYYY-MM-DD"} onChange={(value, dateString) => setSelectDate(dateString)} />
+                    </div>
+                    </Col>
+                    <Col span={12}>
+                        <Card className='w-full' title="จัดส่งประจําวัน" >
+                            <div className='h-[300px] overflow-y-scroll'>
+                                <Table columns={columnDropDayly} dataSource={dropDayly} pagination={false}></Table>
+                            </div>
+                        </Card>
+                    </Col>
+                    <Col span={12} className='pl-2' >
+                        <Card className='w-full' title='จุดจัดส่งพิเศษ'>
+                            <div className='h-[300px] overflow-y-scroll'>
+                                <Table columns={columnDropOrder} dataSource={dropOrder} pagination={false}></Table>
+                            </div>
+
+                        </Card>
+                    </Col>
+                </Row>
+                <div className='mt-5'>
                     <Card>
                         <Row>
                             <Col span={12} className='pr-2'>
@@ -471,23 +495,6 @@ const DeliveryPage = () => {
                     </Card>
                 </div>
 
-                <Row className='mt-5'>
-                    <Col span={24}>   <div className='float-right p-2'>
-                        <DatePicker size='large' defaultValue={selectDate} format={"YYYY-MM-DD"} onChange={(value, dateString) => setSelectDate(dateString)} />
-                    </div>
-                    </Col>
-                    <Col span={12}>
-                        <Card className='w-full' title="จัดส่งประจําวัน" >
-
-                            <Table columns={columnDropDayly} dataSource={dropDayly} pagination={{ pageSize: 5 }}></Table>
-                        </Card>
-                    </Col>
-                    <Col span={12} className='pl-2' >
-                        <Card className='w-full' title='จุดจัดส่งพิเศษ'>
-                            <Table columns={columnDropOrder} dataSource={dropOrder} pagination={{ pageSize: 5 }}></Table>
-                        </Card>
-                    </Col>
-                </Row>
             </div>
             <Modal open={openDetail} onCancel={() => handleCloseModalDetail()} footer={[
                 <div key={"detail-footer"}>
