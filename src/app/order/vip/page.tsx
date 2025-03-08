@@ -393,7 +393,7 @@ const OrderVip = () => {
                 <div>
                     <Row>
                         <Col span={16}>
-                            <Row>
+                            {/* <Row>
                                 <Col span={24} className="pr-2" >
                                     <Card className='w-full' title="สินค้าในคลัง">
                                         <div className="w-full h-[250px] overflow-y-scroll">
@@ -402,7 +402,7 @@ const OrderVip = () => {
 
                                     </Card>
                                 </Col>
-                            </Row>
+                            </Row> */}
                             <Row className="mt-5">
                                 <Col span={24} className='pr-2'>
                                     <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true} />
@@ -485,9 +485,6 @@ const OrderVip = () => {
                                         </Form.Item>
                                     </Form>
                                 </Card>
-
-
-
                             </Row>
                         </Col>
                     </Row>

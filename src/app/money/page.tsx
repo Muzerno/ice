@@ -71,7 +71,7 @@ const MoneyOrderPage = () => {
             render: (item: any) => {
                 let customer_name = "";
                 for (const i of item.delivery_details) {
-                    customer_name = i.dropoffpoint.customer.name
+                    customer_name = i?.dropoffpoint?.customer?.name || i?.dropoffpoint?.customer_order?.name
 
                 }
                 return customer_name

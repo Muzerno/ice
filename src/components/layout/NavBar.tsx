@@ -60,11 +60,10 @@ const NavBarComponent = (props: IProps) => {
     }, [userLogin])
     return (
         <Sider trigger={null} collapsible collapsed={collapsed} className='sticky'>
-            {!collapsed && <div className="demo-logo-vertical text-center text-white p-5 text-2xl" >ICE FACTORY</div>}
+            {!collapsed && <div className="demo-logo-vertical text-center text-white p-5 text-md" >โรงน้ำแข็งหลอดศรีนวล</div>}
             <Menu
                 theme="dark"
                 mode="inline"
-
                 className='mt-10 sticky'
                 onClick={(item) => setMenuSelect(item.key)}
                 selectedKeys={[menuSelect]}

@@ -50,10 +50,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             htmlFilePath = path.join(process.cwd(), 'src', 'app', 'dashboard', 'template', 'money.html');
             rowData = result.data.map((item: any, index: number) => {
                 total += item.amount
+                const customer_name = item?.delivery?.delivery_details[0]?.dropoffpoint?.customer_order?.name || item?.delivery?.delivery_details[0]?.dropoffpoint?.customer?.name
+                console.log(item.delivery.delivery_details)
                 return {
                     index: index + 1,
                     ...item,
-                    line_name: item.delivery.car.Lines[0].line_name,
+                    customer_name: customer_name,
+                    line_name: item?.delivery?.car?.Lines[0]?.line_name,
                     date_time: format(new Date(item.date_time), 'dd/MM/yyyy HH:mm:ss'),
                 }
             })
