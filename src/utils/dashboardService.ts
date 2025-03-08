@@ -1,3 +1,4 @@
+import { format } from "date-fns"
 import AxiosInstances from "./axiosInstance"
 
 
@@ -14,7 +15,7 @@ export async function moneyPage(date: string) {
     try {
         const dashboard = await AxiosInstances.get(`/dashboard/money`, {
             params: {
-                date_time: date
+                date_time: format(new Date(date), 'yyyy-MM-dd')
             }
         })
         return Promise.resolve(dashboard.data)

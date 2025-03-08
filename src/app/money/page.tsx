@@ -12,26 +12,24 @@ const MoneyOrderPage = () => {
     const [data, setData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deliveryDetail, setDeliveryDetail] = useState<any[]>([]);
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState<string | any>(format(new Date(), 'yyyy-MM-dd'));
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         fetchMoneyOrders();
-    }, []);
+    }, [date]);
 
     const fetchMoneyOrders = async () => {
-        setIsLoading(true);
-        const res = await moneyPage(format(date, 'yyyy-MM-dd'));
+
+        const res = await moneyPage(date);
         if (res) {
             setData(res);
+
         }
         setIsLoading(false);
     };
 
-    const handeChangeDate = (date: any) => {
-        setDate(date);
-        fetchMoneyOrders();
-    };
+
 
     const handelModal = (item: any) => {
         const arrayData = []
@@ -110,7 +108,7 @@ const MoneyOrderPage = () => {
     return (
         <LayoutComponent>
             <Card>
-                <DatePicker onChange={(e, dateString) => handeChangeDate(dateString)} format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} className='float-right pb-2' />
+                <DatePicker multiple={false} onChange={(e, dateString) => setDate(dateString)} format={"YYYY-MM-DD"} size='large' defaultValue={dayjs(new Date())} className='float-right pb-2' />
                 {!isLoading && data.length > 0 ? (
                     <Table
                         className='pt-2'
