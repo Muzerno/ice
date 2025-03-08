@@ -34,13 +34,13 @@ const NavBarComponent = (props: IProps) => {
     })
 
     useEffect(() => {
-        if (!userLogin) return
+        if (userLogin?.user?.role?.role_key !== 'deliver') return
         if (userLogin?.user?.role?.role_key === 'deliver') {
             console.log(userLogin?.user?.role.role_key)
             fetchLocation();
-            const intervalId = setInterval(fetchLocation, 300000);
-            return () => clearInterval(intervalId);
         }
+        const intervalId = setInterval(fetchLocation, 300000);
+        return () => clearInterval(intervalId);
     }, [userLogin]);
 
     const fetchLocation = () => {
