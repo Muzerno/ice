@@ -149,7 +149,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
                     }
                 });
             } else if (carLocation) {
-
+                console.log('carLocation', carLocation)
                 carLocation.forEach((item) => {
                     const lon = parseFloat(item.longitude);
                     const lat = parseFloat(item.latitude);
@@ -172,7 +172,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
         } else {
             console.error('Longdo Map library not loaded');
         }
-    }, [customerLocation]);
+    }, [customerLocation, carLocation]);
 
 
     const setLocation = () => {
