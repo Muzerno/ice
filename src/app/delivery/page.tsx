@@ -478,13 +478,15 @@ const DeliveryPage = () => {
                         <Row>
                             <Col span={12} className='pr-2'>
                                 <Card className='w-full' title="สินค้าในรถ">
-                                    <Table
-                                        rowSelection={{
-                                            type: "checkbox",
-                                            ...rowSelection,
-                                        }}
-                                        rowKey={(id: any) => id.id}
-                                        columns={columnProductInCar} dataSource={stock} pagination={{ pageSize: 5 }}></Table>
+                                    <div className='h-[300px] overflow-y-scroll'>
+                                        <Table
+                                            rowSelection={{
+                                                type: "checkbox",
+                                                ...rowSelection,
+                                            }}
+                                            rowKey={(id: any) => id.id}
+                                            columns={columnProductInCar} dataSource={stock} pagination={false}></Table>
+                                    </div>
                                 </Card>
                             </Col>
                             <Col span={12}>
