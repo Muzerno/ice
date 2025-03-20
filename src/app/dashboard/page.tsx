@@ -198,7 +198,7 @@ export default function Dashboard(props: IProps) {
                             </Select>
                         </div>
                     </div>
-                    {transportationData.length > 0 && (exportType === 'delivery' || exportType === "withdraw") &&
+                    {transportationData.length > 0 && (exportType === 'delivery' || exportType === "withdraw" || exportType === "money") &&
                         <div className='flex justify-center mt-5'>
                             <div className='pr-2 text-md'>เลือกสาย</div>
                             <div>
