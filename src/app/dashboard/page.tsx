@@ -32,7 +32,7 @@ export default function Dashboard(props: IProps) {
     const [dateTo, setDateTo] = useState<string>('');
     const [exportType, setExportType] = useState<string>('manufacture');
     const [transportationData, setTransportationData] = useState<any>([]);
-    const [selectLine, setSelectLine] = useState<any>();
+    const [selectLine, setSelectLine] = useState();
     useEffect(() => {
         fetchDashboard();
         deliverLine()
@@ -198,7 +198,7 @@ export default function Dashboard(props: IProps) {
                             </Select>
                         </div>
                     </div>
-                    {transportationData.length > 0 && exportType === 'delivery' &&
+                    {transportationData.length > 0 && (exportType === 'delivery' || exportType === "withdraw") &&
                         <div className='flex justify-center mt-5'>
                             <div className='pr-2 text-md'>เลือกสาย</div>
                             <div>

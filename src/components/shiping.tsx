@@ -261,7 +261,6 @@ const Shipping = () => {
 
     const handleOpenModalCustomer = (value: any) => {
         setOpenModalCustomer(true)
-
         setSelectCustomer(value.customer)
     }
 

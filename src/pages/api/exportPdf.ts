@@ -30,10 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return {
                     index: index + 1,
                     ...item,
-                    date_time: format(new Date(item.date_time), 'dd/MM/yyyy'),
+                    date_time: format(new Date(item.date_time), 'dd/MM/yyyy HH:mm'),
                 }
             })
-
             // Group data by product name
             const groupedData = result.data.reduce((acc: any, item: any) => {
                 const productName = item.products.name;
@@ -129,6 +128,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             total = rowData.reduce((sum: number, group: any) => sum + group.amount, 0);
 
             // return res.status(200).json({ rowData, total });
+        }
+        if (type === 'delivery' && result.data) {
+            htmlFilePath = path.join(process.cwd(), 'src', 'app', 'dashboard', 'template', 'delivery.html');
+            rowData = result.data.map((item: any, index: number) => {
+                const customer_name = item?.customer_order?.name || item?.customer?.name
+                const customer_type = item?.drop_type === "dayly" ? "จุดส่งประจำวัน" : "คำสั่งซื้อพิเศษ"
+                return {
+                    index: index + 1,
+                    line_name: item?.line?.line_name || item?.car?.car_number,
+                    customer_name,
+                    customer_type,
+                    items: item
+                }
+            })
+            total = rowData.length;
         }
         const htmlTemplate = await fs.readFile(htmlFilePath, 'utf-8');
         const template = Handlebars.compile(htmlTemplate);

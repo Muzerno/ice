@@ -66,7 +66,7 @@
 </head>
 
 <body>
-    <h2>รายงานการผลิตน้ำแข็ง</h2>
+    <h2>สรุปข้อมูลสาย</h2>
     <div class="report-header">
         <div>ห้างหุ้นส่วนจำกัด โรงน้ำแข็งหลอดศรีนวล
             <div class="address">
@@ -76,42 +76,22 @@
         </div>
         <div>วันที่: {{date_from}} <br> ถึง: {{date_to}}</div>
     </div>
-
     <table border="1">
         <thead>
             <tr>
                 <th>ลําดับ</th>
-                <th>วัน / เวลา</th>
-                <th>ชื่อน้ำแข็ง</th>
-                <th>จำนวน</th>
+                <th>ชื่อสาย/เลขทะเบียนรถ</th>
+                <th>ชื่อลูกค้า</th>
+                <th>ประเภทลูกค้า</th>
             </tr>
         </thead>
         <tbody>
             {{#each rowData}}
             <tr>
                 <td>{{index}}</td>
-                <td>{{date_time}}</td>
-                <td>{{products.name}}</td>
-                <td>{{manufacture_amount}}</td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    <h4 style="margin-top: 20px;">สรุปรายการ</h4>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ลําดับ</th>
-                <th>ชื่อน้ำแข็ง</th>
-                <th>จำนวน</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each rowData2}}
-            <tr>
-                <td>{{index}}</td>
-                <td>{{product_name}}</td>
-                <td>{{manufacture_amount}}</td>
+                <td>{{line_name}}</td>
+                <td>{{customer_name}}</td>
+                <td>{{customer_type}}</td>
             </tr>
             {{/each}}
         </tbody>
