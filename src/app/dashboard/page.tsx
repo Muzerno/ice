@@ -194,7 +194,7 @@ export default function Dashboard(props: IProps) {
                                 <Select.Option key='1' value='manufacture'>รายการผลิต</Select.Option>
                                 <Select.Option key='2' value='withdraw'>รายการเบิก</Select.Option>
                                 <Select.Option key='3' value='money'>รายการเงิน</Select.Option>
-                                <Select.Option key='3' value='delivery'>สรุปสาย</Select.Option>
+                                <Select.Option key='4' value='delivery'>สรุปสาย</Select.Option>
                             </Select>
                         </div>
                     </div>
@@ -203,6 +203,7 @@ export default function Dashboard(props: IProps) {
                             <div className='pr-2 text-md'>เลือกสาย</div>
                             <div>
                                 <Select title='Transportation' onChange={(value) => setSelectLine(value)} defaultValue={transportationData[0].id} style={{ width: 220 }} size='large'>
+                                    <Select.Option key='0' value={null}>เลือกทั้งหมด</Select.Option>
                                     {transportationData.map((item: any, index: number) => {
                                         return (
                                             <Select.Option key={index} value={item.id}>{item.line_name}</Select.Option>
