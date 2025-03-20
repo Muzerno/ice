@@ -81,7 +81,6 @@
         <thead>
             <tr>
                 <th>ลําดับ</th>
-                <th>วัน / เวลา</th>
                 <th>ชื่อน้ำแข็ง</th>
                 <th>จำนวน</th>
             </tr>
@@ -90,8 +89,26 @@
             {{#each rowData}}
             <tr>
                 <td>{{index}}</td>
-                <td>{{date_time}}</td>
                 <td>{{products.name}}</td>
+                <td>{{manufacture_amount}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    <h4 style="margin-top: 20px;">สรุปรายการ</h4>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ลําดับ</th>
+                <th>ชื่อน้ำแข็ง</th>
+                <th>จำนวน</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each rowData2}}
+            <tr>
+                <td>{{index}}</td>
+                <td>{{product_name}}</td>
                 <td>{{manufacture_amount}}</td>
             </tr>
             {{/each}}

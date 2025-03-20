@@ -25,7 +25,6 @@ const Shipping = () => {
 
     };
     const handlePaginationChange2 = (pagination: any) => {
-        console.log(pagination.current, pagination.pageSize)
         setCurrentIndex2((pagination.current - 1) * pagination.pageSize);
     }
 
@@ -39,7 +38,7 @@ const Shipping = () => {
             car_id: item.car_id,
             customer_id: rowSelectList,
         });
-        if (res.status === 201) {
+        if (res.status === 201 || res.status === 200) {
             messageApi.success("บันทึกสําเร็จ!");
             form.resetFields();
             deliverLine();
@@ -179,7 +178,7 @@ const Shipping = () => {
             return
         }
         const res = await createTransportationLine(values);
-        if (res.status === 201) {
+        if (res.status === 201 || res.status === 200) {
             messageApi.success("บันทึกสําเร็จ!");
             form.resetFields();
             deliverLine();

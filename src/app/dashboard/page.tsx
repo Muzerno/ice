@@ -1,6 +1,7 @@
 'use client';
 import LayoutComponent from '@/components/Layout';
 import { findAllDashboard } from '@/utils/dashboardService';
+import { findAllTransportationLine } from '@/utils/transpotationService';
 import { BankOutlined, CarOutlined, DownSquareOutlined, HomeOutlined, StockOutlined, TeamOutlined } from '@ant-design/icons';
 import { Button, Card, DatePicker, Modal, Select, Spin, Statistic } from "antd";
 import axios from 'axios';
@@ -30,17 +31,27 @@ export default function Dashboard(props: IProps) {
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
     const [exportType, setExportType] = useState<string>('manufacture');
+    const [transportationData, setTransportationData] = useState<any>([]);
+    const [selectLine, setSelectLine] = useState<any>();
     useEffect(() => {
         fetchDashboard();
-
+        deliverLine()
     }, []);
 
     const fetchDashboard = async () => {
         const res = await findAllDashboard();
         setData(res);
         setIsLoading(true)
+
     };
 
+    const deliverLine = async () => {
+        const res = await findAllTransportationLine()
+        if (res) {
+            console.log(res)
+            setTransportationData(res)
+        }
+    }
 
     const exportPDF = async () => {
         try {
@@ -51,6 +62,7 @@ export default function Dashboard(props: IProps) {
                     type: exportType,
                     date_from: dateFrom,
                     date_to: dateTo,
+                    line: selectLine
                 }
             });
             if (response.data.pdfPath) {
@@ -182,9 +194,25 @@ export default function Dashboard(props: IProps) {
                                 <Select.Option key='1' value='manufacture'>รายการผลิต</Select.Option>
                                 <Select.Option key='2' value='withdraw'>รายการเบิก</Select.Option>
                                 <Select.Option key='3' value='money'>รายการเงิน</Select.Option>
+                                <Select.Option key='3' value='delivery'>สรุปสาย</Select.Option>
                             </Select>
                         </div>
                     </div>
+                    {transportationData.length > 0 && exportType === 'delivery' &&
+                        <div className='flex justify-center mt-5'>
+                            <div className='pr-2 text-md'>เลือกสาย</div>
+                            <div>
+                                <Select title='Transportation' onChange={(value) => setSelectLine(value)} defaultValue={transportationData[0].id} style={{ width: 220 }} size='large'>
+                                    {transportationData.map((item: any, index: number) => {
+                                        return (
+                                            <Select.Option key={index} value={item.id}>{item.line_name}</Select.Option>
+                                        )
+                                    })}
+                                </Select>
+                            </div>
+                        </div>
+                    }
+
                     <div className='flex mt-5 justify-center'>
                         <div className='pr-5'>
                             <span className='pr-2'>วันที่</span>

@@ -108,7 +108,7 @@ export default function userManagement() {
 
     const onFinish = async (values: any) => {
         const res = await createUser(values)
-        if (res.status === 201) {
+        if (res.status === 201 || res.status === 200) {
             messageApi.success('เพิ่มข้อมูลสําเร็จ!');
             fetchUserdata()
             form.resetFields();
