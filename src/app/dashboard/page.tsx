@@ -194,7 +194,7 @@ export default function Dashboard(props: IProps) {
                                 <Select.Option key='1' value='manufacture'>รายการผลิต</Select.Option>
                                 <Select.Option key='2' value='withdraw'>รายการเบิก</Select.Option>
                                 <Select.Option key='3' value='money'>รายการเงิน</Select.Option>
-                                <Select.Option key='4' value='delivery'>สรุปสาย</Select.Option>
+                                <Select.Option key='4' value='delivery'>รายการจัดสายรถ</Select.Option>
                             </Select>
                         </div>
                     </div>
