@@ -203,11 +203,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         customers: new Set(),
                     };
                 }
-
                 if (customerName) {
                     acc[lineName].customers.add(customerName);
                 }
-
                 return acc;
             }, {});
 
@@ -217,7 +215,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 line_name: group.line_name,
                 customers: Array.from(group.customers as Set<string>).map((name: string, index: number) => ({ index: index + 1, customer_name: name })),
             }));
-            total = rowData.length;
+
+            // คำนวณจำนวน customer ทั้งหมด
+            total = rowData.reduce((sum: number, group: any) => sum + group.customers.length, 0);
         }
         const htmlTemplate = await fs.readFile(htmlFilePath, 'utf-8');
         const template = Handlebars.compile(htmlTemplate);
