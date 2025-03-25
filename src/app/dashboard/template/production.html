@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายงานการเงิน</title>
+    <title>รายงานการผลิต</title>
     <style>
         body {
             font-family: 'Sarabun', 'Arial', sans-serif;
@@ -17,6 +17,7 @@
         .logo-container {
             display: flex;
             align-items: center;
+            margin-bottom: 0px;
             width: 100%;
         }
 
@@ -44,7 +45,6 @@
 
         table {
             width: 100%;
-            margin-top: 10px;
             border-collapse: collapse;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
@@ -65,10 +65,7 @@
             background-color: #fafafa;
         }
 
-        .total {
-            margin-top: 20px;
-            text-align: right;
-            width: 100%;
+        .total-row {
             font-weight: bold;
         }
     </style>
@@ -84,47 +81,36 @@
         </div>
     </div>
 
-    <h2>รายงานการเงิน</h2>
+    <h2>รายงานการผลิต</h2>
 
     <div class="date-range">
         วันที่: {{date_from}} ถึง {{date_to}}
     </div>
 
-    {{#each rowData}}
     <table>
         <thead>
             <tr>
-                <th>ลําดับ</th>
-                <th>วันที่</th>
-                <th>ชื่อสาย</th>
-                <th>ชื่อน้ำแข็ง</th>
-                <th>จำนวน</th>
-                <th>จำนวนเงิน</th>
+                <th>ลำดับ</th>
+                <th>ชื่อสาย/เลขทะเบียนรถ</th>
+                <th>ชื่อลูกค้า</th>
+                <th>ประเภทลูกค้า</th>
             </tr>
         </thead>
         <tbody>
-            {{#each ice_list}}
+            {{#each rowData}}
             <tr>
                 <td style="width: 50px !important;">{{index}}</td>
-                {{#if @first}}
-                <td rowspan="{{../ice_list.length}}">{{../date}}</td>
-                <td rowspan="{{../ice_list.length}}">{{../line_name}}</td>
-                {{/if}}
-                <td>{{name}}</td>
-                <td>{{amount}}</td>
-                <td>{{total}}</td>
+                <td>{{line_name}}</td>
+                <td>{{customer_name}}</td>
+                <td>{{customer_type}}</td>
             </tr>
             {{/each}}
-            <tr>
-                <td colspan="5" style="text-align: right;">รวม:</td>
-                <td>{{total_amount}}</td>
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right;">รวม:</td>
+                <td>{{total}} รายการ</td>
             </tr>
         </tbody>
     </table>
-    {{/each}}
-    <div class="total">
-        <p>รวมทั้งหมด: {{total}} บาท</p>
-    </div>
 </body>
 
 </html>
