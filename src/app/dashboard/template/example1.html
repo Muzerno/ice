@@ -51,7 +51,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-
+            margin-bottom: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
 
@@ -120,11 +120,14 @@
                 <td>{{manufacture_amount}}</td>
             </tr>
             {{/each}}
+            <tr>
+                <td colspan="2" style="text-align: right;">รวม:</td>
+                <td>{{manufacture_amount_total}}</td>
+
+            </tr>
         </tbody>
     </table>
-    <div class="total">
-        <p>รวม: {{manufacture_amount_total}} รายการ</p>
-    </div>
+
     {{/each}}
 
     <h4>สรุปรายการ</h4>
