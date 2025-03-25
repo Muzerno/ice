@@ -178,6 +178,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 line_name: group.line_name,
                 ice_list: Object.values(group.ice_details).map((ice: any, iceIndex: number) => ({
                     index: iceIndex + 1,
+                    indexs: index + 1,
                     name: ice.name,
                     amount: ice.amount,
                     price: ice.price,

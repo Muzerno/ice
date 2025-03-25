@@ -105,8 +105,8 @@
         <tbody>
             {{#each ice_list}}
             <tr>
-                <td style="width: 50px !important;">{{index}}</td>
                 {{#if @first}}
+                <td rowspan="{{../ice_list.length}}" style="width: 50px !important;">{{indexs}}</td>
                 <td rowspan="{{../ice_list.length}}">{{../date}}</td>
                 <td rowspan="{{../ice_list.length}}">{{../line_name}}</td>
                 {{/if}}
