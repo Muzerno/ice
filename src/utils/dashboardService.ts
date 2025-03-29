@@ -41,3 +41,17 @@ export async function getLocationCar() {
         return Promise.reject(error)
     }
 }
+
+export async function getExportData(dateFrom: string, dateTo: string, type: string, line: string | null) {
+    try {
+        const exportData = await AxiosInstances.patch(`/dashboard/export`, {
+            type: type,
+            date_from: dateFrom,
+            date_to: dateTo,
+            line: line
+        })
+        return Promise.resolve(exportData.data)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}

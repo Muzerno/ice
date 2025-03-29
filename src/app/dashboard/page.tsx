@@ -1,10 +1,11 @@
 'use client';
 import LayoutComponent from '@/components/Layout';
-import { findAllDashboard } from '@/utils/dashboardService';
+import { findAllDashboard, getExportData } from '@/utils/dashboardService';
 import { findAllTransportationLine } from '@/utils/transpotationService';
 import { BankOutlined, CarOutlined, DownSquareOutlined, HomeOutlined, StockOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Card, DatePicker, Modal, Select, Spin, Statistic } from "antd";
+import { Button, Card, DatePicker, Modal, Select, Spin, Statistic, Table } from "antd";
 import axios from 'axios';
+import { time } from 'console';
 import { format } from 'date-fns';
 import { da } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
@@ -32,7 +33,9 @@ export default function Dashboard(props: IProps) {
     const [dateTo, setDateTo] = useState<string>('');
     const [exportType, setExportType] = useState<string>('manufacture');
     const [transportationData, setTransportationData] = useState<any>([]);
-    const [selectLine, setSelectLine] = useState();
+    const [selectLine, setSelectLine] = useState(null);
+    const [exportData, setExportData] = useState<any>([]);
+
     useEffect(() => {
         fetchDashboard();
         deliverLine()
@@ -48,10 +51,17 @@ export default function Dashboard(props: IProps) {
     const deliverLine = async () => {
         const res = await findAllTransportationLine()
         if (res) {
-            console.log(res)
             setTransportationData(res)
         }
     }
+
+    const getExport = async () => {
+        const res = await getExportData(dateFrom, dateTo, exportType, selectLine)
+        if (res) {
+            setExportData(res)
+        }
+    }
+
 
     const exportPDF = async () => {
         try {
@@ -85,9 +95,9 @@ export default function Dashboard(props: IProps) {
         <Spin tip="Loading..." spinning={!isLoading}>
             <LayoutComponent>
                 <div>
-                    <div className='flex justify-end'>
+                    {/* <div className='flex justify-end'>
                         <Button type="primary" className=' !bg-yellow-300' onClick={() => setOpenModalEdit(true)}>Export to PDF</Button>
-                    </div>
+                    </div> */}
                     <div className='w-full' id="dashboard-content">
                         <div className='flex flex-row justify-center'>
                             <div className='w-1/2'>
@@ -239,10 +249,13 @@ export default function Dashboard(props: IProps) {
                                 size='large'
                             />
                         </div>
-
                     </div>
                     <div className='flex justify-center mt-5' >
+                        <Button disabled={!dateFrom || !dateTo} type="primary" className=' !bg-blue-300' onClick={() => getExport()}>Preview</Button>
                         <Button disabled={!dateFrom || !dateTo} type="primary" className=' !bg-green-300' onClick={exportPDF}>Export</Button>
+                    </div>
+                    <div className='flex justify-center mt-5 overflow-y-auto'>
+
                     </div>
                 </Modal>
 

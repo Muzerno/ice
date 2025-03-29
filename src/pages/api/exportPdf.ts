@@ -130,9 +130,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 car_number: group.car_number,
                 withdraw_details: group.withdraw_details
             }));
-
-
-
             // Calculate total amount
             total = rowData.reduce((sum: number, group: any) => sum + group.amount, 0);
         }

@@ -75,6 +75,26 @@ const NavBarComponent = (props: IProps) => {
                         label: 'รายงาน',
                     } : null,
                     role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                        key: 'dashboard/delivery',
+                        icon: <PaperClipOutlined />,
+                        label: 'รายงานการจัดสาย',
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                        key: 'dashboard/withdraw',
+                        icon: <PaperClipOutlined />,
+                        label: 'รายงานการเบิกสินค้า',
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                        key: 'dashboard/manufacture',
+                        icon: <PaperClipOutlined />,
+                        label: 'รายงานการผลิต',
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
+                        key: 'dashboard/money',
+                        icon: <PaperClipOutlined />,
+                        label: 'รายงานการเงิน',
+                    } : null,
+                    role.roleKey === 'admin' || role.roleKey === 'owner' ? {
                         key: 'maps',
                         icon: <PaperClipOutlined />,
                         label: 'ติดตามตำแหน่ง',
