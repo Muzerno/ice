@@ -6,41 +6,58 @@ import useMessage from 'antd/es/message/useMessage';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
+import './page.css'; // เพิ่มไฟล์ CSS สำหรับปรับแต่ง
 
 import React, { useEffect, useState } from 'react';
 
 const Page = () => {
 
     const router = useRouter();
-
     const [exportType, setExportType] = useState<string>('');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
     const [exportData, setExportData] = useState<any>([]);
     const [exportData2, setExportData2] = useState<any>([]);
     const [total, setTotal] = useState<number>(0);
-    const [total2, setTotal2] = useState<number>(0);
+    const [totalAmount, setTotalAmount] = useState<number>(0);
     const [messageApi, contextHolder] = useMessage();
     const [transportationData, setTransportationData] = useState<any[]>([]);
     const [selectLine, setSelectLine] = useState<string | null>(null);
     const params = useParams();
     const slug = params ? String(params.slug) : '';
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [unit, setUnit] = useState('');
+
 
     useEffect(() => {
-        if (slug === 'manufacture') {
-            setExportType('manufacture')
+        let type = '';
+        let unit = '';
+
+        switch (slug) {
+            case 'manufacture':
+                type = 'manufacture';
+                unit = 'รายการ';
+                break;
+            case 'withdraw':
+                type = 'withdraw';
+                unit = 'รายการ';
+                break;
+            case 'money':
+                type = 'money';
+                unit = 'บาท';
+                break;
+            case 'delivery':
+                type = 'delivery';
+                unit = 'รายการ';
+                break;
+            default:
+                type = '';
+                unit = '';
         }
-        if (slug === 'withdraw') {
-            setExportType('withdraw')
-        }
-        if (slug === 'money') {
-            setExportType('money')
-        }
-        if (slug === 'delivery') {
-            setExportType('delivery')
-        }
-    }, [slug])
+
+        setExportType(type);
+        setUnit(unit);
+    }, [slug]);
 
     useEffect(() => {
         deliverLine()
@@ -91,11 +108,19 @@ const Page = () => {
                     car_number: group.car_number,
                     withdraw_details: group.withdraw_details
                 }));
+
                 // Calculate total amount
                 total = rowData.reduce((sum: number, group: any) => sum + group.amount, 0);
-                console.log(rowData)
-                setExportData(rowData)
-                setTotal(total)
+
+                // คำนวณผลรวมของ "รายการสินค้า/ถุง"
+                const totalItems = rowData.reduce((sum: number, group: any) => {
+                    return sum + group.withdraw_details.reduce((itemSum: number, detail: any) => itemSum + detail.amount, 0);
+                }, 0);
+
+                console.log("Total Items:", totalItems); // ตรวจสอบค่าใน console
+                setExportData(rowData);
+                setTotal(total);
+                setTotalAmount(totalItems); // เก็บค่า totalItems ใน state
             }
             else if (exportType === "delivery") {
                 const groupedData = response.reduce((acc: any, item: any) => {
@@ -270,7 +295,7 @@ const Page = () => {
             }
         },
         {
-            title: 'ชื่อน้ำแข็ง / จำนวน  ',
+            title: 'ชื่อน้ำแข็ง / ถุง  ',
             dataIndex: 'products',
             key: 'name',
             render: (item: any) => {
@@ -305,7 +330,7 @@ const Page = () => {
             }
         },
         {
-            title: 'ชื่อน้ำแข็ง / จำนวน  ',
+            title: 'ชื่อน้ำแข็ง / ถุง  ',
             dataIndex: 'items',
             key: 'name',
             render: (items: any) => {
@@ -321,7 +346,12 @@ const Page = () => {
         {
             title: 'จำนวนรวม',
             dataIndex: 'amount',
-            key: 'amount'
+            key: 'amount',
+            render: (_: any, record: any) => {
+                // คำนวณจำนวนรวมจาก withdraw_details
+                const totalAmount = record.withdraw_details.reduce((sum: number, detail: any) => sum + detail.amount, 0);
+                return <div>{totalAmount}</div>;
+            },
         }
     ]
 
@@ -491,21 +521,45 @@ const Page = () => {
                 </div>
                 <div className='mt-5 p-5 overflow-y-auto'>
                     {exportType === "manufacture" && (
-                        <Table style={{ width: '100%' }} dataSource={exportData} columns={columnsManufacture} pagination={false} />
+                        <Table
+                            className="custom-table"
+                            style={{ width: '100%' }}
+                            dataSource={exportData}
+                            columns={columnsManufacture}
+                            pagination={false}
+                        />
                     )}
                     {exportType === "withdraw" && (
-                        <Table style={{ width: '100%' }} dataSource={exportData} columns={columnsWithdraw} pagination={false} />
+                        <Table
+                            className="custom-table"
+                            style={{ width: '100%' }}
+                            dataSource={exportData}
+                            columns={columnsWithdraw}
+                            pagination={false}
+                        />
                     )}
                     {exportType === "money" && (
-                        <Table style={{ width: '100%' }} dataSource={exportData} columns={columnsMoney} pagination={false} />
+                        <Table
+                            className="custom-table"
+                            style={{ width: '100%' }}
+                            dataSource={exportData}
+                            columns={columnsMoney}
+                            pagination={false}
+                        />
                     )}
                     {exportType === "delivery" && (
-                        <Table style={{ width: '100%' }} dataSource={exportData} columns={columnsDelivery} pagination={false} />
+                        <Table
+                            className="custom-table"
+                            style={{ width: '100%' }}
+                            dataSource={exportData}
+                            columns={columnsDelivery}
+                            pagination={false}
+                        />
                     )}
                 </div>
                 <div className='flex justify-end mt-5 p-5'>
-                    <div className='text-sm text-start'>รวมทั้งหมด : </div>
-                    <div className='text-sm text-start'>{total}</div>
+                    <div className='text-sm text-start'>รวมทั้งหมด: </div>
+                    <div className='text-sm text-start'>{total} {unit}</div>
                 </div>
                 <div className='flex justify-center mt-5 p-5'>
                     <Button size='large' type='primary' style={{ backgroundColor: 'lightblue' }} onClick={() => router.back()}>ย้อนกลับ</Button>

@@ -1,125 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+    <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายงานการเบิกน้ำแข็ง</title>
-    <style>
-        body {
-            font-family: 'Sarabun', 'Arial', sans-serif;
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>รายงานการเบิกน้ำแข็ง</title>
+        <style>
+            body {
+                font-family: 'Sarabun', 'Arial', sans-serif;
+                margin: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 0px;
-        }
+            .logo-container {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                margin-bottom: 0px;
+            }
 
-        .logo {
-            width: 120px;
-            height: auto;
-        }
+            .logo {
+                width: 120px;
+                height: auto;
+            }
 
-        .company-info {
-            margin-left: 20px;
-            font-size: 14px;
-        }
+            .company-info {
+                margin-left: 20px;
+                font-size: 14px;
+            }
 
-        h2 {
-            text-align: center;
-            margin: 20px 0;
-            font-size: 24px;
-        }
+            h2 {
+                text-align: center;
+                margin: 20px 0;
+                font-size: 24px;
+            }
 
-        .date-range {
-            text-align: left;
-            width: 100%;
-            margin-bottom: 20px;
-        }
+            .date-range {
+                text-align: left;
+                width: 100%;
+                margin-bottom: 20px;
+            }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
 
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
+            th,
+            td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
 
-        th {
-            background-color: #f5f5f5;
-            font-weight: bold;
-        }
+            th {
+                background-color: #f5f5f5;
+                font-weight: bold;
+            }
 
-        tr:nth-child(even) {
-            background-color: #fafafa;
-        }
+            tr:nth-child(even) {
+                background-color: #fafafa;
+            }
 
-        .total {
-            margin-top: 20px;
-            text-align: right;
-            width: 100%;
-            font-weight: bold;
-        }
-    </style>
-</head>
+            .total {
+                margin-top: 20px;
+                text-align: right;
+                width: 100%;
+                font-weight: bold;
+            }
+            @media print {
+                th {
+                    background-color: #add8e6 !important; /* สีฟ้า */
+                    -webkit-print-color-adjust: exact; /* เพื่อให้สีแสดงผลในการพิมพ์ */
+                }
+            }
+        </style>
+    </head>
 
-<body>
-    <div class="logo-container">
-        <img src="http://localhost:3000/api/logo" alt="Logo" class="logo">
-        <div class="company-info">
-            ห้างหุ้นส่วนจำกัด โรงน้ำแข็งหลอดศรีนวล<br>
-            310 หมู่ 4, ถนนทางหลวงชนบท, ตำบลเมืองเก่า อำเภอเมืองขอนแก่น<br>
-            จังหวัดขอนแก่น 40000, Thailand โทร 043-222-300
+    <body>
+        <div class="logo-container">
+            <img src="http://localhost:3000/api/logo" alt="Logo" class="logo">
+            <div class="company-info">
+                ห้างหุ้นส่วนจำกัด โรงน้ำแข็งหลอดศรีนวล<br>
+                310 หมู่ 4, ถนนทางหลวงชนบท, ตำบลเมืองเก่า อำเภอเมืองขอนแก่น<br>
+                จังหวัดขอนแก่น 40000, Thailand โทร 043-222-300
+            </div>
         </div>
-    </div>
 
-    <h2>รายงานการเบิกน้ำแข็ง</h2>
+        <h2>รายงานการเบิกน้ำแข็ง</h2>
 
-    <div class="date-range">
-        วันที่: {{date_from}} ถึง {{date_to}}
-    </div>
+        <div class="date-range">
+            วันที่: {{date_from}} ถึง {{date_to}}
+        </div>
 
-    <table>
-        <thead>
+        <table>
+            <thead>
 
-            <tr>
-                <th>ลําดับ</th>
-                <th>วันที่</th>
-                <th>สายการเดินรถ</th>
-                <th>เลขทะเบียนรถ</th>
-                <th>รายการสินค้า</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each rowData}}
-            <tr>
-                <td style="width: 50px !important;">{{index}}</td>
-                <td>{{date_time}}</td>
-                <td>{{line_name}}</td>
-                <td>{{car_number}}</td>
-                <td style="width: 200px !important;">
-                    {{#each withdraw_details}}
-                    {{product.name}} {{amount}}<br>
-                    {{/each}}
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    <div class="total">
-        <p>รวมทั้งหมด: {{total}} รายการ</p>
-    </div>
-</body>
+                <tr>
+                    <th>ลําดับ</th>
+                    <th>วันที่</th>
+                    <th>สายการเดินรถ</th>
+                    <th>เลขทะเบียนรถ</th>
+                    <th>รายการสินค้า/ถุง</th>
+                    <th>จำนวน</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each rowData}}
+                <tr>
+                    <td style="width: 50px !important;">{{index}}</td>
+                    <td>{{date_time}}</td>
+                    <td>{{line_name}}</td>
+                    <td>{{car_number}}</td>
+                    <td style="width: 200px !important;">
+                        {{#each withdraw_details}}
+                        {{product.name}} {{amount}}<br>
+                        {{/each}}
+                    </td>
+                    <td style="width: 50px !important;">
+                        {{amount}} <!-- ใช้ amount ของแต่ละแถว -->
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        <div class="total">
+            <p>รวมทั้งหมด: {{total}} รายการ</p>
+        </div>
+    </body>
 
-</html>
+    </html>

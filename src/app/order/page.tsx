@@ -69,32 +69,44 @@ const Order = () => {
     const create = async (values: any) => {
         if (selectedProducts.length === 0) {
             messageApi.error('กรุณาเลือกรายการสินค้า');
-            return
+            return;
         }
+
         if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
             messageApi.error('กรุณากรอกจํานวนสินค้า');
-            return
+            return;
         }
+
+        // คำนวณจำนวนรวมของสินค้าที่เลือก
+        const totalSelectedAmount = Object.values(selectedProductsAmount).reduce((sum, amount) => sum + amount, 0);
+
+        if (totalSelectedAmount > 40) {
+            messageApi.error('ไม่สามารถเลือกสินค้ารวมเกิน 40 รายการได้');
+            return;
+        }
+
         const res = await createOrder({
             user_id: userLogin?.user?.id,
             product_id: selectedProducts,
             amount: selectedProductsAmount,
             car_id: values.car_id,
             line_id: values.line_id
-        })
+        });
+
         if (res.data.success === true) {
-            fetchWithdrawData()
-            fetchProduct()
-            setSelectedProducts([])
-            setSelectedProductsAmount({})
-            form.resetFields()
+            fetchWithdrawData();
+            fetchProduct();
+            setSelectedProducts([]);
+            setSelectedProductsAmount({});
+            form.resetFields();
             messageApi.success('เบิกสินค้าสําเร็จ');
         } else if (res.status === 201 && res.data.success === false) {
             messageApi.warning('จำนวนสินค้ามีไม่พอ!');
         } else {
             messageApi.error('เบิกสินค้าไม่สําเร็จ');
         }
-    }
+    };
+
     const fetchCarData = async () => {
         const res = await findAllCar();
         if (res.success === true) {

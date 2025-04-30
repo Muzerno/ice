@@ -71,6 +71,12 @@
             width: 100%;
             font-weight: bold;
         }
+        @media print {
+            th {
+                background-color: #add8e6 !important; /* สีฟ้า */
+                -webkit-print-color-adjust: exact; /* เพื่อให้สีแสดงผลในการพิมพ์ */
+            }
+        }
     </style>
 </head>
 
