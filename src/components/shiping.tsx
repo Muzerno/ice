@@ -1,6 +1,6 @@
 // src/components/carManagement.tsx
 import { findAllCustomer } from "@/utils/customerService";
-import { createTransportationLine, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar } from "@/utils/transpotationService";
+import { createTransportationLine, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar,addCustomersToLine } from "@/utils/transpotationService";
 import { DeleteOutlined, PlusCircleOutlined, TeamOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import useMessage from "antd/es/message/useMessage";
@@ -20,6 +20,7 @@ const Shipping = () => {
     const [rowSelectList, setRowSelectList] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentIndex2, setCurrentIndex2] = useState(0);
+    const [assignedCustomers, setAssignedCustomers] = useState<Set<number>>(new Set());
     const handlePaginationChange = (pagination: any) => {
         setCurrentIndex((pagination.current - 1) * pagination.pageSize);
 
@@ -30,23 +31,31 @@ const Shipping = () => {
 
     const handleUpdate = async (item: any) => {
         if (rowSelectList.length <= 0) {
-            messageApi.error("กรุณาเลือกลูกค้า");
-            return
+          messageApi.error("กรุณาเลือกลูกค้า");
+          return;
         }
-        const res = await createTransportationLine({
-            line_name: item.line_name,
-            car_id: item.car_id,
-            customer_id: rowSelectList,
-        });
-        if (res.status === 201 || res.status === 200) {
-            messageApi.success("บันทึกสําเร็จ!");
+      
+        const payload = {
+          line_name: item.line_name,
+          car_id: item.car_id,
+          customer_ids: rowSelectList,
+        };
+      
+        const res = await addCustomersToLine(payload);
+      
+        if (res.status === 200 || res.status === 201) {
+            messageApi.success("เพิ่มลูกค้าในสายเรียบร้อย!");
             form.resetFields();
-            deliverLine();
-            setRowSelectList([])
-        } else {
-            messageApi.error("บันทึกไม่สําเร็จ!");
-        }
-    };
+            
+            // แนะนำให้รอสักเล็กน้อยเพื่อความแน่นอน หรือให้ deliverLine ดึงข้อมูลใหม่จริง ๆ
+            await deliverLine();  // ← ตรวจว่าฟังก์ชันนี้เป็น async และดึงข้อมูลจริง
+            setRowSelectList([]);
+          } else {
+            messageApi.error("เพิ่มลูกค้าไม่สำเร็จ!");
+          }
+      };
+      
+      
 
     const columns = [
         {
@@ -64,7 +73,12 @@ const Shipping = () => {
             title: "เลขทะเบียนรถ",
             dataIndex: "transportation_car",
             key: "car_number",
-            render: (item: any) => item?.car_number,
+            render: (item: any) => {
+                const driverName = item.users
+                    ? `${item.users.firstname || ''} ${item.users.lastname || ''}`.trim()
+                    : 'ไม่มีคนขับ';
+                return `${item.car_number} - ${driverName}`;
+            },
         },
         {
             title: "",
@@ -111,14 +125,56 @@ const Shipping = () => {
             dataIndex: 'address',
             key: 'address',
             render: (address: any) => {
-                const parsedAddress = JSON.parse(address);
+                if (!address) return '-';
+                
+                // แยกส่วนที่อยู่ที่กรอกเองและที่อยู่จากแผนที่
+                const [manualAddress, mapAddressPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
+                
+                // พยายาม parse ที่อยู่จากแผนที่ถ้ามี
+                let mapAddress = null;
+                if (mapAddressPart) {
+                    try {
+                        mapAddress = JSON.parse(mapAddressPart);
+                    } catch (err) {
+                        console.error('Failed to parse map address:', err);
+                        // ถ้า parse ไม่ได้ ให้แสดงข้อมูลดิบ
+                        return (
+                            <div>
+                                <div>{manualAddress || '-'}</div>
+                                {mapAddressPart && <div className="text-gray-500">{mapAddressPart}</div>}
+                            </div>
+                        );
+                    }
+                }
+                
                 return (
                     <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                        <div>{manualAddress || '-'}</div>
+                        {mapAddress && (
+                            <div className="text-gray-500">
+                                {mapAddress.road && <span>{mapAddress.road}</span>}
+                                {mapAddress.subdistrict && <span>, {mapAddress.subdistrict.replace('ต.', 'ตำบล')}</span>}
+                                {mapAddress.district && <span>, {mapAddress.district.replace('อ.', 'อำเภอ')}</span>}
+                                {mapAddress.province && <span>, {mapAddress.province.replace('จ.', 'จังหวัด')}</span>}
+                                {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
+                            </div>
+                        )}
                     </div>
-                )
+                );
             }
         },
+        {
+            title: 'สถานะ',
+            key: 'status',
+            render: (record: any) => {
+              const isAssigned = assignedCustomers.has(record.id);
+              return (
+                <span className={isAssigned ? 'text-red-500' : 'text-green-500'}>
+                  {isAssigned ? 'อยู่ในสายแล้ว' : 'ยังไม่ลงสาย'}
+                </span>
+              );
+            },
+          },
 
 
     ];
@@ -145,12 +201,42 @@ const Shipping = () => {
             dataIndex: 'address',
             key: 'address',
             render: (address: any) => {
-                const parsedAddress = JSON.parse(address);
+                if (!address) return '-';
+                
+                // แยกส่วนที่อยู่ที่กรอกเองและที่อยู่จากแผนที่
+                const [manualAddress, mapAddressPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
+                
+                // พยายาม parse ที่อยู่จากแผนที่ถ้ามี
+                let mapAddress = null;
+                if (mapAddressPart) {
+                    try {
+                        mapAddress = JSON.parse(mapAddressPart);
+                    } catch (err) {
+                        console.error('Failed to parse map address:', err);
+                        // ถ้า parse ไม่ได้ ให้แสดงข้อมูลดิบ
+                        return (
+                            <div>
+                                <div>{manualAddress || '-'}</div>
+                                {mapAddressPart && <div className="text-gray-500">{mapAddressPart}</div>}
+                            </div>
+                        );
+                    }
+                }
+                
                 return (
                     <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                        <div>{manualAddress || '-'}</div>
+                        {mapAddress && (
+                            <div className="text-gray-500">
+                                {mapAddress.road && <span>{mapAddress.road}</span>}
+                                {mapAddress.subdistrict && <span>, {mapAddress.subdistrict.replace('ต.', 'ตำบล')}</span>}
+                                {mapAddress.district && <span>, {mapAddress.district.replace('อ.', 'อำเภอ')}</span>}
+                                {mapAddress.province && <span>, {mapAddress.province.replace('จ.', 'จังหวัด')}</span>}
+                                {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
+                            </div>
+                        )}
                     </div>
-                )
+                );
             }
         },
         {
@@ -221,6 +307,7 @@ const Shipping = () => {
             messageApi.error("ลบไม่สําเร็จ!");
         }
     };
+
     const getCustomer = async () => {
         const res = await findAllCustomer();
         if (res.success === true) {
@@ -235,29 +322,38 @@ const Shipping = () => {
     };
 
     const deliverLine = async () => {
-        const res = await findAllTransportationLine()
+        const res = await findAllTransportationLine();
         if (res) {
-            setTransportationData(res)
-        }
-    }
+          setTransportationData(res);
+          
 
-    const rowSelection: TableProps<any>['rowSelection'] = {
+          const assigned = new Set<number>();
+          res.forEach((line: any) => {
+            if (line.customer && Array.isArray(line.customer)) {
+              line.customer.forEach((cust: any) => {
+                if (cust.id) assigned.add(cust.id);
+              });
+            }
+          });
+          setAssignedCustomers(assigned);
+        }
+      }
+
+      const rowSelection: TableProps<any>['rowSelection'] = {
         selectedRowKeys: rowSelectList,
         onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
-            const customerArray = []
-            for (const row of selectedRows) {
-                customerArray.push(row.id)
-            }
+            const customerArray = selectedRows.map(row => row.id);
             form.setFieldsValue({
                 customer_id: customerArray
-            })
-            setRowSelectList([...customerArray])
+            });
+            setRowSelectList([...customerArray]);
         },
         getCheckboxProps: (record: any) => ({
             name: record.name,
+            disabled: assignedCustomers.has(record.id), // ❗ ปิดการเลือกถ้าอยู่ในสายแล้ว
         }),
-
     };
+    
 
     const handleOpenModalCustomer = (value: any) => {
         setOpenModalCustomer(true)
@@ -321,13 +417,13 @@ const Shipping = () => {
                                 <Input type="text" />
                             </Form.Item>
                             <Form.Item name="car_id" label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณากรอกเลขทะเบียนรถ" }]}>
-                                <Select >
-                                    {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number}</Select.Option>)}
+                            <Select >
+                                    {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number} - {item.users ? `${item.users.firstname} ${item.users.lastname}` : 'ไม่มีคนขับ'}</Select.Option>)}
                                 </Select>
                             </Form.Item>
                             <Form.Item name="customer_id" label="Customer" hidden>
                                 <Select mode="multiple">
-                                    {customerData.map((item: any) => <Select.Option value={item.id}>{item.name}</Select.Option>)}
+                                    {customerData.map((item: any) => <Select.Option value={item.id}>{item.name} </Select.Option>)}
                                 </Select>
                             </Form.Item>
                             <Form.Item className="w-full">

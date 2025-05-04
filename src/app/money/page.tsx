@@ -29,19 +29,12 @@ const MoneyOrderPage = () => {
         setIsLoading(false);
     };
 
-
-
     const handelModal = (item: any) => {
-        const arrayData = []
-        for (const data of item.delivery) {
-            if (data.delivery_details.length !== 0) {
-                arrayData.push(data)
-            }
-
-        }
+        const arrayData = item.delivery || [];
         setDeliveryDetail(arrayData);
-        setIsModalOpen(!isModalOpen);
+        setIsModalOpen(true);
     };
+    
 
     const column = [
         {
@@ -65,50 +58,41 @@ const MoneyOrderPage = () => {
 
     const columnDetail = [
         {
-            title: "ชื่อลูกค้า",
-            dataIndex: "",
-            key: " customer_name",
+            title: "เวลาส่ง",
+            key: "delivery_time",
             render: (item: any) => {
-                let customer_name = "";
-                for (const i of item.delivery_details) {
-                    customer_name = i?.dropoffpoint?.customer?.name || i?.dropoffpoint?.customer_order?.name
-
-                }
-                return customer_name
-            }
+                return dayjs(item.delivery_date).format("HH:mm");
+            },
+        },
+        {
+            title: "ชื่อลูกค้า",
+            key: "customer_name",
+            render: (item: any) => {
+                return item?.dropoffpoint?.customer?.name || item?.dropoffpoint?.customer_order?.name || '-';
+            },
         },
         {
             title: "รายการสินค้า",
-            dataIndex: "",
             key: "product_name",
             render: (item: any) => {
-                console.log(item)
-                let element = "";
-                for (const i of item.delivery_details) {
-                    element += `<div>${i.product.name} ${i.amount} ถุง </div>`;
-                }
-                return <div dangerouslySetInnerHTML={{ __html: element }} />;
-            }
+                return `${item.product?.name || '-'} ${item.amount} ถุง`;
+            },
         },
         {
             title: "จํานวนเงิน (บาท)",
-            dataIndex: "",
             key: "total",
             render: (item: any) => {
-                let total = 0;
-                for (const i of item.delivery_details) {
-                    total += (i.price * i.amount)
-                }
-                return total
-            }
-
-        }
+                return item.price * item.amount;
+            },
+        }        
     ];
+    
+    
 
     return (
         <LayoutComponent>
             <Card>
-                <DatePicker multiple={false} onChange={(e, dateString) => setDate(dateString)} format={"YYYY-MM-DD"} size='large' defaultValue={dayjs(new Date())} className='float-right pb-2' />
+                <DatePicker multiple={false} onChange={(e, date_time) => setDate(date_time)} format={"YYYY-MM-DD"} size='large' defaultValue={dayjs(new Date())} className='float-right pb-2' />
                 {!isLoading && data.length > 0 ? (
                     <Table
                         className='pt-2'

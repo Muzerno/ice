@@ -50,6 +50,11 @@ const OrderVip = () => {
             render: (text: any, record: any, index: any) => currentIndex + index + 1
         },
         {
+            title: 'รหัสลูกค้า',
+            dataIndex: 'customer_code',
+            key: 'customer_code',
+        },
+        {
             title: "ชื่อลูกค้า",
             dataIndex: "name",
             key: "name",
@@ -62,15 +67,22 @@ const OrderVip = () => {
         {
             title: 'ที่อยู่',
             dataIndex: 'address',
-            key: 'address',
-            render: (address: any) => {
-                if (address === null) return null
-                const parsedAddress = JSON.parse(address);
+            render: (address: string) => {
+                if (!address) return null;
+
+                const [manual, mapPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
+                const mapAddress = mapPart ? JSON.parse(mapPart) : null;
+
                 return (
                     <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                        <div>{manual}</div>
+                        {mapAddress && (
+                            <div className="text-gray-500">
+                                {mapAddress.road}, {mapAddress.subdistrict}
+                            </div>
+                        )}
                     </div>
-                )
+                );
             }
         },
         {
@@ -94,146 +106,146 @@ const OrderVip = () => {
 
     ];
 
-    const customerColumns = [
-        {
-            title: 'ลำดับ',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: any, record: any, index: any) => index + 1
-        },
-        {
-            title: 'ชื่อ',
-            dataIndex: 'name',
-            key: 'name',
-        },
-        {
-            title: 'เบอร์โทรศัพท์',
-            dataIndex: 'telephone',
-            key: 'telephone',
-        },
-        {
-            title: 'ที่อยู่',
-            dataIndex: 'address',
-            key: 'address',
-            render: (address: any) => {
-                const parsedAddress = JSON.parse(address);
-                return (
-                    <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
-                    </div>
-                )
-            }
-        },
+    // const customerColumns = [
+    //     {
+    //         title: 'ลำดับ',
+    //         dataIndex: 'id',
+    //         key: 'id',
+    //         render: (text: any, record: any, index: any) => index + 1
+    //     },
+    //     {
+    //         title: 'ชื่อ',
+    //         dataIndex: 'name',
+    //         key: 'name',
+    //     },
+    //     {
+    //         title: 'เบอร์โทรศัพท์',
+    //         dataIndex: 'telephone',
+    //         key: 'telephone',
+    //     },
+    //     {
+    //         title: 'ที่อยู่',
+    //         dataIndex: 'address',
+    //         key: 'address',
+    //         render: (address: any) => {
+    //             const parsedAddress = JSON.parse(address);
+    //             return (
+    //                 <div>
+    //                     {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+    //                 </div>
+    //             )
+    //         }
+    //     },
 
 
-    ];
+    // ];
 
-    const productInStoreColumns = [
-        {
-            title: 'ลำดับ',
-            dataIndex: 'id',
-            key: 'id',
-            render: (text: any, record: any, index: any) => currentIndex2 + index + 1
-        },
-        {
-            title: 'ชื่อสินค้า',
-            dataIndex: 'name',
-            key: 'name',
-        },
-        {
-            title: "จำนวน",
-            dataIndex: "amount",
-            key: "amount",
-            render: (text: any, record: any) => record.amount
-        },
-    ];
+    // const productInStoreColumns = [
+    //     {
+    //         title: 'ลำดับ',
+    //         dataIndex: 'id',
+    //         key: 'id',
+    //         render: (text: any, record: any, index: any) => currentIndex2 + index + 1
+    //     },
+    //     {
+    //         title: 'ชื่อสินค้า',
+    //         dataIndex: 'name',
+    //         key: 'name',
+    //     },
+    //     {
+    //         title: "จำนวน",
+    //         dataIndex: "amount",
+    //         key: "amount",
+    //         render: (text: any, record: any) => record.amount
+    //     },
+    // ];
 
-    const ProductSelectColumns = [
-        // {
-        //     title: 'เลือก',
-        //     dataIndex: 'id',
-        //     key: 'id',
-        //     width: "5%",
-        //     render: (item: any) => {
-        //         return (
-        //             <Checkbox
-        //                 key={item}
-        //                 checked={selectedProducts.includes(item)}
-        //                 onChange={(e) => {
-        //                     if (e.target.checked) {
-        //                         setSelectedProducts([...selectedProducts, item]);
-        //                     } else {
-        //                         setSelectedProducts(
-        //                             selectedProducts.filter((id) => id !== item)
-        //                         );
-        //                         setSelectedProductsAmount((prevAmounts) => {
-        //                             const newAmounts = { ...prevAmounts };
-        //                             delete newAmounts[item];
-        //                             return newAmounts;
-        //                         });
-        //                     }
-        //                 }}
-        //             />
-        //         );
-        //     }
-        // },
-        {
-            title: 'ชื่อสินค้า',
-            dataIndex: 'name',
-            key: 'product_name',
-        },
-        {
-            title: "จำนวน",
-            dataIndex: "",
-            key: "action",
-            width: 160,
-            render: (item: any) => {
-                const isSelected = selectedProducts.includes(item.id);
-                return (
-                    <div className='flex justify-center'>
-                        <Button
-                            disabled={!isSelected}
-                            onClick={() => {
-                                setSelectedProductsAmount((prevAmounts) => ({
-                                    ...prevAmounts,
-                                    [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
-                                }));
-                            }}
-                        >
-                            -
-                        </Button>
-                        <Input
-                            className='text-center'
-                            value={selectedProductsAmount[item.id] || 0}
-                            onChange={(e) => {
-                                const newAmount = parseInt(e.target.value) || 0;
-                                setSelectedProductsAmount((prevAmounts) => ({
-                                    ...prevAmounts,
-                                    [item.id]: Math.min(newAmount, item.amount),
-                                }));
-                            }}
+    // const ProductSelectColumns = [
+    //     // {
+    //     //     title: 'เลือก',
+    //     //     dataIndex: 'id',
+    //     //     key: 'id',
+    //     //     width: "5%",
+    //     //     render: (item: any) => {
+    //     //         return (
+    //     //             <Checkbox
+    //     //                 key={item}
+    //     //                 checked={selectedProducts.includes(item)}
+    //     //                 onChange={(e) => {
+    //     //                     if (e.target.checked) {
+    //     //                         setSelectedProducts([...selectedProducts, item]);
+    //     //                     } else {
+    //     //                         setSelectedProducts(
+    //     //                             selectedProducts.filter((id) => id !== item)
+    //     //                         );
+    //     //                         setSelectedProductsAmount((prevAmounts) => {
+    //     //                             const newAmounts = { ...prevAmounts };
+    //     //                             delete newAmounts[item];
+    //     //                             return newAmounts;
+    //     //                         });
+    //     //                     }
+    //     //                 }}
+    //     //             />
+    //     //         );
+    //     //     }
+    //     // },
+    //     {
+    //         title: 'ชื่อสินค้า',
+    //         dataIndex: 'name',
+    //         key: 'product_name',
+    //     },
+    //     {
+    //         title: "จำนวน",
+    //         dataIndex: "",
+    //         key: "action",
+    //         width: 160,
+    //         render: (item: any) => {
+    //             const isSelected = selectedProducts.includes(item.id);
+    //             return (
+    //                 <div className='flex justify-center'>
+    //                     <Button
+    //                         disabled={!isSelected}
+    //                         onClick={() => {
+    //                             setSelectedProductsAmount((prevAmounts) => ({
+    //                                 ...prevAmounts,
+    //                                 [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
+    //                             }));
+    //                         }}
+    //                     >
+    //                         -
+    //                     </Button>
+    //                     <Input
+    //                         className='text-center'
+    //                         value={selectedProductsAmount[item.id] || 0}
+    //                         onChange={(e) => {
+    //                             const newAmount = parseInt(e.target.value) || 0;
+    //                             setSelectedProductsAmount((prevAmounts) => ({
+    //                                 ...prevAmounts,
+    //                                 [item.id]: Math.min(newAmount, item.amount),
+    //                             }));
+    //                         }}
 
-                            disabled={!isSelected}
-                        />
-                        <Button
-                            disabled={!isSelected}
-                            onClick={() => {
-                                setSelectedProductsAmount((prevAmounts) => {
-                                    const newAmount = (prevAmounts[item.id] || 0) + 1;
-                                    return {
-                                        ...prevAmounts,
-                                        [item.id]: Math.min(newAmount, item.amount),
-                                    };
-                                });
-                            }}
-                        >
-                            +
-                        </Button>
-                    </div>
-                );
-            }
-        }
-    ]
+    //                         disabled={!isSelected}
+    //                     />
+    //                     <Button
+    //                         disabled={!isSelected}
+    //                         onClick={() => {
+    //                             setSelectedProductsAmount((prevAmounts) => {
+    //                                 const newAmount = (prevAmounts[item.id] || 0) + 1;
+    //                                 return {
+    //                                     ...prevAmounts,
+    //                                     [item.id]: Math.min(newAmount, item.amount),
+    //                                 };
+    //                             });
+    //                         }}
+    //                     >
+    //                         +
+    //                     </Button>
+    //                 </div>
+    //             );
+    //         }
+    //     }
+    // ]
 
     const productSelect = [
         {
@@ -257,7 +269,6 @@ const OrderVip = () => {
     ];
 
 
-
     const fetchProduct = async () => {
         const res = await findAllProductDrowdown()
         if (res.status === 200) {
@@ -266,19 +277,20 @@ const OrderVip = () => {
     }
 
     const onFinish = async (values: any) => {
-        // if (selectedProducts.length === 0) {
-        //     messageApi.error("กรุณาเลือกสินค้า");
-        //     return;
-        // }
-        // if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
-        //     messageApi.error("กรุณากรอกจํานวนสินค้า");
-        //     return;
-        // }
-        const res = await createOrderVip({
-            ...values,
-            // product_id: selectedProducts,
-            // amount: selectedProductsAmount,
-        })
+        const combinedAddress = `${values.manual_address}\n\n[ที่อยู่จากแผนที่]: ${values.map_address}`;
+
+        // สร้าง payload ที่ถูกต้อง
+        const payload = {
+            customer_name: values.customer_name,
+            telephone: values.telephone,
+            car_id: values.car_id,
+            latitude: values.latitude,
+            longitude: values.longitude,
+            address: combinedAddress, // ส่งที่อยู่รวม
+            // ข้อมูลอื่นๆ ที่จำเป็น
+        };
+
+        const res = await createOrderVip(payload);
 
         if (res.status === 201) {
             messageApi.success("สร้างสําเร็จ!");
@@ -303,12 +315,14 @@ const OrderVip = () => {
 
         }
     };
+
     const getCustomer = async () => {
         const res = await findAllCustomer();
         if (res.success === true) {
             setCustomerData(res.data);
         }
     };
+
     const fetchCarData = async () => {
         const res = await findAllCar();
         if (res.success === true) {
@@ -345,31 +359,13 @@ const OrderVip = () => {
 
     useEffect(() => {
         if (location) {
-            form.setFieldsValue({ latitude: location.lat, longitude: location.lon, address: JSON.stringify(trueAddress) });
+            form.setFieldsValue({
+                latitude: location.lat,
+                longitude: location.lon,
+                map_address: JSON.stringify(trueAddress),
+            });
         }
-    }, [location, trueAddress])
-
-    const randomCustomerId = () => {
-        let text = "CV-";
-        let possibleNumbers = "0123456789";
-        let possibleLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-        // Add 2 random numbers
-        for (let i = 0; i < 2; i++) {
-            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
-        }
-
-        // Add 5 random letters
-        for (let i = 0; i < 5; i++) {
-            text += possibleLetters.charAt(Math.floor(Math.random() * possibleLetters.length));
-        }
-
-        for (let i = 0; i < 2; i++) {
-            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
-        }
-
-        return text;
-    }
+    }, [location, trueAddress]);
 
     const rowSelection: TableProps<any>['rowSelection'] = {
         selectedRowKeys: selectedProducts,
@@ -438,14 +434,14 @@ const OrderVip = () => {
 
                                             </Select>
                                         </Form.Item> */}
-                                        <Row>
+                                        {/* <Row>
 
                                             <Form.Item key={"customer_code"} name={"customer_code"} className='w-2/3' label="รหัสลูกค้า" rules={[{ required: true, message: "กรุณากรอกรหัส" }]}>
                                                 <Input disabled />
                                             </Form.Item>
 
                                             <Button type='default' className='w-1/3  mt-8' onClick={() => form.setFieldsValue({ customer_code: randomCustomerId() })}>Generate</Button>
-                                        </Row>
+                                        </Row> */}
                                         <Form.Item key={"customer_name"} name={"customer_name"} className='w-full' label="ชื่อลูกค้า" rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}>
                                             <Input />
                                         </Form.Item>
@@ -456,7 +452,7 @@ const OrderVip = () => {
                                             <Select className='w-full' >
                                                 {carData.map((item: any) =>
                                                     <Select.Option key={item.id} value={item.id}>
-                                                        {item.car_number}
+                                                        {item.car_number} - {item.users?.firstname} - {item.users?.lastname}
                                                     </Select.Option>
                                                 )}
 
@@ -469,8 +465,14 @@ const OrderVip = () => {
                                         <Form.Item key={"lon"} name={"longitude"} className='w-full' label="ลองจิจูด" rules={[{ required: true, message: "กรุณากรอกตำแหน่ง" }]} initialValue={location?.lon}>
                                             <Input value={location?.lon} disabled />
                                         </Form.Item>
-                                        <Form.Item key={"address"} name={"address"} className='w-full' label="ที่อยู่" rules={[{ required: true, message: "กรุณากรอกที่อยู่" }]}>
-                                            <TextArea value={trueAddress} rows={4} disabled />
+                                        <Form.Item name={"manual_address"} className='w-full' label="ที่อยู่ (กรอกเอง)" rules={[{ required: true, message: "กรอกที่อยู่ด้วยตนเอง" }]}>
+                                            <TextArea rows={2} placeholder="กรอกที่อยู่ด้วยตนเอง" />
+                                        </Form.Item>
+                                        <Form.Item
+                                            name="map_address"
+                                            label="ที่อยู่จากแผนที่"
+                                        >
+                                            <TextArea rows={2} disabled placeholder="ที่อยู่ที่ดึงจากแผนที่" />
                                         </Form.Item>
 
                                         <Form.Item className="w-full">

@@ -5,8 +5,9 @@ import { createManufacture, deleteManufacture, findAllManufacture, updateManufac
 import { createOrder, findAllOrder, findAllOrderWithDay } from '@/utils/orderService';
 import { findAllProductDrowdown } from '@/utils/productService';
 import { findAllCar, findAllTransportationLine } from '@/utils/transpotationService';
-import { RestOutlined, ToolOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table, TableProps } from 'antd';
+import { StockInCar } from '@/utils/productService';
+import { RestOutlined, ToolOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Button, Card, Checkbox, Col, DatePicker, Form, Input, message, Popconfirm, Row, Select, Table, TableProps, Modal } from 'antd';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import React, { useContext, useEffect, useState } from 'react';
@@ -28,6 +29,11 @@ const Order = () => {
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentIndex2, setCurrentIndex2] = useState(0);
+    const [stockInCar, setStockInCar] = useState<number | null>(null);
+    const [stockInCarModalVisible, setStockInCarModalVisible] = useState(false);
+    const [stockInCarData, setStockInCarData] = useState<any[]>([]);
+    const [lineOptions, setLineOptions] = useState<any[]>([]);
+    const [filteredLineOptions, setFilteredLineOptions] = useState<any[]>([]);
     const handlePaginationChange = (pagination: any) => {
         setCurrentIndex((pagination.current - 1) * pagination.pageSize);
     };
@@ -60,50 +66,107 @@ const Order = () => {
     }
 
     const fetchLine = async () => {
-        const res = await findAllTransportationLine()
+        const res = await findAllTransportationLine();
         if (res) {
-            setLineData(res)
+            setLineData(res);
+            setLineOptions(res.map((line: any) => ({
+                value: line.id,
+                label: line.line_name,
+                car_id: line.car_id
+            })));
         }
-    }
+    };
+
+    const fetchStockInCar = async (carId: number) => {
+        try {
+            const res = await StockInCar(carId);
+            if (res && Array.isArray(res)) { // ตรวจสอบว่า res เป็น array
+                setStockInCarData(res);
+                // คำนวณจำนวนน้ำแข็งทั้งหมด
+                const totalIce = res.reduce((sum, item) => sum + (item.stock_amount || 0), 0);
+                setStockInCar(totalIce);
+            } else {
+                setStockInCarData([]);
+                setStockInCar(null);
+                messageApi.warning('ไม่พบข้อมูลน้ำแข็งในรถคันนี้');
+            }
+        } catch (err) {
+            console.error('Error fetching stock in car:', err);
+            setStockInCarData([]);
+            setStockInCar(null);
+            messageApi.error('เกิดข้อผิดพลาดในการดึงข้อมูลน้ำแข็งในรถ');
+        }
+    };
+
+    const stockInCarColumns = [
+        {
+            title: "ลำดับ",
+            dataIndex: "id",
+            key: "id",
+            render: (text: any, record: any, index: number) => index + 1
+        },
+        {
+            title: 'ชื่อสินค้า',
+            dataIndex: 'product_name',
+            key: 'product_name',
+        },
+        {
+            title: 'จำนวนคงเหลือ',
+            dataIndex: 'stock_amount',
+            key: 'stock_amount',
+        },
+        {
+            title: 'ราคา (บาท)',
+            dataIndex: 'product_price',
+            key: 'product_price',
+        },
+    ];
 
     const create = async (values: any) => {
-        if (selectedProducts.length === 0) {
-            messageApi.error('กรุณาเลือกรายการสินค้า');
-            return;
-        }
-
-        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
-            messageApi.error('กรุณากรอกจํานวนสินค้า');
-            return;
-        }
-
-        // คำนวณจำนวนรวมของสินค้าที่เลือก
-        const totalSelectedAmount = Object.values(selectedProductsAmount).reduce((sum, amount) => sum + amount, 0);
-
-        if (totalSelectedAmount > 40) {
-            messageApi.error('ไม่สามารถเลือกสินค้ารวมเกิน 40 รายการได้');
-            return;
-        }
-
-        const res = await createOrder({
-            user_id: userLogin?.user?.id,
-            product_id: selectedProducts,
-            amount: selectedProductsAmount,
-            car_id: values.car_id,
-            line_id: values.line_id
-        });
-
-        if (res.data.success === true) {
-            fetchWithdrawData();
-            fetchProduct();
-            setSelectedProducts([]);
-            setSelectedProductsAmount({});
-            form.resetFields();
-            messageApi.success('เบิกสินค้าสําเร็จ');
-        } else if (res.status === 201 && res.data.success === false) {
-            messageApi.warning('จำนวนสินค้ามีไม่พอ!');
-        } else {
-            messageApi.error('เบิกสินค้าไม่สําเร็จ');
+        try {
+            if (selectedProducts.length === 0) {
+                messageApi.error('กรุณาเลือกรายการสินค้า');
+                return;
+            }
+    
+            if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+                messageApi.error('กรุณากรอกจํานวนสินค้า');
+                return;
+            }
+    
+            const totalSelectedAmount = Object.values(selectedProductsAmount).reduce((sum, amount) => sum + amount, 0);
+            if (totalSelectedAmount > 40) {
+                messageApi.error('ไม่สามารถเลือกสินค้ารวมเกิน 40 รายการได้');
+                return;
+            }
+    
+            const res = await createOrder({
+                user_id: userLogin?.user?.id,
+                product_id: selectedProducts,
+                amount: selectedProductsAmount,
+                car_id: values.car_id,
+                line_id: values.line_id
+            });
+    
+            if (res.data.success === true) {
+                // รอให้ดึงข้อมูลใหม่เสร็จก่อนเคลียร์ฟอร์ม
+                await Promise.all([
+                    fetchWithdrawData(),
+                    fetchProduct(),
+                    fetchStockInCar(values.car_id)
+                ]);
+    
+                setSelectedProducts([]);
+                setSelectedProductsAmount({});
+                form.resetFields();
+                messageApi.success('เบิกสินค้าสําเร็จ');
+            } else if (res.status === 201 && res.data.success === false) {
+                messageApi.warning('จำนวนสินค้ามีไม่พอ!');
+            } else {
+                messageApi.error('เบิกสินค้าไม่สําเร็จ');
+            }
+        } catch (error) {
+            messageApi.error('เกิดข้อผิดพลาดในการเบิกสินค้า');
         }
     };
 
@@ -114,6 +177,7 @@ const Order = () => {
             setCarData(res.data);
         }
     };
+
     const columns = [
         {
             title: "ลำดับ",
@@ -122,12 +186,17 @@ const Order = () => {
             render: (text: any, record: any, index: any) => currentIndex2 + index + 1
         },
         {
-            title: 'สายการเดินรถ',
-            dataIndex: 'line',
-            key: 'line_name',
-            render: (item: any) => item?.line_name
-
-        },
+            title: "สายการเดินรถ",
+            dataIndex: "transportation_car",
+            key: "line_name",
+            render: (car: any) => car?.Lines?.[0]?.line_name || "-",
+          },
+          {
+            title: "ทะเบียนรถ",
+            dataIndex: "transportation_car",
+            key: "car_number",
+            render: (car: any) => car?.car_number || "-",
+          },
         {
             title: 'วันที่เบิก',
             dataIndex: 'date_time',
@@ -285,13 +354,15 @@ const Order = () => {
     }
 
     const handleChangeLine = (id: any) => {
-        const findLine: any = lineData.find((line: any) => line.id === id)
+        const findLine: any = lineData.find((line: any) => line.id === id);
         if (findLine) {
             form.setFieldsValue({
                 car_id: findLine.car_id
-            })
+            });
+            fetchStockInCar(findLine.car_id); // เรียก API
         }
-    }
+    };
+
 
 
     const rowSelection: TableProps<any>['rowSelection'] = {
@@ -308,6 +379,23 @@ const Order = () => {
         // }),
 
     };
+
+    const handleCarChange = (carId: number) => {
+        // กรองสายรถที่เกี่ยวข้องกับรถคันนี้
+        const filteredLines = lineOptions.filter(line => line.car_id === carId);
+        setFilteredLineOptions(filteredLines);
+
+        // ถ้ามีสายรถที่เกี่ยวข้อง ให้เลือกสายรถนั้นโดยอัตโนมัติ
+        if (filteredLines.length > 0) {
+            form.setFieldsValue({ line_id: filteredLines[0].value });
+        } else {
+            form.setFieldsValue({ line_id: undefined });
+        }
+
+        // ดึงข้อมูลน้ำแข็งในรถ
+        fetchStockInCar(carId);
+    };
+
     return (
         <LayoutComponent>
             {contextHolder}
@@ -343,25 +431,52 @@ const Order = () => {
                         <Card className='w-full' title="เบิกสินค้า">
                             <Form layout='vertical' onFinish={create} form={form}>
                                 <Form.Item name={"line_id"} key={"line_id"} className='w-full' label="สายการเดินรถ" rules={[{ required: true, message: "กรุณาเลือกสาย" }]}>
-                                    <Select className='w-full' onChange={(e) => handleChangeLine(e)}>
-                                        {lineData.map((item: any) =>
-                                            <Select.Option key={item.id} value={item.id}>
-                                                {item.line_name}
-                                            </Select.Option>
-                                        )}
-
-                                    </Select>
+                                    <Select
+                                        className='w-full'
+                                        onChange={(lineId) => {
+                                            // หารถที่ใช้สายนี้
+                                            const selectedLine = lineData.find((line: any) => line.id === lineId);
+                                            if (selectedLine) {
+                                                form.setFieldsValue({ car_id: selectedLine.car_id });
+                                                fetchStockInCar(selectedLine.car_id);
+                                            }
+                                        }}
+                                        options={lineData.map((line: any) => ({
+                                            value: line.id,
+                                            label: line.line_name
+                                        }))}
+                                    />
                                 </Form.Item>
                                 <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
-                                    <Select className='w-full' >
-                                        {carData.map((item: any) =>
-                                            <Select.Option key={item.id} value={item.id}>
-                                                {item.car_number}
-                                            </Select.Option>
-                                        )}
-
-                                    </Select>
+                                    <Select
+                                        className='w-full'
+                                        onChange={(carId) => {
+                                            // หาสายที่ใช้รถคันนี้
+                                            const relatedLines = lineData.filter((line: any) => line.car_id === carId);
+                                            if (relatedLines.length > 0) {
+                                                form.setFieldsValue({ line_id: relatedLines[0].id });
+                                            }
+                                            fetchStockInCar(carId);
+                                        }}
+                                        options={carData.map((car: any) => ({
+                                            value: car.id,
+                                            label: `${car.car_number} - ${car.users.firstname} ${car.users.lastname || ''}`
+                                        }))}
+                                    />
                                 </Form.Item>
+                                {stockInCar !== null && stockInCarData.length > 0 && (
+                                    <div className='text-right text-sm text-blue-500 mb-2 flex justify-between items-center'>
+                                        <span>❄️ คงเหลือน้ำแข็งในรถ: {stockInCar} ถุง</span>
+                                        <Button
+                                            type="link"
+                                            icon={<InfoCircleOutlined />}
+                                            onClick={() => setStockInCarModalVisible(true)}
+                                            size="small"
+                                        >
+                                            ดูรายละเอียด
+                                        </Button>
+                                    </div>
+                                )}
                                 <Table rowKey={(id: any) => id.id} rowSelection={{ ...rowSelection }} columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
 
                                 <Button type="primary" className=' w-full' htmlType="submit">บันทึก</Button>
@@ -375,6 +490,27 @@ const Order = () => {
 
 
             </div>
+
+            <Modal
+                title="รายละเอียดน้ำแข็งในรถ"
+                visible={stockInCarModalVisible}
+                onCancel={() => setStockInCarModalVisible(false)}
+                footer={[
+                    <Button key="close" onClick={() => setStockInCarModalVisible(false)}>
+                        ปิด
+                    </Button>
+                ]}
+            >
+                <Table
+                    columns={stockInCarColumns}
+                    dataSource={stockInCarData}
+                    rowKey="id"
+                    pagination={false}
+                />
+                <div className="mt-4 text-right font-semibold">
+                    รวมทั้งหมด: {stockInCar} ถุง
+                </div>
+            </Modal>
         </LayoutComponent>
     );
 }

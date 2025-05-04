@@ -55,6 +55,20 @@ export async function findAllTransportationLine() {
     }
 }
 
+export async function addCustomersToLine(params: any) {
+    try {
+      const res = await AxiosInstances.post('/transportation/line/add-customers', params);
+      return Promise.resolve({
+        status: res.status,
+        data: res.data,
+      });
+    } catch (error: any) {
+      return Promise.reject(error?.response ?? error);
+    }
+  }
+  
+  
+
 export async function updateTransportationLine(id: number, params: any) {
     try {
         const transportationLine = await AxiosInstances.put(`/transportation/${id}`, params)
@@ -93,15 +107,13 @@ export async function getDeliveryByCarId(carId: number, date: string) {
     }
 }
 
-export async function updateDaliveryStatus(id: number, body: any) {
+export async function updateDeliveryStatus(id: number, body: any) {
     try {
-        const delivery = await AxiosInstances.patch(`/transportation/update/DaliveryStatus/${id}`, body)
+        const delivery = await AxiosInstances.patch(`/transportation/update/DeliveryStatus/${id}`, body)
         return Promise.resolve(delivery)
     } catch (error) {
         return Promise.reject(error)
     }
-
-
 }
 
 export async function updateLocation(id: number, params: any) {
