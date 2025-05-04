@@ -59,9 +59,9 @@ const ProdectManagement = () => {
 
     const columns = [
         {
-            title: 'รหัสสินค้า',
-            dataIndex: 'id',
-            key: 'id',
+            title: 'ลำดับ',
+            dataIndex: 'index',
+            key: 'index',
             render: (text: any, record: any, index: any) => index + 1
         },
         {

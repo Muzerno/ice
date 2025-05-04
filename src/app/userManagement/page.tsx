@@ -25,11 +25,12 @@ export default function userManagement() {
 
     const columns = [
         {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-            size: "xs md lg"
-        },
+            title: 'ลำดับ',
+            dataIndex: 'index',
+            key: 'index',
+            size: "xs md lg",
+            render: (text, record, index) => index + 1
+        },        
         {
             title: 'ชื่อ',
             dataIndex: '',
