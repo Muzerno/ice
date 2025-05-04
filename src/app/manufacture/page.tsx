@@ -78,10 +78,10 @@ export default function Manufacture(props: IProps) {
 
         {
             title: 'เวลาที่ผลิต',
-            dataIndex: 'date_time',
+            dataIndex: ['manufacture', 'date_time'], // เข้าถึง manufacture.date_time
             key: 'date_time',
-            render: (item: any) => format(new Date(item), 'HH:mm'),
-        },
+            render: (value: string) => format(new Date(value), 'HH:mm'),
+          },          
         {
             title: 'จำนวน',
             dataIndex: 'manufacture_amount',
@@ -148,11 +148,17 @@ export default function Manufacture(props: IProps) {
 
     const ProductColumns = [
         {
-            title: 'รหัสสินค้า',
-            dataIndex: 'id',
-            key: 'id',
-            sx: { width: '10%' },
+            title: 'ลำดับ',
+            key: 'index',
+            render: (_: any, __: any, index: number) => index + 1,
+            sx: { width: '5%' }, // เพิ่มหรือปรับขนาดความกว้างได้ตามต้องการ
         },
+        // {
+        //     title: 'รหัสสินค้า',
+        //     dataIndex: 'id',
+        //     key: 'id',
+        //     sx: { width: '10%' },
+        // },
         {
             title: 'ชื่อสินค้า',
             dataIndex: 'name',
@@ -264,15 +270,27 @@ export default function Manufacture(props: IProps) {
     }
 
     const onUpdate = async (values: any) => {
-        const res = await updateManufacture(values.id, values)
-        if (res.status === 200) {
-            messageApi.success('แก้ไขข้อมูลการผลิตสําเร็จ');
-            setOpenModalEdit(false)
-            fetchManufacture()
-        } else {
-            messageApi.error('แก้ไขข้อมูลการผลิตไม่สําเร็จ');
+        try {
+          // สร้าง payload ที่ถูกต้อง
+          const payload = {
+            product_id: Number(values.product_id),
+            amount: Number(values.manufacture_amount)
+          };
+      
+          const res = await updateManufacture(values.id, payload);
+          
+          if (res.status === 200) {
+            messageApi.success('แก้ไขข้อมูลการผลิตสำเร็จ');
+            setOpenModalEdit(false);
+            fetchManufacture();
+          } else {
+            messageApi.error(`แก้ไขข้อมูลการผลิตไม่สำเร็จ: ${res.data?.message || ''}`);
+          }
+        } catch (error) {
+          console.error('Update error:', error);
+          messageApi.error('เกิดข้อผิดพลาดในการแก้ไขข้อมูล');
         }
-    }
+      };
 
 
     const rowSelection: TableProps<any>['rowSelection'] = {
@@ -376,9 +394,9 @@ export default function Manufacture(props: IProps) {
 
                         </Select>
                     </Form.Item>
-                    <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
+                    {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
                         <DatePicker className='w-full' format={'DD/MM/YYYY'} />
-                    </Form.Item>
+                    </Form.Item> */}
                     <Form.Item name={"manufacture_amount"} className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                         <Input className='w-full' />
                     </Form.Item>

@@ -32,9 +32,21 @@ const CarManagement: React.FC = () => {
             title: "",
             key: "button",
             render: (item: any) => (
-                <>  <Button type="primary" className='!bg-yellow-300 mr-1' icon={<ToolOutlined />} onClick={() => { setOpenModalEdit(true); formEdit.setFieldsValue({ ...item }); setSelectedCar(item.id) }}>
-
-                </Button>
+                <>
+                    <Button
+                        type="primary"
+                        className='!bg-yellow-300 mr-1'
+                        icon={<ToolOutlined />}
+                        onClick={() => {
+                            setOpenModalEdit(true);
+                            setSelectedCar(item.id);
+                            formEdit.setFieldsValue({
+                                car_number: item.car_number,
+                                user_id: item.user_id // ตั้งค่า user_id ปัจจุบัน
+                            });
+                        }}
+                    >
+                    </Button>
                     <Popconfirm
                         title="ต้องการลบข้อมูลใช่หรือไม่?"
                         description="ลบข้อมูล!"
@@ -50,12 +62,16 @@ const CarManagement: React.FC = () => {
     ];
 
     useEffect(() => {
+        const userFilters = userData
+            .filter((user: any) => user.role?.role_key === 'deliver') // เฉพาะคนขับ
+            .filter((user: any) =>
+                !carData.some((car: any) => car.user_id === user.id) ||
+                (selectedCar && carData.some(car => car.id === selectedCar && car.user_id === user.id))
+            ); // ยังไม่ถูกผูกกับรถ หรือเป็นผู้ใช้ปัจจุบันของรถที่กำลังแก้ไข
 
-        const userFilters = userData.filter((item: any) => item.role?.role_key === 'deliver');
         setUserFilter(userFilters);
+    }, [userData, carData, selectedCar]); // เพิ่ม selectedCar ใน dependencies
 
-
-    }, [userData]);
 
     const onFinish = async (values: any) => {
         const res = await createCar(values);
@@ -71,16 +87,19 @@ const CarManagement: React.FC = () => {
 
     const onFinishEdit = async (values: any) => {
         const res = await updateCar(selectedCar, values);
+    
         if (res.status === 200) {
             messageApi.success("อัพเดทสําเร็จ!");
             formEdit.resetFields();
             fetchCarData();
             setOpenModalEdit(false);
-        }
-        if (res.status === 204) {
-            messageApi.error("เลขทะเบียนรถซ้ําหรือคนขับไม่ถูกต้อง");
+        } else if (res.status === 409) {
+            messageApi.error(res.data?.message || "เลขทะเบียนรถซ้ําหรือคนขับไม่ถูกต้อง");
+        } else {
+            messageApi.error("เกิดข้อผิดพลาดในการอัพเดท");
         }
     };
+    
 
     const deleteCars = async (id: number) => {
         const res = await deleteCar(id);
@@ -149,7 +168,10 @@ const CarManagement: React.FC = () => {
                     <Modal
                         title="แก้ไขข้อมูลรถ"
                         visible={openModalEdit}
-                        onCancel={() => setOpenModalEdit(false)}
+                        onCancel={() => {
+                            setOpenModalEdit(false);
+                            setSelectedCar(null);
+                        }}
                         footer={[
                             <Button key="back" onClick={() => setOpenModalEdit(false)}>
                                 ปิด
@@ -167,7 +189,12 @@ const CarManagement: React.FC = () => {
                             </Form.Item>
                             <Form.Item name="user_id" label="ผู้ใช้">
                                 <Select>
-                                    {userFilter.map((item: any) => <Select.Option key={item.id} value={item.id}>{item.firstname} {item.lastname} {item.role.role_name}</Select.Option>)}
+                                    {userFilter.map((item: any) => (
+                                        <Select.Option key={item.id} value={item.id}>
+                                            {item.firstname} {item.lastname} {item.role ? `[${item.role.role_name}]` : ''}
+                                            {selectedCar && carData.find(car => car.id === selectedCar)?.user_id === item.id && ' (ปัจจุบัน)'}
+                                        </Select.Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </Form>

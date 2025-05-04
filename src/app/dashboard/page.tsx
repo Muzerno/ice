@@ -18,6 +18,7 @@ interface IProps {
 interface DashboardData {
     countUser: number;
     countProduct: number;
+    countCar: number;
     countCustomer: number;
     totalSell: string;
     countManufactureDetail: number;
@@ -43,6 +44,8 @@ export default function Dashboard(props: IProps) {
 
     const fetchDashboard = async () => {
         const res = await findAllDashboard();
+        console.log(res);
+        
         setData(res);
         setIsLoading(true)
 
@@ -105,7 +108,7 @@ export default function Dashboard(props: IProps) {
                                     <Card>
                                         <Statistic
                                             title="จำนวนรถ"
-                                            value={data?.countProduct || 0}
+                                            value={data?.countCar || 0}
                                             valueStyle={{ color: '#3f8600' }}
                                             prefix={<CarOutlined />}
                                             suffix="คัน"

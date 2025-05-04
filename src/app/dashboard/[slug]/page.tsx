@@ -98,7 +98,6 @@ const Page = () => {
                     return acc;
                 }, {});
 
-                // Convert grouped data to array
                 rowData = Object.values(groupedData).map((group: any, index: number) => ({
                     index: index + 1,
                     line_name: group.line_name,
@@ -109,23 +108,21 @@ const Page = () => {
                     withdraw_details: group.withdraw_details
                 }));
 
-                // Calculate total amount
                 total = rowData.reduce((sum: number, group: any) => sum + group.amount, 0);
 
-                // คำนวณผลรวมของ "รายการสินค้า/ถุง"
                 const totalItems = rowData.reduce((sum: number, group: any) => {
                     return sum + group.withdraw_details.reduce((itemSum: number, detail: any) => itemSum + detail.amount, 0);
                 }, 0);
 
-                console.log("Total Items:", totalItems); // ตรวจสอบค่าใน console
+                console.log("Total Items:", totalItems); 
                 setExportData(rowData);
                 setTotal(total);
-                setTotalAmount(totalItems); // เก็บค่า totalItems ใน state
+                setTotalAmount(totalItems);
             }
             else if (exportType === "delivery") {
                 const groupedData = response.reduce((acc: any, item: any) => {
                     const lineName = item?.line?.line_name || item?.car?.car_number;
-                    const customerName = item?.customer?.name || item?.customer_order?.name;
+                    const customerName = item?.customer?.name
 
                     if (!acc[lineName]) {
                         acc[lineName] = {
@@ -139,14 +136,12 @@ const Page = () => {
                     return acc;
                 }, {});
 
-                // แปลงข้อมูลที่จัดกลุ่มแล้วเป็น array
                 rowData = Object.values(groupedData).map((group: any, index: number) => ({
                     index: index + 1,
                     line_name: group.line_name,
                     customers: Array.from(group.customers as Set<string>).map((name: string, index: number) => ({ index: index + 1, customer_name: name })),
                 }));
 
-                // คำนวณจำนวน customer ทั้งหมด
                 total = rowData.reduce((sum: number, group: any) => sum + group.customers.length, 0);
                 console.log(rowData)
                 setExportData(rowData)
@@ -154,7 +149,14 @@ const Page = () => {
             }
             else if (exportType === "money") {
                 const groupedData = response.reduce((acc: any, item: any) => {
-                    const lineName = item?.delivery?.car?.Lines[0]?.line_name;
+                    const detail = item.delivery_details;
+                    const lineId = detail?.dropoffpoint?.line_id;
+                    const lines = detail?.car?.Lines || [];
+
+                    // หา line_name จาก car.Lines ที่ตรงกับ line_id
+                    const matchedLine = lines.find((line: any) => line.id === lineId);
+                    const lineName = matchedLine?.line_name || 'ไม่พบชื่อสาย';
+
                     const date = format(new Date(item.date_time), 'dd/MM/yyyy');
                     const key = `${lineName}-${date}`;
 
@@ -167,8 +169,11 @@ const Page = () => {
                         };
                     }
 
-                    // รวมข้อมูลน้ำแข็งแต่ละประเภท
-                    item.delivery.delivery_details.forEach((detail: any) => {
+                    const details = Array.isArray(item.delivery_details)
+                        ? item.delivery_details
+                        : [item.delivery_details];
+
+                    details.forEach((detail: any) => {
                         const productId = detail.product.id;
                         if (!acc[key].ice_details[productId]) {
                             acc[key].ice_details[productId] = {
@@ -179,14 +184,14 @@ const Page = () => {
                             };
                         }
                         acc[key].ice_details[productId].amount += detail.amount;
-                        acc[key].ice_details[productId].total = acc[key].ice_details[productId].amount * detail.price;
+                        acc[key].ice_details[productId].total =
+                            acc[key].ice_details[productId].amount * detail.price;
                     });
 
                     acc[key].total_amount += item.amount;
                     return acc;
                 }, {});
 
-                // แปลงข้อมูลที่จัดกลุ่มแล้วเป็น array
                 rowData = Object.values(groupedData).map((group: any, index: number) => ({
                     index: index + 1,
                     date: group.date,
@@ -202,14 +207,14 @@ const Page = () => {
                     total_amount: group.total_amount
                 }));
 
-                // คำนวณยอดรวมทั้งหม
                 total = rowData.reduce((sum: number, group: any) => sum + group.total_amount, 0);
-                setExportData(rowData)
-                setTotal(total)
-            } else if (exportType === "manufacture") {
-                // Group by date first
+                setExportData(rowData);
+                setTotal(total);
+            }
+
+            else if (exportType === "manufacture") {
                 const groupedByDate = response.reduce((acc: any, item: any) => {
-                    const dateOnly = format(new Date(item.date_time), 'dd/MM/yyyy');
+                    const dateOnly = format(new Date(item.manufacture?.date_time), 'dd/MM/yyyy');
                     if (!acc[dateOnly]) {
                         acc[dateOnly] = {
                             products: {},
@@ -229,7 +234,6 @@ const Page = () => {
                     return acc;
                 }, {});
 
-                // Convert to final format with index starting from 1 for each date
                 rowData = Object.entries(groupedByDate).map(([date, data]: [string, any]) => {
                     let dateIndex = 1;
                     const productsWithIndex = Object.values(data.products).map((product: any) => ({
@@ -258,7 +262,6 @@ const Page = () => {
                     return acc;
                 }, {});
 
-                // // Convert grouped data to array
                 const rowData2 = Object.values(groupedData).map((group: any, index: number) => ({
                     index: index + 1,
                     product_name: group.product_name,
@@ -328,6 +331,19 @@ const Page = () => {
             render: (item: any) => {
                 return item
             }
+        },
+        {
+            title: 'ชื่อสาย',
+            dataIndex: 'line_name',
+            key: 'line_name',
+            render: (item: any) => {
+                return item
+            }
+        },
+        {
+            title: 'เลขทะเบียนรถ',
+            dataIndex: 'car_number',
+            key: 'car_number',
         },
         {
             title: 'ชื่อน้ำแข็ง / ถุง  ',

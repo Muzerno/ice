@@ -53,12 +53,29 @@ const CustomerManagement = () => {
             dataIndex: 'address',
             key: 'address',
             render: (address: any) => {
-                const parsedAddress = JSON.parse(address);
-                return (
-                    <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
-                    </div>
-                )
+                // แยกส่วนที่อยู่ที่กรอกเองและที่อยู่จากแผนที่
+                const [manualAddress, mapAddressPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
+
+                try {
+                    const mapAddress = mapAddressPart ? JSON.parse(mapAddressPart) : null;
+
+                    return (
+                        <div>
+                            <div>{manualAddress || '-'}</div>
+                            {mapAddress && (
+                                <div className="text-gray-500">
+                                    {mapAddress.road && <span>{mapAddress.road}</span>}
+                                    {mapAddress.subdistrict && <span>, {mapAddress.subdistrict.replace('ต.', 'ตำบล')}</span>}
+                                    {mapAddress.district && <span>, {mapAddress.district.replace('อ.', 'อำเภอ')}</span>}
+                                    {mapAddress.province && <span>, {mapAddress.province.replace('จ.', 'จังหวัด')}</span>}
+                                    {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
+                                </div>
+                            )}
+                        </div>
+                    );
+                } catch (err) {
+                    return <div>{address || '-'}</div>;
+                }
             }
         },
         {
@@ -110,15 +127,39 @@ const CustomerManagement = () => {
 
     useEffect(() => {
         if (location) {
-            form.setFieldsValue({ latitude: location.lat, longitude: location.lon, address: JSON.stringify(trueAddress) });
+            form.setFieldsValue({
+                latitude: location.lat,
+                longitude: location.lon,
+                map_address: JSON.stringify(trueAddress),
+            });
         }
-    }, [location, trueAddress])
+    }, [location, trueAddress]);
 
     useEffect(() => {
         if (locationEdit) {
-            formEdit.setFieldsValue({ latitude: locationEdit.lat, longitude: locationEdit.lon, address: JSON.stringify(trueAddress) });
+            formEdit.setFieldsValue({ 
+                latitude: locationEdit.lat, 
+                longitude: locationEdit.lon, 
+                map_address: JSON.stringify(trueAddress) 
+            });
         }
-    }, [locationEdit, trueAddress])
+    }, [locationEdit, trueAddress]);
+
+    useEffect(() => {
+        if (seleteUUid && customerData) {
+            const customer = customerData.find((c: any) => c.id === seleteUUid);
+            if (customer) {
+                // แยกที่อยู่จาก address
+                const [manualAddress, mapAddress] = customer.address.split('\n\n[ที่อยู่จากแผนที่]: ');
+                
+                formEdit.setFieldsValue({
+                    ...customer,
+                    manual_address: manualAddress,
+                    map_address: mapAddress || ''
+                });
+            }
+        }
+    }, [seleteUUid, customerData]);
 
     const fetchCustomerData = async () => {
         const res = await findAllCustomer();
@@ -127,29 +168,51 @@ const CustomerManagement = () => {
         }
     };
 
-    const createCustomers = async (params: any) => {
-        const res = await createCustomer(params)
+    const createCustomers = async (values: any) => {
+        const combinedAddress = `${values.manual_address}\n\n[ที่อยู่จากแผนที่]: ${values.map_address}`;
+
+        const payload = {
+            ...values,
+            address: combinedAddress,
+        };
+
+        const res = await createCustomer(payload);
+
         if (res.status === 201) {
             messageApi.success('สร้างลูกค้าสําเร็จ!');
-            fetchCustomerData()
+            fetchCustomerData();
             form.resetFields();
         } else {
             messageApi.error('สร้างลูกค้าไม่สําเร็จ!');
         }
+    };
 
-    }
 
     const onUpdate = async (values: any) => {
-        const res = await updateCustomer(seleteUUid, values)
-
+        // แยกข้อมูลที่อยู่
+        const combinedAddress = `${values.manual_address}\n\n[ที่อยู่จากแผนที่]: ${values.map_address}`;
+        
+        // สร้าง payload โดยไม่รวม manual_address และ map_address
+        const payload = {
+            name: values.name,
+            telephone: values.telephone,
+            customer_code: values.customer_code,
+            address: combinedAddress,
+            latitude: values.latitude,
+            longitude: values.longitude
+        };
+        
+        const res = await updateCustomer(seleteUUid, payload);
+        
         if (res.status === 200) {
             messageApi.success('แก้ไขลูกค้าสําเร็จ!');
-            setOpenModalEdit(false)
-            fetchCustomerData()
+            setOpenModalEdit(false);
+            fetchCustomerData();
         } else {
             messageApi.error('แก้ไขลูกค้าไม่สําเร็จ!');
         }
-    }
+    };
+
 
     const onDelete = async (id: number) => {
         const res = await deleteCustomer(id)
@@ -165,27 +228,27 @@ const CustomerManagement = () => {
         fetchCustomerData();
     }, [openModalEdit]);
 
-    const randomCustomerId = () => {
-        let text = "C-";
-        let possibleNumbers = "0123456789";
-        let possibleLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // const randomCustomerId = () => {
+    //     let text = "C-";
+    //     let possibleNumbers = "0123456789";
+    //     let possibleLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        // Add 2 random numbers
-        for (let i = 0; i < 2; i++) {
-            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
-        }
+    //     // Add 2 random numbers
+    //     for (let i = 0; i < 2; i++) {
+    //         text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
+    //     }
 
-        // Add 5 random letters
-        for (let i = 0; i < 5; i++) {
-            text += possibleLetters.charAt(Math.floor(Math.random() * possibleLetters.length));
-        }
+    //     // Add 5 random letters
+    //     for (let i = 0; i < 5; i++) {
+    //         text += possibleLetters.charAt(Math.floor(Math.random() * possibleLetters.length));
+    //     }
 
-        for (let i = 0; i < 2; i++) {
-            text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
-        }
+    //     for (let i = 0; i < 2; i++) {
+    //         text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
+    //     }
 
-        return text;
-    }
+    //     return text;
+    // }
 
     return (
         <LayoutComponent>
@@ -198,7 +261,7 @@ const CustomerManagement = () => {
                     <Col span={8}>
                         <Card className="w-full !bg-slate-100">
                             <Form layout='vertical' title='Add Customer' form={form} onFinish={(e) => createCustomers(e)} >
-                                <Row>
+                                {/* <Row>
                                     <Col span={24}>
                                         <Row>
                                             <Col span={18}>
@@ -215,7 +278,7 @@ const CustomerManagement = () => {
 
                                     </Col>
 
-                                </Row>
+                                </Row> */}
                                 <Row >
                                     <Col span={24}>
                                         <Form.Item name={"name"} key={"name"} label="ชื่อลูกค้า"
@@ -251,9 +314,23 @@ const CustomerManagement = () => {
                                 </Row>
                                 <Row>
                                     <Col span={24}>
-                                        <Form.Item name={"address"} key={"address"} label="ที่อยู่"
-                                            rules={[{ required: true, message: "กรอกที่อยู่" }]} >
-                                            <TextArea rows={2} disabled />
+                                        <Form.Item
+                                            name="manual_address"
+                                            label="ที่อยู่ (กรอกเอง)"
+                                            rules={[{ required: true, message: "กรอกที่อยู่ด้วยตนเอง" }]}
+                                        >
+                                            <TextArea rows={2} placeholder="กรอกที่อยู่ด้วยตนเอง" />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row>
+                                    <Col span={24}>
+                                        <Form.Item
+                                            name="map_address"
+                                            label="ที่อยู่จากแผนที่"
+                                        >
+                                            <TextArea rows={2} disabled placeholder="ที่อยู่ที่ดึงจากแผนที่" />
                                         </Form.Item>
                                     </Col>
                                 </Row>
@@ -280,20 +357,21 @@ const CustomerManagement = () => {
 
                 </Row>
             </Card>
+
             <Modal title="แก้ไขลูกค้า" open={openModalEdit} onCancel={() => setOpenModalEdit(false)} footer={[]}>
-                <Form layout='vertical' title='Add Customer' form={formEdit} onFinish={(e) => onUpdate(e)} >
-                    <Row >
+                <Form layout='vertical' title='Edit Customer' form={formEdit} onFinish={(e) => onUpdate(e)}>
+                    {/* ส่วนข้อมูลทั่วไป */}
+                    <Row>
                         <Col span={24}>
                             <Form.Item name={"name"} key={"name"} label="ชื่อลูกค้า"
-                                rules={[{ required: true, message: "กรอกชื่อลูกค้า" }]} >
+                                rules={[{ required: true, message: "กรอกชื่อลูกค้า" }]}>
                                 <Input type='text' />
                             </Form.Item>
                         </Col>
                     </Row>
                     <Row>
                         <Col span={24}>
-                            <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
-                                rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
+                            <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า">
                                 <Input type='text' disabled />
                             </Form.Item>
                         </Col>
@@ -301,46 +379,64 @@ const CustomerManagement = () => {
                     <Row>
                         <Col span={24}>
                             <Form.Item name={"telephone"} key={"telephone"} label="เบอร์โทรศัพท์"
-                                rules={[{ required: true, message: "กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "กรอกเบอร์โทรศัพท์ให้ถูกต้อง" }]} >
+                                rules={[{ required: true, message: "กรอกเบอร์โทรศัพท์" }, { pattern: /^[0-9]{10}$/, message: "กรอกเบอร์โทรศัพท์ให้ถูกต้อง" }]}>
                                 <Input type='text' />
                             </Form.Item>
                         </Col>
                     </Row>
+
+                    {/* ส่วนแผนที่ */}
                     <Row>
                         <Col span={24}>
                             <LongdoMap setMarker={setLocationEdit} setTrueAddress={setTrueAddress} isOpenButton={true} />
                         </Col>
                     </Row>
+
+                    {/* ส่วนพิกัด */}
                     <Row className='mt-2'>
                         <Col span={12} className='pr-1'>
-                            <Form.Item name={"latitude"} key={"lat"} label="ละติจูด"
-                                rules={[{ required: true, message: "ละติจูด" }]} >
-                                <Input type='text' value={location?.lat} readOnly disabled />
+                            <Form.Item name={"latitude"} key={"lat"} label="ละติจูด">
+                                <Input type='text' readOnly disabled />
                             </Form.Item>
-
                         </Col>
                         <Col span={12}>
-                            <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด"
-                                rules={[{ required: true, message: "ลองจิจูด " }]} >
-                                <Input type='text' value={location?.lon} readOnly disabled />
+                            <Form.Item name={"longitude"} key={"lon"} label="ลองจิจูด">
+                                <Input type='text' readOnly disabled />
                             </Form.Item>
                         </Col>
                     </Row>
+
+                    {/* ส่วนที่อยู่ที่กรอกเอง */}
                     <Row>
                         <Col span={24}>
-                            <Form.Item name={"address"} key={"address"} label="ที่อยู่"
-                                rules={[{ required: true, message: "กรอกที่อยู่" }]} >
-                                <TextArea rows={2} readOnly disabled />
+                            <Form.Item
+                                name="manual_address"
+                                label="ที่อยู่ (กรอกเอง)"
+                                rules={[{ required: true, message: "กรอกที่อยู่ด้วยตนเอง" }]}
+                            >
+                                <TextArea rows={2} placeholder="กรอกที่อยู่ด้วยตนเอง" />
                             </Form.Item>
                         </Col>
                     </Row>
 
+                    {/* ส่วนที่อยู่จากแผนที่ */}
+                    <Row>
+                        <Col span={24}>
+                            <Form.Item
+                                name="map_address"
+                                label="ที่อยู่จากแผนที่"
+                            >
+                                <TextArea rows={2} disabled placeholder="ที่อยู่ที่ดึงจากแผนที่" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    {/* ปุ่มบันทึก */}
                     <Row className='mt-2'>
                         <Col span={24}>
-                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()} >
-                                <Button type="primary" className='w-full' >บันทึก</Button>
+                            <Popconfirm title="ต้องการบันทึกข้อมูลใช่หรือไม่?" description="บันทึกข้อมูล" onConfirm={() => formEdit.submit()}>
+                                <Button type="primary" className='w-full'>บันทึก</Button>
                             </Popconfirm>
-
                         </Col>
                     </Row>
                 </Form>

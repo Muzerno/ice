@@ -116,63 +116,107 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
     const mapInstance = useRef<any | null>(null);
     const [locations, setLocations] = useState<{ lon: number, lat: number }[]>([]);
 
+    const safeParseJSON = (input: string) => {
+        try {
+            return JSON.parse(input);
+        } catch (e) {
+            return null;
+        }
+    };
+
 
     useEffect(() => {
-        if (window.longdo) {
-            mapInstance.current = new window.longdo.Map({
-                placeholder: mapRef.current,
-            });
+        if (!window.longdo) {
+            console.error('Longdo Map library not loaded');
+            return;
+        }
 
-            if (customerLocation) {
-                customerLocation.forEach((location) => {
-                    const lon = parseFloat(location.longitude);
-                    const lat = parseFloat(location.latitude);
+        mapInstance.current = new window.longdo.Map({
+            placeholder: mapRef.current,
+        });
 
-                    if (!isNaN(lon) && !isNaN(lat)) {
-                        let address
-                        if (location.customer) {
-                            address = JSON.parse(location.customer.address)
-                        } else if (location.customer_order) {
-                            address = JSON.parse(location.customer_order.address)
-                        }
-                        const marker = new window.longdo.Marker({
-                            lon,
-                            lat
-                        }, {
-                            title: location?.customer?.name || location?.customer_order?.name,
-                            detail: `${address.road ? address.road : ''} ${address?.subdistrict ? address.subdistrict : ''} ${address.district} ${address.province} ${address.country} ${address.postcode}`,
-                            size: { width: 200, height: 100 }
-                        });
-                        mapInstance.current.Overlays.add(marker);
-                    } else {
-                        console.error('Invalid coordinates:', location);
+        const formatMapAddress = (json: any) => {
+            if (!json) return '';
+            const road = json.road ?? '';
+            const subdistrict = json.subdistrict?.replace(/^ต\./, 'ตำบล') ?? '';
+            const district = json.district?.replace(/^อ\./, 'อำเภอ') ?? '';
+            const province = json.province?.replace(/^จ\./, 'จังหวัด') ?? '';
+            const postcode = json.postcode ?? '';
+            return [road, subdistrict, district, province, postcode].filter(Boolean).join(', ');
+        };
+
+        const parseFullAddress = (fullAddress: string): { manual: string; map: string } => {
+            const [manualAddress, mapAddressPart] = fullAddress.split('\n\n[ที่อยู่จากแผนที่]: ');
+            if (!mapAddressPart) return { manual: manualAddress || '-', map: '' };
+
+            try {
+                const json = JSON.parse(mapAddressPart);
+                return {
+                    manual: manualAddress || '-',
+                    map: formatMapAddress(json),
+                };
+            } catch (err) {
+                console.error('Failed to parse map address:', err);
+                return {
+                    manual: manualAddress || '-',
+                    map: mapAddressPart, // raw fallback
+                };
+            }
+        };
+
+        if (customerLocation) {
+            customerLocation.forEach((location) => {
+                const lon = parseFloat(location.longitude);
+                const lat = parseFloat(location.latitude);
+
+                if (!isNaN(lon) && !isNaN(lat)) {
+                    let name = '';
+                    let addressInfo: { manual: string; map: string } = { manual: '-', map: '' };
+
+                    if (location.customer) {
+                        name = location.customer.name;
+                        addressInfo = parseFullAddress(location.customer.address);
+                    } else if (location.customer_order) {
+                        name = location.customer_order.name;
+                        addressInfo = parseFullAddress(location.customer_order.address);
                     }
-                });
-            } else if (carLocation) {
-                console.log('carLocation', carLocation)
-                carLocation.forEach((item) => {
-                    const lon = parseFloat(item.longitude);
-                    const lat = parseFloat(item.latitude);
 
-                    if (!isNaN(lon) && !isNaN(lat)) {
-                        const marker = new window.longdo.Marker({
-                            lon,
-                            lat
-                        }, {
+                    const marker = new window.longdo.Marker(
+                        { lon, lat },
+                        {
+                            title: name,
+                            detail: `${addressInfo.manual}${addressInfo.map ? '\n' + addressInfo.map : ''}`,
+                            size: { width: 200, height: 100 }
+                        }
+                    );
+
+                    mapInstance.current.Overlays.add(marker);
+                } else {
+                    console.error('Invalid coordinates:', location);
+                }
+            });
+        } else if (carLocation) {
+            carLocation.forEach((item) => {
+                const lon = parseFloat(item.longitude);
+                const lat = parseFloat(item.latitude);
+
+                if (!isNaN(lon) && !isNaN(lat)) {
+                    const marker = new window.longdo.Marker(
+                        { lon, lat },
+                        {
                             title: item.car_number,
                             detail: `เลขทะเบียน ${item.car_number}`,
                             size: { width: 200, height: 100 }
-                        });
-                        mapInstance.current.Overlays.add(marker);
-                    } else {
-                        console.error('Invalid coordinates:', location);
-                    }
-                });
-            }
-        } else {
-            console.error('Longdo Map library not loaded');
+                        }
+                    );
+                    mapInstance.current.Overlays.add(marker);
+                } else {
+                    console.error('Invalid coordinates:', item);
+                }
+            });
         }
     }, [customerLocation, carLocation]);
+
 
 
     const setLocation = () => {

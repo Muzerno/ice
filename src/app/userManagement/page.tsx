@@ -99,12 +99,28 @@ export default function userManagement() {
     }
 
     const removeUser = async (id: number) => {
-        const user = await deleteUser(id)
-        if (user.status === 200) {
+        try {
+          const user = await deleteUser(id);
+      
+          if (user.status === 200 && user.data.success) {
             messageApi.success('ลบข้อมูลสําเร็จ!');
-            fetchUserdata()
+            fetchUserdata();
+          } else {
+            // ตรวจจาก errorCode โดยตรง
+            if (user.data?.errorCode === 'FK_USER_CAR') {
+              messageApi.error('ไม่สามารถลบผู้ใช้นี้ได้ เนื่องจากมีข้อมูลรถที่ผูกอยู่');
+            } else {
+              messageApi.error(user.data?.message || 'ลบข้อมูลไม่สําเร็จ');
+            }
+          }
+      
+        } catch (error) {
+          messageApi.error('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
         }
-    }
+      }
+      
+
+
 
     const onFinish = async (values: any) => {
         const res = await createUser(values)

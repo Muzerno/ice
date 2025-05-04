@@ -3,7 +3,7 @@ import LayoutComponent from '@/components/Layout';
 import LongdoMap from '@/components/LongdoMap';
 import { UserContext } from '@/context/userContext';
 import { StockInCar } from '@/utils/productService';
-import { getDeliveryByCarId, updateDaliveryStatus } from '@/utils/transpotationService';
+import { getDeliveryByCarId,updateDeliveryStatus } from '@/utils/transpotationService';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Col, DatePicker, Input, message, Modal, Popconfirm, Row, Table, TableProps } from 'antd';
 import { format, parseISO, set } from 'date-fns';
@@ -43,7 +43,9 @@ const DeliveryPage = () => {
     const fetchDataDelivery = async () => {
         const userId = userLogin?.user?.transportation_car?.id
         if (userId) {
+            
             const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id, dayjs(selectDate).format('YYYY-MM-DD'));
+            console.log(res);
             if (res) {
                 setDropDayly(res.drop_dayly)
                 setDropOrder(res.drop_order)
@@ -88,24 +90,52 @@ const DeliveryPage = () => {
             console.error('Data is not provided or invalid:', data);
         }
     }, [data]);
+
     const handleSuccess = async (id: number) => {
-        if (selectedProducts.length <= 0) {
-            return messageApi.error("กรุณาเลือกรายการสินค้า");
-        }
-        if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
-            return messageApi.error("กรุณากรอกจํานวนสินค้า");
-        }
-        const res = await updateDaliveryStatus(id, { products: selectedProducts, product_amount: selectedProductsAmount, car_id: userLogin?.user?.transportation_car?.id, status: "success" });
-        if (res) {
-            fetchDataDelivery();
-            fetchStock();
-            setSelectedProducts([])
-            setSelectedProductsAmount({})
-            messageApi.success("บันทึกสําเร็จ");
-        } else {
-            messageApi.error("บันทึกไม่สําเร็จ");
+        try {
+            // Validation checks
+            if (selectedProducts.length <= 0) {
+                messageApi.error("กรุณาเลือกรายการสินค้า");
+                return;
+            }
+            
+            if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
+                messageApi.error("กรุณากรอกจํานวนสินค้า");
+                return;
+            }
+    
+            // 1. เรียก API และรอผลลัพธ์
+            const { data: res, error } = await updateDeliveryStatus(id, {
+                products: selectedProducts,
+                product_amount: selectedProductsAmount,
+                car_id: userLogin?.user?.transportation_car?.id,
+                delivery_status: "success"
+            });
+    
+            // 2. ตรวจสอบผลลัพธ์แบบละเอียด
+            if (!error && res?.success) {
+                // 3. รีเฟรชข้อมูลแบบขนาน
+                await Promise.allSettled([
+                    fetchDataDelivery(),
+                    fetchStock()
+                ]);
+                
+                // 4. รีเซ็ตสถานะ
+                setSelectedProducts([]);
+                setSelectedProductsAmount({});
+                
+                // 5. แจ้งเตือนสำเร็จ
+                messageApi.success("บันทึกสําเร็จ");
+            } else {
+                // แจ้งเตือนข้อความจากเซิร์ฟเวอร์ หรือข้อความทั่วไป
+                messageApi.error(res?.message || error?.message || "บันทึกไม่สําเร็จ");
+            }
+        } catch (error) {
+            console.error("Error in handleSuccess:", error);
+            messageApi.error("เกิดข้อผิดพลาดในการบันทึก");
         }
     }
+
     const handleOpenModal = (item: any) => {
         setProductSelect(item)
         setOpenModal(true);
@@ -137,7 +167,7 @@ const DeliveryPage = () => {
     };
 
     const handleFail = async (id: number) => {
-        const res = await updateDaliveryStatus(id, { status: "cancel" });
+        const res = await updateDeliveryStatus(id, { delivery_status: "cancel" });
         if (res) {
             fetchDataDelivery();
             messageApi.success("บันทึกสําเร็จ");
@@ -145,6 +175,7 @@ const DeliveryPage = () => {
             messageApi.error("บันทึกไม่สําเร็จ");
         }
     }
+
     const columnDropDayly = [
         {
             title: 'ชื่อลูกค้า',
@@ -163,12 +194,39 @@ const DeliveryPage = () => {
             dataIndex: 'customer',
             key: 'customer',
             render: (item: any) => {
-                let parsedAddress = JSON.parse(item.address);
+                if (!item?.address) return '-';
+
+                const [manualAddress, mapAddressPart] = item.address.split('\n\n[ที่อยู่จากแผนที่]: ');
+
+                let mapAddress = null;
+                if (mapAddressPart) {
+                    try {
+                        mapAddress = JSON.parse(mapAddressPart);
+                    } catch (err) {
+                        console.error('Failed to parse map address:', err);
+                        return (
+                            <div>
+                                <div>{manualAddress || '-'}</div>
+                                <div className="text-gray-500">{mapAddressPart}</div>
+                            </div>
+                        );
+                    }
+                }
+
                 return (
                     <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                        <div>{manualAddress || '-'}</div>
+                        {mapAddress && (
+                            <div className="text-gray-500">
+                                {mapAddress.road && <span>{mapAddress.road}</span>}
+                                {mapAddress.subdistrict && <span>, {mapAddress.subdistrict.replace('ต.', 'ตำบล')}</span>}
+                                {mapAddress.district && <span>, {mapAddress.district.replace('อ.', 'อำเภอ')}</span>}
+                                {mapAddress.province && <span>, {mapAddress.province.replace('จ.', 'จังหวัด')}</span>}
+                                {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
+                            </div>
+                        )}
                     </div>
-                )
+                );
             }
         },
         {
@@ -214,27 +272,54 @@ const DeliveryPage = () => {
     const columnDropOrder = [
         {
             title: 'ชื่อลูกค้า',
-            dataIndex: 'customer_order',
-            key: 'customer_order',
+            dataIndex: 'customer',
+            key: 'customer',
             render: (item: any) => item?.name,
         },
         {
             title: 'เบอร์โทรศัพท์',
-            dataIndex: 'customer_order',
-            key: 'customer_order',
+            dataIndex: 'customer',
+            key: 'customer',
             render: (item: any) => item?.telephone,
         },
         {
             title: 'ที่อยู่',
-            dataIndex: 'customer_order',
-            key: 'customer_order',
+            dataIndex: 'customer',
+            key: 'customer',
             render: (item: any) => {
-                let parsedAddress = JSON.parse(item.address);
+                if (!item?.address) return '-';
+
+                const [manualAddress, mapAddressPart] = item.address.split('\n\n[ที่อยู่จากแผนที่]: ');
+
+                let mapAddress = null;
+                if (mapAddressPart) {
+                    try {
+                        mapAddress = JSON.parse(mapAddressPart);
+                    } catch (err) {
+                        console.error('Failed to parse map address:', err);
+                        return (
+                            <div>
+                                <div>{manualAddress || '-'}</div>
+                                <div className="text-gray-500">{mapAddressPart}</div>
+                            </div>
+                        );
+                    }
+                }
+
                 return (
                     <div>
-                        {parsedAddress.road ? parsedAddress.road : ''} {parsedAddress.subdistrict} {parsedAddress.district} {parsedAddress.province} {parsedAddress.country} {parsedAddress.postcode}
+                        <div>{manualAddress || '-'}</div>
+                        {mapAddress && (
+                            <div className="text-gray-500">
+                                {mapAddress.road && <span>{mapAddress.road}</span>}
+                                {mapAddress.subdistrict && <span>, {mapAddress.subdistrict.replace('ต.', 'ตำบล')}</span>}
+                                {mapAddress.district && <span>, {mapAddress.district.replace('อ.', 'อำเภอ')}</span>}
+                                {mapAddress.province && <span>, {mapAddress.province.replace('จ.', 'จังหวัด')}</span>}
+                                {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
+                            </div>
+                        )}
                     </div>
-                )
+                );
             }
         },
         {
@@ -428,7 +513,6 @@ const DeliveryPage = () => {
             key: "price",
         }
     ]
-
 
     const rowSelection: TableProps<any>['rowSelection'] = {
         selectedRowKeys: selectedProducts,
