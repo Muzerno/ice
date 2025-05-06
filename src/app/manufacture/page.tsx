@@ -28,6 +28,7 @@ export default function Manufacture(props: IProps) {
     const [openModalEdit, setOpenModalEdit] = useState(false);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
+    const [selectedDate, setSelectedDate] = useState(dayjs());
     const [selectedProductsAmount, setSelectedProductsAmount] = useState<{ [key: number]: number }>({});
     useEffect(() => {
         fetchProduct()
@@ -58,6 +59,10 @@ export default function Manufacture(props: IProps) {
             messageApi.error('กรุณากรอกจํานวนสินค้า');
             return
         }
+        if (selectedDate && selectedDate.isBefore(dayjs(), 'day')) {
+            messageApi.error('ไม่สามารถเลือกวันที่ย้อนหลังได้');
+            return;
+        }
         const res = await createManufacture({
             user_id: userLogin?.user?.id,
             product_id: selectedProducts,
@@ -81,7 +86,7 @@ export default function Manufacture(props: IProps) {
             dataIndex: ['manufacture', 'date_time'], // เข้าถึง manufacture.date_time
             key: 'date_time',
             render: (value: string) => format(new Date(value), 'HH:mm'),
-          },          
+        },
         {
             title: 'จำนวน',
             dataIndex: 'manufacture_amount',
@@ -111,23 +116,26 @@ export default function Manufacture(props: IProps) {
 
                                 formEdit.setFieldsValue({
                                     id: item?.id,
-                                    date_time: dayjs(new Date()),
+                                    ice_id: item?.ice_id,
+                                    manufacture_id: item?.manufacture_id,
                                     product_id: item?.products.id,
-                                    manufacture_amount: item?.manufacture_amount
+                                    manufacture_amount: item?.manufacture_amount,
+                                    date_time: dayjs(item?.manufacture?.date_time),
                                 });
+
                             }}
                         />
-                        <Popconfirm
-                            key={item.id}
+                        {/* <Popconfirm
+                            key={item.manufacture_id}
                             title="ลบข้อมูลการผลิต"
                             description="คุณต้องการลบข้อมูลการผลิตหรือไม่"
-                            onConfirm={() => onDelete(item.id)}
+                            onConfirm={() => onDelete(item.manufacture_id)}
                             okText="Yes"
                             cancelText="No"
-                            open={openConfirmUuid === item.id}
+                            open={openConfirmUuid === item.manufacture_id}
                             onOpenChange={(newOpen) => {
                                 if (newOpen) {
-                                    setOpenConfirmUuid(item.id);
+                                    setOpenConfirmUuid(item.manufacture_id);
                                 } else {
                                     setOpenConfirmUuid(null);
                                 }
@@ -139,7 +147,7 @@ export default function Manufacture(props: IProps) {
                                 key={item.id}
                                 icon={<RestOutlined />}
                             />
-                        </Popconfirm>
+                        </Popconfirm> */}
                     </>
                 )
             }
@@ -151,14 +159,9 @@ export default function Manufacture(props: IProps) {
             title: 'ลำดับ',
             key: 'index',
             render: (_: any, __: any, index: number) => index + 1,
-            sx: { width: '5%' }, // เพิ่มหรือปรับขนาดความกว้างได้ตามต้องการ
+            sx: { width: '5%' },
         },
-        // {
-        //     title: 'รหัสสินค้า',
-        //     dataIndex: 'id',
-        //     key: 'id',
-        //     sx: { width: '10%' },
-        // },
+
         {
             title: 'ชื่อสินค้า',
             dataIndex: 'name',
@@ -177,34 +180,6 @@ export default function Manufacture(props: IProps) {
         },
     ]
     const ProductSelectColumns = [
-        // {
-        //     title: 'เลือก',
-        //     dataIndex: 'id',
-        //     key: 'id',
-        //     width: "5%",
-        //     render: (item: any) => {
-        //         return (
-        //             <Checkbox
-        //                 key={item}
-        //                 checked={selectedProducts.includes(item)}
-        //                 onChange={(e) => {
-        //                     if (e.target.checked) {
-        //                         setSelectedProducts([...selectedProducts, item]);
-        //                     } else {
-        //                         setSelectedProducts(
-        //                             selectedProducts.filter((id) => id !== item)
-        //                         );
-        //                         setSelectedProductsAmount((prevAmounts) => {
-        //                             const newAmounts = { ...prevAmounts };
-        //                             delete newAmounts[item];
-        //                             return newAmounts;
-        //                         });
-        //                     }
-        //                 }}
-        //             />
-        //         );
-        //     }
-        // },
         {
             title: 'ชื่อสินค้า',
             dataIndex: 'name',
@@ -270,27 +245,38 @@ export default function Manufacture(props: IProps) {
     }
 
     const onUpdate = async (values: any) => {
+        console.log('VALUES ที่ส่งมา:', values); // ✅ สำคัญมาก
+
         try {
-          // สร้าง payload ที่ถูกต้อง
-          const payload = {
-            product_id: Number(values.product_id),
-            amount: Number(values.manufacture_amount)
-          };
-      
-          const res = await updateManufacture(values.id, payload);
-          
-          if (res.status === 200) {
-            messageApi.success('แก้ไขข้อมูลการผลิตสำเร็จ');
-            setOpenModalEdit(false);
-            fetchManufacture();
-          } else {
-            messageApi.error(`แก้ไขข้อมูลการผลิตไม่สำเร็จ: ${res.data?.message || ''}`);
-          }
+            const payload = {
+                ice_id: values.ice_id ?? values.products?.id,
+                manufacture_id: values.manufacture_id ?? values.manufacture?.id,
+                amount: Number(values.manufacture_amount),
+                date_time: values.manufacture?.date_time,
+            };
+
+            if (!payload.ice_id || !payload.manufacture_id) {
+                console.log('❌ payload ไม่สมบูรณ์:', payload);
+                messageApi.error('ไม่พบข้อมูล ice_id หรือ manufacture_id');
+                return;
+            }
+
+            const res = await updateManufacture(payload);
+
+            if (res.status === 200) {
+                messageApi.success('แก้ไขข้อมูลการผลิตสำเร็จ');
+                setOpenModalEdit(false);
+                fetchManufacture();
+            } else {
+                messageApi.error(`แก้ไขข้อมูลการผลิตไม่สำเร็จ: ${res.data?.message || ''}`);
+            }
         } catch (error) {
-          console.error('Update error:', error);
-          messageApi.error('เกิดข้อผิดพลาดในการแก้ไขข้อมูล');
+            console.error('Update error:', error);
+            messageApi.error('เกิดข้อผิดพลาดในการแก้ไขข้อมูล');
         }
-      };
+    };
+
+
 
 
     const rowSelection: TableProps<any>['rowSelection'] = {
@@ -302,9 +288,6 @@ export default function Manufacture(props: IProps) {
             }
             setSelectedProducts([...customerArray])
         },
-        // getCheckboxProps: (record: any) => ({
-        //     name: record.name,
-        // }),
 
     };
 
@@ -332,7 +315,16 @@ export default function Manufacture(props: IProps) {
                                     </Col>
                                     <Col span={12}>
                                         <div className='mb-2 float-end'>
-                                            <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} onChange={(date, dateString) => fetchManufacture(date)} />
+                                            <DatePicker
+                                                format={"DD/MM/YYYY"}
+                                                size='large'
+                                                defaultValue={selectedDate}
+                                                disabledDate={(current) => current && current > dayjs().endOf('day')}
+                                                onChange={(date) => {
+                                                    setSelectedDate(date);
+                                                    fetchManufacture(date);
+                                                }}
+                                            />
                                         </div>
                                     </Col>
 
@@ -352,25 +344,8 @@ export default function Manufacture(props: IProps) {
                     <Col span={8} className='pl-2'>
                         <Card className='w-full' title="เพิ่มข้อมูลการผลิต">
                             <Form layout='vertical' onFinish={create} form={form}>
-                                {/* <Card className='w-full' title="สินค้าในคลัง"> */}
 
                                 <Table rowKey={(id: any) => id.id} rowSelection={{ type: 'checkbox', ...rowSelection }} columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
-                                {/* </Card> */}
-                                {/* <Form.Item key={"product_id"} name={"product_id"} hidden className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
-                                    <Select className='w-full' mode='multiple' >
-                                        {productData.map((item: any) =>
-                                            <Select.Option key={item.id} value={item.id}>
-                                                {item.name}
-                                            </Select.Option>
-                                        )}
-                                    </Select>
-                                </Form.Item> */}
-                                {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
-                                    <DatePicker className='w-full' format={'DD/MM/YYYY'} />
-                                </Form.Item> */}
-                                {/* <Form.Item name={"manufacture_amount"} hidden className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
-                                    <Input className='w-full' />
-                                </Form.Item> */}
 
                                 <Button type="primary" className=' w-full' htmlType="submit" >บันทึก</Button>
 
@@ -384,6 +359,12 @@ export default function Manufacture(props: IProps) {
                     <Form.Item name='id' hidden>
                         <Input />
                     </Form.Item>
+                    <Form.Item name='ice_id' hidden>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name='manufacture_id' hidden>
+                        <Input />
+                    </Form.Item>
                     <Form.Item name={"product_id"} className='w-full' label="สินค้า" rules={[{ required: true, message: "กรุณาเลือกสินค้า" }]}>
                         <Select className='w-full' disabled>
                             {productData.map((item: any) =>
@@ -394,9 +375,7 @@ export default function Manufacture(props: IProps) {
 
                         </Select>
                     </Form.Item>
-                    {/* <Form.Item name={"date_time"} className='w-full ' label="วันที่ผลิต" rules={[{ required: true, message: "กรุณาเลือกวันที่ผลิต" }]}>
-                        <DatePicker className='w-full' format={'DD/MM/YYYY'} />
-                    </Form.Item> */}
+
                     <Form.Item name={"manufacture_amount"} className='w-full' label="จำนวนที่ผลิต" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
                         <Input className='w-full' />
                     </Form.Item>

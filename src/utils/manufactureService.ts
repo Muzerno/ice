@@ -32,14 +32,15 @@ export async function deleteManufacture(id: number) {
     }
 }
 
-export async function updateManufacture(id: number, params: any) {
+export async function updateManufacture(params: any) {
     try {
-        const manufacture = await AxiosInstances.put(`/manufacture/${id}`, params);
-        return Promise.resolve(manufacture);
+      const manufacture = await AxiosInstances.put('/manufacture', params);
+      return Promise.resolve(manufacture);
     } catch (error) {
-        return Promise.reject(error);
+      return Promise.reject(error);
     }
-}
+  }
+  
 
 export async function findOneManufacture(id: number) {
     try {

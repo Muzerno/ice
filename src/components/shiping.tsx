@@ -1,6 +1,6 @@
 // src/components/carManagement.tsx
 import { findAllCustomer } from "@/utils/customerService";
-import { createTransportationLine, deleteTransportationLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar,addCustomersToLine } from "@/utils/transpotationService";
+import { createTransportationLine, deleteCustomerFromLine, deleteTransportationLineWithIds, findAllCar, findAllTransportationLine, updateCar, addCustomersToLine } from "@/utils/transpotationService";
 import { DeleteOutlined, PlusCircleOutlined, TeamOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, TableProps } from "antd";
 import useMessage from "antd/es/message/useMessage";
@@ -31,31 +31,30 @@ const Shipping = () => {
 
     const handleUpdate = async (item: any) => {
         if (rowSelectList.length <= 0) {
-          messageApi.error("กรุณาเลือกลูกค้า");
-          return;
+            messageApi.error("กรุณาเลือกลูกค้า");
+            return;
         }
-      
+
         const payload = {
-          line_name: item.line_name,
-          car_id: item.car_id,
-          customer_ids: rowSelectList,
+            line_id: item.line_id,
+            car_id: item.car_id,
+            customer_ids: rowSelectList,
         };
-      
+
         const res = await addCustomersToLine(payload);
-      
+
         if (res.status === 200 || res.status === 201) {
             messageApi.success("เพิ่มลูกค้าในสายเรียบร้อย!");
             form.resetFields();
-            
-            // แนะนำให้รอสักเล็กน้อยเพื่อความแน่นอน หรือให้ deliverLine ดึงข้อมูลใหม่จริง ๆ
-            await deliverLine();  // ← ตรวจว่าฟังก์ชันนี้เป็น async และดึงข้อมูลจริง
+            await deliverLine();
             setRowSelectList([]);
-          } else {
+        } else {
             messageApi.error("เพิ่มลูกค้าไม่สำเร็จ!");
-          }
-      };
-      
-      
+        }
+    };
+
+
+
 
     const columns = [
         {
@@ -92,7 +91,7 @@ const Shipping = () => {
                     <Popconfirm
                         title="Delete the car"
                         description="แน่ใจหรือไม่"
-                        onConfirm={() => deleteLineWithIdsArray(item.lineArray)}
+                        onConfirm={() => deleteLineWithIdsArray(item.line_id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -126,10 +125,10 @@ const Shipping = () => {
             key: 'address',
             render: (address: any) => {
                 if (!address) return '-';
-                
+
                 // แยกส่วนที่อยู่ที่กรอกเองและที่อยู่จากแผนที่
                 const [manualAddress, mapAddressPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
-                
+
                 // พยายาม parse ที่อยู่จากแผนที่ถ้ามี
                 let mapAddress = null;
                 if (mapAddressPart) {
@@ -146,7 +145,7 @@ const Shipping = () => {
                         );
                     }
                 }
-                
+
                 return (
                     <div>
                         <div>{manualAddress || '-'}</div>
@@ -167,14 +166,14 @@ const Shipping = () => {
             title: 'สถานะ',
             key: 'status',
             render: (record: any) => {
-              const isAssigned = assignedCustomers.has(record.id);
-              return (
-                <span className={isAssigned ? 'text-red-500' : 'text-green-500'}>
-                  {isAssigned ? 'อยู่ในสายแล้ว' : 'ยังไม่ลงสาย'}
-                </span>
-              );
+                const isAssigned = assignedCustomers.has(record.customer_id);
+                return (
+                    <span className={isAssigned ? 'text-red-500' : 'text-green-500'}>
+                        {isAssigned ? 'อยู่ในสายแล้ว' : 'ยังไม่ลงสาย'}
+                    </span>
+                );
             },
-          },
+        },
 
 
     ];
@@ -202,10 +201,10 @@ const Shipping = () => {
             key: 'address',
             render: (address: any) => {
                 if (!address) return '-';
-                
+
                 // แยกส่วนที่อยู่ที่กรอกเองและที่อยู่จากแผนที่
                 const [manualAddress, mapAddressPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
-                
+
                 // พยายาม parse ที่อยู่จากแผนที่ถ้ามี
                 let mapAddress = null;
                 if (mapAddressPart) {
@@ -222,7 +221,7 @@ const Shipping = () => {
                         );
                     }
                 }
-                
+
                 return (
                     <div>
                         <div>{manualAddress || '-'}</div>
@@ -247,7 +246,7 @@ const Shipping = () => {
                     <Popconfirm
                         title="Delete the car"
                         description="แน่ใจหรือไม่"
-                        onConfirm={() => deleteLine(item.line_id)}
+                        onConfirm={() => deleteLine(item.line_id, item.customer_id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -268,9 +267,9 @@ const Shipping = () => {
             messageApi.success("บันทึกสําเร็จ!");
             form.resetFields();
             deliverLine();
-            setRowSelectList([])
-        } if (res.status === 204) {
-            messageApi.error("สายรถซ้ําหรือเลขรถไม่ถูกต้อง");
+            setRowSelectList([]);
+        } else if (res.status === 400) {
+            messageApi.error(res.data?.message || "เกิดข้อผิดพลาดในการสร้างสายรถ");
         }
 
     };
@@ -284,29 +283,30 @@ const Shipping = () => {
         }
     };
 
-    const deleteLine = async (id: number) => {
-        const res = await deleteTransportationLine(id);
+    const deleteLine = async (lineId: number, cusId: number) => {
+        const res = await deleteCustomerFromLine(lineId, cusId);
         if (res.status === 200) {
             messageApi.success("ลบสําเร็จ!");
             deliverLine();
-            getCustomer()
-            setOpenModalCustomer(false)
+            getCustomer();
+            setOpenModalCustomer(false);
         } else {
             messageApi.error("ลบไม่สําเร็จ!");
         }
     };
 
-    const deleteLineWithIdsArray = async (id: number[]) => {
-        const res = await deleteTransportationLineWithIds(id);
+
+    const deleteLineWithIdsArray = async (ids: number[]) => {
+        const res = await deleteTransportationLineWithIds(ids);
         if (res.status === 200) {
             messageApi.success("ลบสําเร็จ!");
-            deliverLine();
-            getCustomer()
-
+            deliverLine(); // โหลดเส้นทางใหม่
+            getCustomer(); // โหลดลูกค้าใหม่
         } else {
             messageApi.error("ลบไม่สําเร็จ!");
         }
     };
+
 
     const getCustomer = async () => {
         const res = await findAllCustomer();
@@ -324,36 +324,39 @@ const Shipping = () => {
     const deliverLine = async () => {
         const res = await findAllTransportationLine();
         if (res) {
-          setTransportationData(res);
-          
+            setTransportationData(res);
 
-          const assigned = new Set<number>();
-          res.forEach((line: any) => {
-            if (line.customer && Array.isArray(line.customer)) {
-              line.customer.forEach((cust: any) => {
-                if (cust.id) assigned.add(cust.id);
-              });
-            }
-          });
-          setAssignedCustomers(assigned);
+            const assigned = new Set<number>();
+            res.forEach((line: any) => {
+                if (line.customer && Array.isArray(line.customer)) {
+                    line.customer.forEach((cust: any) => {
+                        if (cust.customer_id) assigned.add(cust.customer_id); // ใช้ customer_id
+                    });
+                }
+            });
+            setAssignedCustomers(assigned);
         }
-      }
+    }
 
-      const rowSelection: TableProps<any>['rowSelection'] = {
+    const rowSelection: TableProps<any>['rowSelection'] = {
         selectedRowKeys: rowSelectList,
         onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
-            const customerArray = selectedRows.map(row => row.id);
+            // ใช้ customer_id แทน id
+            const customerArray = selectedRows
+                .map(row => row.customer_id)
+                .filter(customer_id => customer_id != null);
+
             form.setFieldsValue({
                 customer_id: customerArray
             });
-            setRowSelectList([...customerArray]);
+            setRowSelectList(customerArray);
         },
         getCheckboxProps: (record: any) => ({
             name: record.name,
-            disabled: assignedCustomers.has(record.id), // ❗ ปิดการเลือกถ้าอยู่ในสายแล้ว
+            disabled: assignedCustomers.has(record.customer_id), // ใช้ customer_id
         }),
     };
-    
+
 
     const handleOpenModalCustomer = (value: any) => {
         setOpenModalCustomer(true)
@@ -379,16 +382,15 @@ const Shipping = () => {
                             <div>
                                 <Card title="ข้อมูลลูกค้า" className="w-full  " >
                                     <div className="h-[300px] overflow-y-scroll">
-                                        <Table columns={customerColumns}
+                                        <Table
+                                            columns={customerColumns}
                                             rowSelection={{
                                                 type: "checkbox",
                                                 ...rowSelection,
                                             }}
-                                            style={{ overflowY: "scroll" }}
-                                            rowKey={(id: any) => id.id}
+                                            rowKey={(record) => record.customer_id} // ใช้ customer_id แทน id
                                             pagination={false}
                                             dataSource={customerData}
-
                                             onChange={handlePaginationChange2}
                                         >
 
@@ -417,13 +419,13 @@ const Shipping = () => {
                                 <Input type="text" />
                             </Form.Item>
                             <Form.Item name="car_id" label="เลขทะเบียนรถ" rules={[{ required: true, message: "กรุณากรอกเลขทะเบียนรถ" }]}>
-                            <Select >
-                                    {carData.map((item: any) => <Select.Option value={item.id}>{item.car_number} - {item.users ? `${item.users.firstname} ${item.users.lastname}` : 'ไม่มีคนขับ'}</Select.Option>)}
+                                <Select >
+                                    {carData.map((item: any) => <Select.Option value={item.car_id}>{item.car_number} - {item.users ? `${item.users.firstname} ${item.users.lastname}` : 'ไม่มีคนขับ'}</Select.Option>)}
                                 </Select>
                             </Form.Item>
                             <Form.Item name="customer_id" label="Customer" hidden>
                                 <Select mode="multiple">
-                                    {customerData.map((item: any) => <Select.Option value={item.id}>{item.name} </Select.Option>)}
+                                    {customerData.map((item: any) => <Select.Option value={item.customer_id}>{item.name} </Select.Option>)}
                                 </Select>
                             </Form.Item>
                             <Form.Item className="w-full">

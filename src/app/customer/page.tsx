@@ -35,8 +35,8 @@ const CustomerManagement = () => {
         },
         {
             title: 'รหัสลูกค้า',
-            dataIndex: 'customer_code',
-            key: 'customer_code',
+            dataIndex: 'customer_id',
+            key: 'customer_id',
         },
         {
             title: 'ชื่อ',
@@ -53,7 +53,6 @@ const CustomerManagement = () => {
             dataIndex: 'address',
             key: 'address',
             render: (address: any) => {
-                // แยกส่วนที่อยู่ที่กรอกเองและที่อยู่จากแผนที่
                 const [manualAddress, mapAddressPart] = address.split('\n\n[ที่อยู่จากแผนที่]: ');
 
                 try {
@@ -88,7 +87,7 @@ const CustomerManagement = () => {
                         className="!bg-yellow-300 mr-1"
                         icon={<ToolOutlined />}
                         onClick={() => {
-                            setSeleteUUid(item.id);
+                            setSeleteUUid(item.customer_id);
                             setOpenModalEdit(true);
                             formEdit.setFieldsValue({
                                 ...item
@@ -96,16 +95,16 @@ const CustomerManagement = () => {
                         }}
                     />
                     <Popconfirm
-                        key={item.id}
+                        key={item.customer_id}
                         title="ต้องการลบข้อมูลใช่หรือไม่?"
                         description="ลบข้อมูล"
-                        onConfirm={() => onDelete(item.id)}
+                        onConfirm={() => onDelete(item.customer_id)}
                         okText="Yes"
                         cancelText="No"
-                        open={openConfirmUuid === item.id}
+                        open={openConfirmUuid === item.customer_id}
                         onOpenChange={(newOpen) => {
                             if (newOpen) {
-                                setOpenConfirmUuid(item.id);
+                                setOpenConfirmUuid(item.customer_id);
                             } else {
                                 setOpenConfirmUuid(null);
                             }
@@ -116,7 +115,7 @@ const CustomerManagement = () => {
                         <Button
                             type="primary"
                             className="!bg-red-500"
-                            key={item.id}
+                            key={item.customer_id}
                             icon={<RestOutlined />}
                         />
                     </Popconfirm>
@@ -147,7 +146,7 @@ const CustomerManagement = () => {
 
     useEffect(() => {
         if (seleteUUid && customerData) {
-            const customer = customerData.find((c: any) => c.id === seleteUUid);
+            const customer = customerData.find((c: any) => c.customer_id === seleteUUid);
             if (customer) {
                 // แยกที่อยู่จาก address
                 const [manualAddress, mapAddress] = customer.address.split('\n\n[ที่อยู่จากแผนที่]: ');
@@ -189,10 +188,7 @@ const CustomerManagement = () => {
 
 
     const onUpdate = async (values: any) => {
-        // แยกข้อมูลที่อยู่
         const combinedAddress = `${values.manual_address}\n\n[ที่อยู่จากแผนที่]: ${values.map_address}`;
-        
-        // สร้าง payload โดยไม่รวม manual_address และ map_address
         const payload = {
             name: values.name,
             telephone: values.telephone,
@@ -214,41 +210,26 @@ const CustomerManagement = () => {
     };
 
 
-    const onDelete = async (id: number) => {
-        const res = await deleteCustomer(id)
-        if (res.status === 200) {
-            messageApi.success('ลบลูกค้าสําเร็จ!');
-            fetchCustomerData()
-        } else {
-            messageApi.error('ลบลูกค้าไม่สําเร็จ!');
+    const onDelete = async (customer_id: number) => {
+        try {
+          const res = await deleteCustomer(customer_id);
+          if (res.status === 200) {
+            messageApi.success('ลบลูกค้าสำเร็จ!');
+            fetchCustomerData();
+          }
+        } catch (error: any) {
+          if (error.response?.data?.message === 'ไม่สามารถลบลูกค้าได้ เนื่องจากมีการผูกไว้กับสายรถ') {
+            messageApi.error('ไม่สามารถลบได้: ลูกค้าผูกไว้กับสายรถแล้ว');
+          } else {
+            messageApi.error('ลบลูกค้าไม่สำเร็จ!');
+          }
         }
-    }
+      };
+      
 
     useEffect(() => {
         fetchCustomerData();
     }, [openModalEdit]);
-
-    // const randomCustomerId = () => {
-    //     let text = "C-";
-    //     let possibleNumbers = "0123456789";
-    //     let possibleLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    //     // Add 2 random numbers
-    //     for (let i = 0; i < 2; i++) {
-    //         text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
-    //     }
-
-    //     // Add 5 random letters
-    //     for (let i = 0; i < 5; i++) {
-    //         text += possibleLetters.charAt(Math.floor(Math.random() * possibleLetters.length));
-    //     }
-
-    //     for (let i = 0; i < 2; i++) {
-    //         text += possibleNumbers.charAt(Math.floor(Math.random() * possibleNumbers.length));
-    //     }
-
-    //     return text;
-    // }
 
     return (
         <LayoutComponent>
@@ -261,24 +242,6 @@ const CustomerManagement = () => {
                     <Col span={8}>
                         <Card className="w-full !bg-slate-100">
                             <Form layout='vertical' title='Add Customer' form={form} onFinish={(e) => createCustomers(e)} >
-                                {/* <Row>
-                                    <Col span={24}>
-                                        <Row>
-                                            <Col span={18}>
-                                                <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า"
-                                                    rules={[{ required: true, message: "กรอกรหัสลูกค้า" }]} >
-                                                    <Input type='text' disabled />
-                                                </Form.Item>
-                                            </Col>
-                                            <Col span={6} className='pt-8'>
-                                                <Button type='default' className='w-full' onClick={() => form.setFieldsValue({ customer_code: randomCustomerId() })}>Generate</Button>
-                                            </Col>
-                                        </Row>
-
-
-                                    </Col>
-
-                                </Row> */}
                                 <Row >
                                     <Col span={24}>
                                         <Form.Item name={"name"} key={"name"} label="ชื่อลูกค้า"
@@ -371,7 +334,7 @@ const CustomerManagement = () => {
                     </Row>
                     <Row>
                         <Col span={24}>
-                            <Form.Item name={"customer_code"} key={"customer_code"} label="รหัสลูกค้า">
+                            <Form.Item name={"customer_id"} key={"customer_id"} label="รหัสลูกค้า">
                                 <Input type='text' disabled />
                             </Form.Item>
                         </Col>

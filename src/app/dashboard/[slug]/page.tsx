@@ -114,7 +114,7 @@ const Page = () => {
                     return sum + group.withdraw_details.reduce((itemSum: number, detail: any) => itemSum + detail.amount, 0);
                 }, 0);
 
-                console.log("Total Items:", totalItems); 
+                console.log("Total Items:", totalItems);
                 setExportData(rowData);
                 setTotal(total);
                 setTotalAmount(totalItems);
@@ -149,14 +149,7 @@ const Page = () => {
             }
             else if (exportType === "money") {
                 const groupedData = response.reduce((acc: any, item: any) => {
-                    const detail = item.delivery_details;
-                    const lineId = detail?.dropoffpoint?.line_id;
-                    const lines = detail?.car?.Lines || [];
-
-                    // หา line_name จาก car.Lines ที่ตรงกับ line_id
-                    const matchedLine = lines.find((line: any) => line.id === lineId);
-                    const lineName = matchedLine?.line_name || 'ไม่พบชื่อสาย';
-
+                    const lineName = item.line?.line_name || 'ไม่พบชื่อสาย';
                     const date = format(new Date(item.date_time), 'dd/MM/yyyy');
                     const key = `${lineName}-${date}`;
 
@@ -169,23 +162,27 @@ const Page = () => {
                         };
                     }
 
-                    const details = Array.isArray(item.delivery_details)
-                        ? item.delivery_details
-                        : [item.delivery_details];
+                    const dropOffPoints = item.line?.dropOffPoints || [];
+                    dropOffPoints.forEach((drop: any) => {
+                        const deliveryDetails = drop.delivery_details || [];
 
-                    details.forEach((detail: any) => {
-                        const productId = detail.product.id;
-                        if (!acc[key].ice_details[productId]) {
-                            acc[key].ice_details[productId] = {
-                                name: detail.product.name,
-                                amount: 0,
-                                price: detail.price,
-                                total: 0
-                            };
-                        }
-                        acc[key].ice_details[productId].amount += detail.amount;
-                        acc[key].ice_details[productId].total =
-                            acc[key].ice_details[productId].amount * detail.price;
+                        deliveryDetails.forEach((detail: any) => {
+                            const productId = detail?.product?.id;
+                            if (!productId) return;
+
+                            if (!acc[key].ice_details[productId]) {
+                                acc[key].ice_details[productId] = {
+                                    name: detail?.product?.name,
+                                    amount: 0,
+                                    price: detail?.price,
+                                    total: 0
+                                };
+                            }
+
+                            acc[key].ice_details[productId].amount += detail?.amount;
+                            acc[key].ice_details[productId].total =
+                                acc[key].ice_details[productId].amount * detail?.price;
+                        });
                     });
 
                     acc[key].total_amount += item.amount;
@@ -211,6 +208,7 @@ const Page = () => {
                 setExportData(rowData);
                 setTotal(total);
             }
+
 
             else if (exportType === "manufacture") {
                 const groupedByDate = response.reduce((acc: any, item: any) => {
@@ -497,7 +495,7 @@ const Page = () => {
                                     <Select.Option key='0' value={null}>เลือกทั้งหมด</Select.Option>
                                     {transportationData.map((item: any, index: number) => {
                                         return (
-                                            <Select.Option key={index} value={item.id}>{item.line_name}</Select.Option>
+                                            <Select.Option key={index} value={item.line_id}>{item.line_name}</Select.Option>
                                         )
                                     })}
                                 </Select>

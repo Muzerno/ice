@@ -34,14 +34,14 @@ const Order = () => {
     const [stockInCarData, setStockInCarData] = useState<any[]>([]);
     const [lineOptions, setLineOptions] = useState<any[]>([]);
     const [filteredLineOptions, setFilteredLineOptions] = useState<any[]>([]);
+    const [selectedDate, setSelectedDate] = useState(dayjs());
+
     const handlePaginationChange = (pagination: any) => {
         setCurrentIndex((pagination.current - 1) * pagination.pageSize);
     };
     const handlePaginationChange2 = (pagination: any) => {
         setCurrentIndex2((pagination.current - 1) * pagination.pageSize);
     };
-
-    const [openConfirmUuid, setOpenConfirmUuid] = useState<number | null>();
 
     useEffect(() => {
         fetchProduct()
@@ -128,18 +128,23 @@ const Order = () => {
                 messageApi.error('กรุณาเลือกรายการสินค้า');
                 return;
             }
-    
+
             if (Object.keys(selectedProductsAmount).length < selectedProducts.length) {
                 messageApi.error('กรุณากรอกจํานวนสินค้า');
                 return;
             }
-    
+
             const totalSelectedAmount = Object.values(selectedProductsAmount).reduce((sum, amount) => sum + amount, 0);
             if (totalSelectedAmount > 40) {
                 messageApi.error('ไม่สามารถเลือกสินค้ารวมเกิน 40 รายการได้');
                 return;
             }
-    
+
+            if (selectedDate && selectedDate.isBefore(dayjs(), 'day')) {
+                messageApi.error('ไม่สามารถเลือกวันที่ย้อนหลังได้');
+                return;
+            }
+
             const res = await createOrder({
                 user_id: userLogin?.user?.id,
                 product_id: selectedProducts,
@@ -147,15 +152,14 @@ const Order = () => {
                 car_id: values.car_id,
                 line_id: values.line_id
             });
-    
+
             if (res.data.success === true) {
-                // รอให้ดึงข้อมูลใหม่เสร็จก่อนเคลียร์ฟอร์ม
                 await Promise.all([
                     fetchWithdrawData(),
                     fetchProduct(),
                     fetchStockInCar(values.car_id)
                 ]);
-    
+
                 setSelectedProducts([]);
                 setSelectedProductsAmount({});
                 form.resetFields();
@@ -190,13 +194,13 @@ const Order = () => {
             dataIndex: "transportation_car",
             key: "line_name",
             render: (car: any) => car?.Lines?.[0]?.line_name || "-",
-          },
-          {
+        },
+        {
             title: "ทะเบียนรถ",
             dataIndex: "transportation_car",
             key: "car_number",
             render: (car: any) => car?.car_number || "-",
-          },
+        },
         {
             title: 'วันที่เบิก',
             dataIndex: 'date_time',
@@ -332,38 +336,6 @@ const Order = () => {
             }
         }
     ]
-    const onDelete = async (id: number) => {
-        const res = await deleteManufacture(id)
-        if (res.status === 200) {
-            messageApi.success('ลบข้อมูลสำเร็จ');
-            fetchWithdrawData()
-        } else {
-            messageApi.error('ลบข้อมูลไม่สำเร็จ');
-        }
-    }
-
-    const onUpdate = async (values: any) => {
-        const res = await updateManufacture(values.id, values)
-        if (res.status === 200) {
-            messageApi.success('แก้ไขข้อมูลสำเร็จ');
-            setOpenModalEdit(false)
-            fetchWithdrawData()
-        } else {
-            messageApi.error('แก้ไขข้อมูลไม่สำเร็จ');
-        }
-    }
-
-    const handleChangeLine = (id: any) => {
-        const findLine: any = lineData.find((line: any) => line.id === id);
-        if (findLine) {
-            form.setFieldsValue({
-                car_id: findLine.car_id
-            });
-            fetchStockInCar(findLine.car_id); // เรียก API
-        }
-    };
-
-
 
     const rowSelection: TableProps<any>['rowSelection'] = {
         selectedRowKeys: selectedProducts,
@@ -415,7 +387,16 @@ const Order = () => {
 
                             <Card className='w-full pt-5' title="การเบิกสินค้า">
                                 <div className='mb-2 float-end'>
-                                    <DatePicker format={"DD/MM/YYYY"} size='large' defaultValue={dayjs(new Date())} onChange={(date, dateString) => fetchWithdrawData(date)} />
+                                    <DatePicker
+                                        format={"DD/MM/YYYY"}
+                                        size='large'
+                                        defaultValue={selectedDate}
+                                        disabledDate={(current) => current && current > dayjs().endOf('day')}
+                                        onChange={(date) => {
+                                            setSelectedDate(date);
+                                            fetchWithdrawData(date);
+                                        }}
+                                    />
                                 </div>
                                 <div className='w-full h-[300px] overflow-y-scroll'>
                                     <Table columns={columns} dataSource={data} onChange={handlePaginationChange2} pagination={false} />
@@ -435,14 +416,14 @@ const Order = () => {
                                         className='w-full'
                                         onChange={(lineId) => {
                                             // หารถที่ใช้สายนี้
-                                            const selectedLine = lineData.find((line: any) => line.id === lineId);
+                                            const selectedLine = lineData.find((line: any) => line.line_id === lineId);
                                             if (selectedLine) {
                                                 form.setFieldsValue({ car_id: selectedLine.car_id });
                                                 fetchStockInCar(selectedLine.car_id);
                                             }
                                         }}
                                         options={lineData.map((line: any) => ({
-                                            value: line.id,
+                                            value: line.line_id,
                                             label: line.line_name
                                         }))}
                                     />
@@ -451,15 +432,14 @@ const Order = () => {
                                     <Select
                                         className='w-full'
                                         onChange={(carId) => {
-                                            // หาสายที่ใช้รถคันนี้
                                             const relatedLines = lineData.filter((line: any) => line.car_id === carId);
                                             if (relatedLines.length > 0) {
-                                                form.setFieldsValue({ line_id: relatedLines[0].id });
+                                                form.setFieldsValue({ line_id: relatedLines[0].line_id });
                                             }
                                             fetchStockInCar(carId);
                                         }}
                                         options={carData.map((car: any) => ({
-                                            value: car.id,
+                                            value: car.car_id,
                                             label: `${car.car_number} - ${car.users.firstname} ${car.users.lastname || ''}`
                                         }))}
                                     />

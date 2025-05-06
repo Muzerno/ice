@@ -34,17 +34,22 @@ const DeliveryPage = () => {
     const [productSelect, setProductSelect] = useState<any>([]);
     const [totalPrice, setTotalPrice] = useState(0);
     useEffect(() => {
-        if (userLogin && userLogin?.user?.transportation_car?.id) {
+        console.log(userLogin);
+        
+        if (userLogin && userLogin?.user?.transportation_car?.car_id) {
+            
             fetchDataDelivery();
             fetchStock();
         }
     }, [userLogin]);
 
     const fetchDataDelivery = async () => {
-        const userId = userLogin?.user?.transportation_car?.id
+        const userId = userLogin?.user?.transportation_car?.car_id
         if (userId) {
             
-            const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.id, dayjs(selectDate).format('YYYY-MM-DD'));
+            const res = await getDeliveryByCarId(userLogin?.user?.transportation_car?.car_id, dayjs(selectDate).format('YYYY-MM-DD'));
+            console.log(res);
+            
             console.log(res);
             if (res) {
                 setDropDayly(res.drop_dayly)
@@ -59,17 +64,12 @@ const DeliveryPage = () => {
     }, [selectDate])
 
     const fetchStock = async () => {
-        const res = await StockInCar(userLogin?.user?.transportation_car?.id)
+        const res = await StockInCar(userLogin?.user?.transportation_car?.car_id)
         if (res) {
             setStock(res)
         }
     }
-    // const updateLocation = async () => {
-    //     navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-    //         const { latitude, longitude } = coords;
-    //         const res = await 
-    //     })
-    // }
+
     useEffect(() => {
         if (data) {
             const dataMerge: any = [];
@@ -106,9 +106,10 @@ const DeliveryPage = () => {
     
             // 1. เรียก API และรอผลลัพธ์
             const { data: res, error } = await updateDeliveryStatus(id, {
+                drop_id: id,
                 products: selectedProducts,
                 product_amount: selectedProductsAmount,
-                car_id: userLogin?.user?.transportation_car?.id,
+                car_id: userLogin?.user?.transportation_car?.car_id,
                 delivery_status: "success"
             });
     
@@ -255,10 +256,10 @@ const DeliveryPage = () => {
                     }
                     {item.drop_status === "inprogress" &&
                         <>
-                            <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง">
+                            <Popconfirm onConfirm={() => handleSuccess(item.drop_id)} title="ยืนยันการจัดส่ง">
                                 <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
                             </Popconfirm>
-                            <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง">
+                            <Popconfirm onConfirm={() => handleFail(item.drop_id)} title="ยกเลิกการจัดส่ง">
                                 <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
                             </Popconfirm>
                         </>
@@ -349,10 +350,10 @@ const DeliveryPage = () => {
                     }
                     {item.drop_status === "inprogress" &&
                         <>
-                            <Popconfirm onConfirm={() => handleSuccess(item.id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
+                            <Popconfirm onConfirm={() => handleSuccess(item.drop_id)} title="ยืนยันการจัดส่ง" description="แน่ใจหรือไม่">
                                 <Button type='primary' icon={<CheckOutlined className='text-green-400' />}></Button>
                             </Popconfirm>
-                            <Popconfirm onConfirm={() => handleFail(item.id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
+                            <Popconfirm onConfirm={() => handleFail(item.drop_id)} title="ยกเลิกการจัดส่ง" description="แน่ใจหรือไม่">
                                 <Button type='primary' danger className='ml-2' icon={<CloseOutlined className='text-red-400' />}></Button>
                             </Popconfirm>
                         </>
@@ -421,7 +422,7 @@ const DeliveryPage = () => {
             key: "action",
             width: 160,
             render: (item: any) => {
-                const isSelected = selectedProducts.includes(item.id);
+                const isSelected = selectedProducts.includes(item.ice_id);
                 return (
                     <div className='flex justify-center'>
                         <Button
@@ -429,7 +430,7 @@ const DeliveryPage = () => {
                             onClick={() => {
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
+                                    [item.ice_id]: Math.max((prevAmounts[item.ice_id] || 0) - 1, 0),
                                 }));
                             }}
                         >
@@ -437,12 +438,12 @@ const DeliveryPage = () => {
                         </Button>
                         <Input
                             className='text-center'
-                            value={selectedProductsAmount[item.id] || 0}
+                            value={selectedProductsAmount[item.ice_id] || 0}
                             onChange={(e) => {
                                 const newAmount = parseInt(e.target.value) || 0;
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: Math.min(newAmount, item.stock_amount),
+                                    [item.ice_id]: Math.min(newAmount, item.stock_amount),
                                 }));
                             }}
                             disabled={!isSelected}
@@ -451,10 +452,10 @@ const DeliveryPage = () => {
                             disabled={!isSelected}
                             onClick={() => {
                                 setSelectedProductsAmount((prevAmounts) => {
-                                    const newAmount = (prevAmounts[item.id] || 0) + 1;
+                                    const newAmount = (prevAmounts[item.ice_id] || 0) + 1;
                                     return {
                                         ...prevAmounts,
-                                        [item.id]: Math.min(newAmount, item.stock_amount),
+                                        [item.ice_id]: Math.min(newAmount, item.stock_amount),
                                     };
                                 });
                             }}
@@ -466,6 +467,7 @@ const DeliveryPage = () => {
             }
         }
     ]
+
     const orderColumn = [
         {
             title: 'ลำดับ',
@@ -490,6 +492,7 @@ const DeliveryPage = () => {
             render: (item: any) => item.price
         }
     ]
+
     const productDeliveryColumn = [
         {
             title: 'ลำดับ',
@@ -519,7 +522,7 @@ const DeliveryPage = () => {
         onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
             const rowArray = []
             for (const row of selectedRows) {
-                rowArray.push(row.id)
+                rowArray.push(row.ice_id)
                 console.log(row)
             }
             setSelectedProducts([...rowArray])
@@ -529,7 +532,6 @@ const DeliveryPage = () => {
         }),
 
     };
-    console.log(dropOrder)
 
     return (
         <LayoutComponent>
@@ -568,7 +570,7 @@ const DeliveryPage = () => {
                                                 type: "checkbox",
                                                 ...rowSelection,
                                             }}
-                                            rowKey={(id: any) => id.id}
+                                            rowKey={(ice_id: any) => ice_id.ice_id}
                                             columns={columnProductInCar} dataSource={stock} pagination={false}></Table>
                                     </div>
                                 </Card>

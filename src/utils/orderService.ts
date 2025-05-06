@@ -69,9 +69,9 @@ export async function findAllOrderVip() {
     }
 }
 
-export async function removeOrderVip(id: number) {
+export async function removeOrderVip(customer_id: number) {
     try {
-        const withdraw = await AxiosInstances.delete(`/withdraw/vip/${id}`)
+        const withdraw = await AxiosInstances.delete(`/withdraw/vip/${customer_id}`)
         return Promise.resolve(withdraw)
     } catch (error) {
         return Promise.reject(error)

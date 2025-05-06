@@ -182,48 +182,51 @@ export default async function handler(
         "money.html"
       );
       const groupedData = result.data.reduce((acc: any, item: any) => {
-        const detail = Array.isArray(item.delivery_details)
-          ? item.delivery_details[0]
-          : item.delivery_details;
+        const dropOffPoints = item.line?.dropOffPoints || [];
 
-        const lineId = detail?.dropoffpoint?.line_id;
-        const lines = detail?.car?.Lines || [];
+        dropOffPoints.forEach((drop: any) => {
+          const details = drop.delivery_details || [];
+          const lineId = drop.line_id;
+          const lines = details[0]?.car?.Lines || [];
 
-        const matchedLine = lines.find((line: any) => line.id === lineId);
-        const lineName = matchedLine?.line_name || "ไม่พบชื่อสาย";
+          const matchedLine = lines.find(
+            (line: any) => line.line_id === lineId
+          );
+          const lineName = matchedLine?.line_name || "ไม่พบชื่อสาย";
 
-        const date = format(new Date(item.date_time), "dd/MM/yyyy");
-        const key = `${lineName}-${date}`;
+          const date = format(new Date(item.date_time), "dd/MM/yyyy");
+          const key = `${lineName}-${date}`;
 
-        if (!acc[key]) {
-          acc[key] = {
-            line_name: lineName,
-            date: date,
-            ice_details: {},
-            total_amount: 0,
-          };
-        }
-
-        const details = Array.isArray(item.delivery_details)
-          ? item.delivery_details
-          : [item.delivery_details];
-
-        details.forEach((detail: any) => {
-          const productId = detail.product.id;
-          if (!acc[key].ice_details[productId]) {
-            acc[key].ice_details[productId] = {
-              name: detail.product.name,
-              amount: 0,
-              price: detail.price,
-              total: 0,
+          if (!acc[key]) {
+            acc[key] = {
+              line_name: lineName,
+              date: date,
+              ice_details: {},
+              total_amount: 0,
             };
           }
-          acc[key].ice_details[productId].amount += detail.amount;
-          acc[key].ice_details[productId].total =
-            acc[key].ice_details[productId].amount * detail.price;
+
+          details.forEach((detail: any) => {
+            if (!detail?.product?.id) return;
+
+            const productId = detail.product.id;
+            if (!acc[key].ice_details[productId]) {
+              acc[key].ice_details[productId] = {
+                name: detail.product.name,
+                amount: 0,
+                price: detail.price,
+                total: 0,
+              };
+            }
+
+            acc[key].ice_details[productId].amount += detail.amount;
+            acc[key].ice_details[productId].total =
+              acc[key].ice_details[productId].amount * detail.price;
+          });
+
+          acc[key].total_amount += item.amount || 0;
         });
 
-        acc[key].total_amount += item.amount;
         return acc;
       }, {});
 

@@ -39,7 +39,7 @@ const CarManagement: React.FC = () => {
                         icon={<ToolOutlined />}
                         onClick={() => {
                             setOpenModalEdit(true);
-                            setSelectedCar(item.id);
+                            setSelectedCar(item.car_id);
                             formEdit.setFieldsValue({
                                 car_number: item.car_number,
                                 user_id: item.user_id // ตั้งค่า user_id ปัจจุบัน
@@ -50,7 +50,7 @@ const CarManagement: React.FC = () => {
                     <Popconfirm
                         title="ต้องการลบข้อมูลใช่หรือไม่?"
                         description="ลบข้อมูล!"
-                        onConfirm={() => deleteCars(item.id)}
+                        onConfirm={() => deleteCars(item.car_id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -66,7 +66,7 @@ const CarManagement: React.FC = () => {
             .filter((user: any) => user.role?.role_key === 'deliver') // เฉพาะคนขับ
             .filter((user: any) =>
                 !carData.some((car: any) => car.user_id === user.id) ||
-                (selectedCar && carData.some(car => car.id === selectedCar && car.user_id === user.id))
+                (selectedCar && carData.some(car => car.car_id === selectedCar && car.user_id === user.id))
             ); // ยังไม่ถูกผูกกับรถ หรือเป็นผู้ใช้ปัจจุบันของรถที่กำลังแก้ไข
 
         setUserFilter(userFilters);
@@ -101,8 +101,8 @@ const CarManagement: React.FC = () => {
     };
     
 
-    const deleteCars = async (id: number) => {
-        const res = await deleteCar(id);
+    const deleteCars = async (car_id: number) => {
+        const res = await deleteCar(car_id);
         if (res.status === 200) {
             messageApi.success("ลบสําเร็จ!");
             fetchCarData();
@@ -192,7 +192,7 @@ const CarManagement: React.FC = () => {
                                     {userFilter.map((item: any) => (
                                         <Select.Option key={item.id} value={item.id}>
                                             {item.firstname} {item.lastname} {item.role ? `[${item.role.role_name}]` : ''}
-                                            {selectedCar && carData.find(car => car.id === selectedCar)?.user_id === item.id && ' (ปัจจุบัน)'}
+                                            {selectedCar && carData.find(car => car.car_id === selectedCar)?.user_id === item.id && ' (ปัจจุบัน)'}
                                         </Select.Option>
                                     ))}
                                 </Select>
