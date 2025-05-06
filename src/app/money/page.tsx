@@ -43,6 +43,11 @@ const MoneyOrderPage = () => {
             key: 'line_name',
         },
         {
+            title: 'เลขทะเบียนรถ',
+            dataIndex: 'car_number',
+            key: 'car_number',
+        },
+        {
             title: 'จำนวนเงิน (บาท)',
             dataIndex: 'total',
             key: 'total',

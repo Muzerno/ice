@@ -217,6 +217,38 @@ const LongdoMap: React.FC<LongdoMapProps> = ({ width = '100%', height = '400px',
         }
     }, [customerLocation, carLocation]);
 
+    useEffect(() => {
+        if (!carLocation) return;
+    
+        const interval = setInterval(() => {
+            if (!mapInstance.current) return;
+    
+            // ลบ marker เดิมก่อน
+            mapInstance.current.Overlays.clear();
+    
+            carLocation.forEach((item) => {
+                const lon = parseFloat(item.longitude);
+                const lat = parseFloat(item.latitude);
+    
+                if (!isNaN(lon) && !isNaN(lat)) {
+                    const marker = new window.longdo.Marker(
+                        { lon, lat },
+                        {
+                            title: item.car_number,
+                            detail: `เลขทะเบียน ${item.car_number}`,
+                            size: { width: 200, height: 100 }
+                        }
+                    );
+                    mapInstance.current.Overlays.add(marker);
+                }
+            });
+    
+        }, 5000); // ทุก 5 วินาที
+    
+        return () => clearInterval(interval); // ล้าง timer ตอน component unmount
+    }, [carLocation]);
+    
+
 
 
     const setLocation = () => {

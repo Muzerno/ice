@@ -51,8 +51,8 @@ const OrderVip = () => {
         },
         {
             title: 'รหัสลูกค้า',
-            dataIndex: 'customer_code',
-            key: 'customer_code',
+            dataIndex: 'customer_id',
+            key: 'customer_id',
         },
         {
             title: "ชื่อลูกค้า",
@@ -94,7 +94,7 @@ const OrderVip = () => {
                     <Popconfirm
                         title="Delete the car"
                         description="แน่ใจหรือไม่"
-                        onConfirm={() => deleteOrder(item.id)}
+                        onConfirm={() => deleteOrder(item.customer_id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -278,16 +278,13 @@ const OrderVip = () => {
 
     const onFinish = async (values: any) => {
         const combinedAddress = `${values.manual_address}\n\n[ที่อยู่จากแผนที่]: ${values.map_address}`;
-
-        // สร้าง payload ที่ถูกต้อง
         const payload = {
             customer_name: values.customer_name,
             telephone: values.telephone,
             car_id: values.car_id,
             latitude: values.latitude,
             longitude: values.longitude,
-            address: combinedAddress, // ส่งที่อยู่รวม
-            // ข้อมูลอื่นๆ ที่จำเป็น
+            address: combinedAddress,
         };
 
         const res = await createOrderVip(payload);
@@ -305,10 +302,8 @@ const OrderVip = () => {
         }
     };
 
-
-
-    const deleteOrder = async (id: number) => {
-        const res = await removeOrderVip(id);
+    const deleteOrder = async (customer_id: number) => {
+        const res = await removeOrderVip(customer_id);
         if (res.status === 200) {
             messageApi.success("ลบสําเร็จ!");
             fetchLine()
@@ -389,28 +384,11 @@ const OrderVip = () => {
                 <div>
                     <Row>
                         <Col span={16}>
-                            {/* <Row>
-                                <Col span={24} className="pr-2" >
-                                    <Card className='w-full' title="สินค้าในคลัง">
-                                        <div className="w-full h-[250px] overflow-y-scroll">
-                                            <Table columns={productInStoreColumns} onChange={handlePaginationChange2} dataSource={productData} pagination={false} />
-                                        </div>
-
-                                    </Card>
-                                </Col>
-                            </Row> */}
                             <Row className="mt-5">
                                 <Col span={24} className='pr-2'>
                                     <LongdoMap setMarker={setLocation} setTrueAddress={setTrueAddress} isOpenButton={true} />
                                 </Col>
-                                {/* <Col span={12} className="pr-2" >
-                                    <Card className='w-full' title="สินค้าที่เลือก">
-                                        <div className="w-full h-[330px] overflow-y-scroll">
-                                            <Table rowSelection={{ ...rowSelection }} rowKey={(id: any) => id.id} columns={ProductSelectColumns} dataSource={productData} pagination={false} />
-                                        </div>
-
-                                    </Card>
-                                </Col> */}
+                            
                                 <Col span={24} className="mt-5 pr-2" >
                                     <Card title="ข้อมูลคำสั่งซื้อ" className="w-full">
                                         <div className="w-full h-[300px] overflow-y-scroll">
@@ -424,34 +402,17 @@ const OrderVip = () => {
                             <Row>
                                 <Card title="เพิ่มคำสั่งซื้อ" className="w-full">
                                     <Form form={form} layout="vertical" onFinish={onFinish}>
-                                        {/* <Form.Item name={"line_id"} key={"line_id"} className='w-full' label="สายการเดินรถ" rules={[{ required: true, message: "กรุณาเลือกสาย" }]}>
-                                            <Select className='w-full' onChange={(e) => handleChangeLine(e)}>
-                                                {lineData.map((item: any) =>
-                                                    <Select.Option key={item.id} value={item.id}>
-                                                        {item.line_name}
-                                                    </Select.Option>
-                                                )}
-
-                                            </Select>
-                                        </Form.Item> */}
-                                        {/* <Row>
-
-                                            <Form.Item key={"customer_code"} name={"customer_code"} className='w-2/3' label="รหัสลูกค้า" rules={[{ required: true, message: "กรุณากรอกรหัส" }]}>
-                                                <Input disabled />
-                                            </Form.Item>
-
-                                            <Button type='default' className='w-1/3  mt-8' onClick={() => form.setFieldsValue({ customer_code: randomCustomerId() })}>Generate</Button>
-                                        </Row> */}
+                                        
                                         <Form.Item key={"customer_name"} name={"customer_name"} className='w-full' label="ชื่อลูกค้า" rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}>
                                             <Input />
                                         </Form.Item>
-                                        <Form.Item key={"telephone"} name={"telephone"} className='w-full' label="เบอร์โทร" rules={[{ required: true, message: "กรุณากรอกเบอร์" }]}>
+                                        <Form.Item key={"telephone"} name={"telephone"} className='w-full' label="เบอร์โทร" rules={[{ required: true, message: "กรุณากรอกเบอร์" }, { pattern: /^[0-9]{10}$/, message: "กรอกเบอร์โทรศัพท์ให้ถูกต้อง" }]}>
                                             <Input />
                                         </Form.Item>
                                         <Form.Item name={"car_id"} className='w-full' label="เลขทะเบียนรถที่จัดส่ง" rules={[{ required: true, message: "กรุณาเลือกรถ" }]}>
                                             <Select className='w-full' >
                                                 {carData.map((item: any) =>
-                                                    <Select.Option key={item.id} value={item.id}>
+                                                    <Select.Option key={item.car_id} value={item.car_id}>
                                                         {item.car_number} - {item.users?.firstname} - {item.users?.lastname}
                                                     </Select.Option>
                                                 )}

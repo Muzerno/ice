@@ -48,7 +48,7 @@ const NavBarComponent = (props: IProps) => {
         if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(async ({ coords }) => {
                 const { latitude, longitude } = coords;
-                await updateLocaltion(userLogin?.user?.transportation_car?.id, { latitude, longitude })
+                await updateLocaltion(userLogin?.user?.transportation_car?.car_id, { latitude, longitude })
             });
         }
     };

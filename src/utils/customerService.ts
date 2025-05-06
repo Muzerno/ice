@@ -19,9 +19,9 @@ export async function findAllCustomer() {
     }
 }
 
-export async function deleteCustomer(id: number) {
+export async function deleteCustomer(customer_id: number) {
     try {
-        const customer = await AxiosInstances.delete(`/customer/${id}`)
+        const customer = await AxiosInstances.delete(`/customer/${customer_id}`)
         return Promise.resolve(customer)
     } catch (error) {
         return Promise.reject(error)
@@ -37,9 +37,9 @@ export async function findOneCustomer(id: number) {
     }
 }
 
-export async function updateCustomer(id?: number | null | undefined, params?: any) {
+export async function updateCustomer(customer_id?: number | null | undefined, params?: any) {
     try {
-        const customer = await AxiosInstances.patch(`/customer/${id}`, params)
+        const customer = await AxiosInstances.patch(`/customer/${customer_id}`, params)
         return Promise.resolve(customer)
     } catch (error) {
         return Promise.reject(error)
