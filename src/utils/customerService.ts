@@ -10,6 +10,16 @@ export async function createCustomer(params: any) {
     }
 }
 
+export async function getNewCustomer() {
+    try {
+        const customer = await AxiosInstances.get('/customer/new-id')
+        return Promise.resolve(customer)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+    
+}
+
 export async function findAllCustomer() {
     try {
         const customers = await AxiosInstances.get('/customer')
