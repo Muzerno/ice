@@ -240,7 +240,7 @@ const CustomerManagement = () => {
   const fetchCustomerId = async () => {
     try {
       const res = await getNewCustomer();
-      console.log("New customer ID:", res.data.newCustomerId); // 👈 debug ตรงนี้
+      console.log("New customer ID:", res.data.newCustomerId);
       form.setFieldsValue({ customer_id: res.data.newCustomerId });
     } catch (error) {
       messageApi.error("ไม่สามารถดึงรหัสลูกค้าได้");
