@@ -60,6 +60,16 @@ export async function createOrderVip(data: any) {
     }
 }
 
+export async function getNewCustomer() {
+    try {
+        const customer = await AxiosInstances.get('/withdraw/new-id')
+        return Promise.resolve(customer)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+
+}
+
 export async function findAllOrderVip() {
     try {
         const withdraw = await AxiosInstances.get('/withdraw/vip')
@@ -68,6 +78,16 @@ export async function findAllOrderVip() {
         return Promise.reject(error)
     }
 }
+
+export const findOrderVipByCarId = async (carId: number) => {
+    try {
+        const withdraw = await AxiosInstances.get(`/withdraw/vip-order/${carId}`)
+        return Promise.resolve(withdraw)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+};
+
 
 export async function removeOrderVip(customer_id: number) {
     try {

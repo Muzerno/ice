@@ -10,6 +10,15 @@ export async function findAllCar() {
   }
 }
 
+export async function findAllCarWithLine() {
+  try {
+    const car = await AxiosInstances.get("/transportation/carWitLine");
+    return Promise.resolve(car.data);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
 export async function updateCar(
   car_id: number | null | undefined,
   params: any
@@ -67,6 +76,28 @@ export async function findAllTransportationLine() {
     return Promise.reject(error);
   }
 }
+
+export const updateCustomerStepsInLine = async (
+  line_id: number,
+  customerSteps: { cus_id: string, step: number }[]
+) => {
+  try {
+    console.log(`[API] Updating customer steps for line ${line_id}:`, customerSteps);
+
+    const response = await AxiosInstances.patch(
+      `/transportation/${line_id}/update-steps`,
+      {
+        customers: customerSteps,
+      }
+    );
+
+    console.log(`[API] Response:`, response.data);
+    return response;
+  } catch (error) {
+    console.error(`[API] Error updating customer steps:`, error);
+    throw error;
+  }
+};
 
 export async function addCustomersToLine(params: any) {
   try {

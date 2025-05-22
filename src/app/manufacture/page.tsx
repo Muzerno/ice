@@ -12,6 +12,7 @@ import { render } from 'react-dom';
 import moment from 'moment';
 import { se } from 'date-fns/locale';
 import dayjs from 'dayjs';
+import { title } from 'process';
 
 interface IProps {
     navBarMenu: number
@@ -155,11 +156,16 @@ export default function Manufacture(props: IProps) {
     ]
 
     const ProductColumns = [
+        // {
+        //     title: 'ลำดับ',
+        //     key: 'index',
+        //     render: (_: any, __: any, index: number) => index + 1,
+        //     sx: { width: '5%' },
+        // },
         {
-            title: 'ลำดับ',
-            key: 'index',
-            render: (_: any, __: any, index: number) => index + 1,
-            sx: { width: '5%' },
+            title: 'รหัสสินค้า',
+            dataIndex: 'ice_id',
+            key: 'ice_id',
         },
 
         {
@@ -191,7 +197,7 @@ export default function Manufacture(props: IProps) {
             key: "action",
             width: 160,
             render: (item: any) => {
-                const isSelected = selectedProducts.includes(item.id);
+                const isSelected = selectedProducts.includes(item.ice_id);
                 return (
                     <div className='flex justify-center'>
                         <Button
@@ -199,7 +205,7 @@ export default function Manufacture(props: IProps) {
                             onClick={() => {
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: Math.max((prevAmounts[item.id] || 0) - 1, 0),
+                                    [item.ice_id]: Math.max((prevAmounts[item.ice_id] || 0) - 1, 0),
                                 }));
                             }}
                         >
@@ -207,12 +213,12 @@ export default function Manufacture(props: IProps) {
                         </Button>
                         <Input
                             className='w-[50px] text-center'
-                            value={selectedProductsAmount[item.id] || 0}
+                            value={selectedProductsAmount[item.ice_id] || 0}
                             onChange={(e) => {
                                 const newAmount = parseInt(e.target.value) || 0;
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: newAmount,
+                                    [item.ice_id]: newAmount,
                                 }));
                             }}
                             disabled={!isSelected}
@@ -222,7 +228,7 @@ export default function Manufacture(props: IProps) {
                             onClick={() => {
                                 setSelectedProductsAmount((prevAmounts) => ({
                                     ...prevAmounts,
-                                    [item.id]: (prevAmounts[item.id] || 0) + 1,
+                                    [item.ice_id]: (prevAmounts[item.ice_id] || 0) + 1,
                                 }));
                             }}
                         >
@@ -284,7 +290,7 @@ export default function Manufacture(props: IProps) {
         onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
             const customerArray = []
             for (const row of selectedRows) {
-                customerArray.push(row.id)
+                customerArray.push(row.ice_id)
             }
             setSelectedProducts([...customerArray])
         },
@@ -310,11 +316,6 @@ export default function Manufacture(props: IProps) {
                                 <Row >
                                     <Col span={12}>
                                         <div className='mb-2 float-start'>
-                                            <StockOutlined /> จำนวนทั้งหมดของวันนี้ {data.length} รายการ
-                                        </div>
-                                    </Col>
-                                    <Col span={12}>
-                                        <div className='mb-2 float-end'>
                                             <DatePicker
                                                 format={"DD/MM/YYYY"}
                                                 size='large'
@@ -325,6 +326,11 @@ export default function Manufacture(props: IProps) {
                                                     fetchManufacture(date);
                                                 }}
                                             />
+                                        </div>
+                                    </Col>
+                                    <Col span={12}>
+                                        <div className='mb-2 float-end'>
+                                            <StockOutlined /> จำนวนทั้งหมดของวันนี้ {data.length} รายการ
                                         </div>
                                     </Col>
 
@@ -345,7 +351,7 @@ export default function Manufacture(props: IProps) {
                         <Card className='w-full' title="เพิ่มข้อมูลการผลิต">
                             <Form layout='vertical' onFinish={create} form={form}>
 
-                                <Table rowKey={(id: any) => id.id} rowSelection={{ type: 'checkbox', ...rowSelection }} columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
+                                <Table rowKey={(ice_id: any) => ice_id.ice_id} rowSelection={{ type: 'checkbox', ...rowSelection }} columns={ProductSelectColumns} dataSource={productData} pagination={{ pageSize: 5 }} />
 
                                 <Button type="primary" className=' w-full' htmlType="submit" >บันทึก</Button>
 
