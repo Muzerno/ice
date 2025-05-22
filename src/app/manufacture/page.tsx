@@ -51,6 +51,8 @@ export default function Manufacture(props: IProps) {
         }
     }
 
+    //test
+
     const create = async (values: any) => {
         if (selectedProducts.length === 0) {
             messageApi.error('กรุณาเลือกรายการสินค้า');
