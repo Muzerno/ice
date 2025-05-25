@@ -116,6 +116,11 @@ const MoneyOrderPage = () => {
     },
   ];
 
+  const totalAmount = deliveryDetail.reduce(
+    (sum, item) => sum + item.amount * item.price,
+    0
+  );
+
   return (
     <LayoutComponent>
       <Card>
@@ -124,6 +129,7 @@ const MoneyOrderPage = () => {
           onChange={(e, date_time) => setDate(date_time)}
           format={"YYYY-MM-DD"}
           size="large"
+          maxDate={dayjs()}
           defaultValue={dayjs(new Date())}
           className="float-right pb-2"
         />
@@ -140,11 +146,16 @@ const MoneyOrderPage = () => {
         footer={[]}
       >
         {deliveryDetail.length > 0 ? (
-          <Table
-            dataSource={deliveryDetail}
-            columns={columnDetail}
-            pagination={false}
-          />
+          <>
+            <Table
+              dataSource={deliveryDetail}
+              columns={columnDetail}
+              pagination={false}
+            />
+            <div className="pt-4 text-right font-bold">
+              ยอดรวม : {totalAmount.toLocaleString()} บาท
+            </div>
+          </>
         ) : (
           <div className="text-center">ไม่มีข้อมูล</div>
         )}

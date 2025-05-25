@@ -176,6 +176,7 @@ const NavBarComponent = (props: IProps) => {
         {(role.roleKey === 'admin' || role.roleKey === 'owner') && (
             <Menu.SubMenu key="reports" icon={<BarsOutlined />} title="รายงาน">
                 <Menu.Item key="dashboard" icon={<PaperClipOutlined />}>รายงานภาพรวม</Menu.Item>
+                <Menu.Item key="dashboard/all" icon={<PaperClipOutlined />}>รายงานต่างๆ</Menu.Item>
                 <Menu.Item key="dashboard/delivery" icon={<PaperClipOutlined />}>รายงานการจัดสาย</Menu.Item>
                 <Menu.Item key="dashboard/withdraw" icon={<PaperClipOutlined />}>รายงานการเบิกสินค้า</Menu.Item>
                 <Menu.Item key="dashboard/manufacture" icon={<PaperClipOutlined />}>รายงานการผลิต</Menu.Item>

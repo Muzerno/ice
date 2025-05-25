@@ -33,6 +33,7 @@ export default async function handler(
     let rowData: any[] = [];
     let rowData2: any[] = [];
     let total = 0;
+    let totalAmount = 0;
     if (type === "manufacture" && result.data) {
       htmlFilePath = path.join(
         process.cwd(),
@@ -56,7 +57,7 @@ export default async function handler(
           };
         }
 
-        const productId = item.products.id;
+        const productId = item.products.ice_id;
         if (!acc[dateOnly].products[productId]) {
           acc[dateOnly].products[productId] = {
             ...item.products,
@@ -166,12 +167,49 @@ export default async function handler(
         car_number: group.car_number,
         withdraw_details: group.withdraw_details,
       }));
+
       // Calculate total amount
       total = rowData.reduce(
         (sum: number, group: any) => sum + group.amount,
         0
       );
+
+      // === 🔽 สร้าง summaryData และ totalAmount ===
+      const summaryMap = new Map<string, { total: number; items: any[] }>();
+
+      rowData.forEach((group: any) => {
+        group.withdraw_details.forEach((detail: any) => {
+          const name = detail.product?.name || "ไม่ทราบชื่อ";
+          const amount = detail.amount;
+
+          if (summaryMap.has(name)) {
+            const entry = summaryMap.get(name)!;
+            entry.total += amount;
+            entry.items.push(detail);
+          } else {
+            summaryMap.set(name, {
+              total: amount,
+              items: [detail],
+            });
+          }
+        });
+      });
+
+      rowData2 = Array.from(summaryMap.entries()).map(
+        ([ice_name, data], index) => ({
+          index: index + 1,
+          ice_name,
+          total_amount: data.total,
+          items: data.items,
+        })
+      );
+
+      totalAmount = rowData2.reduce(
+        (sum, item) => sum + item.total_amount,
+        0
+      );
     }
+
     if (type === "money" && result.data) {
       htmlFilePath = path.join(
         process.cwd(),
@@ -186,6 +224,8 @@ export default async function handler(
 
         dropOffPoints.forEach((drop: any) => {
           const details = drop.delivery_details || [];
+          if (details.length === 0) return; // 🧹 ข้ามถ้าไม่มีน้ำแข็ง
+
           const lineId = drop.line_id;
           const lines = details[0]?.car?.Lines || [];
 
@@ -197,6 +237,7 @@ export default async function handler(
           const date = format(new Date(item.date_time), "dd/MM/yyyy");
           const key = `${lineName}-${date}`;
 
+          // 🛑 สร้าง key เฉพาะเมื่อเจอ delivery ที่มีข้อมูลจริง
           if (!acc[key]) {
             acc[key] = {
               line_name: lineName,
@@ -207,9 +248,9 @@ export default async function handler(
           }
 
           details.forEach((detail: any) => {
-            if (!detail?.product?.id) return;
+            if (!detail?.product?.ice_id) return;
 
-            const productId = detail.product.id;
+            const productId = detail.product.ice_id;
             if (!acc[key].ice_details[productId]) {
               acc[key].ice_details[productId] = {
                 name: detail.product.name,
@@ -224,8 +265,13 @@ export default async function handler(
               acc[key].ice_details[productId].amount * detail.price;
           });
 
-          acc[key].total_amount += item.amount || 0;
+          // คำนวณยอดรวมจากน้ำแข็งจริง ๆ
+          acc[key].total_amount = Object.values(acc[key].ice_details).reduce(
+            (sum: number, detail: any) => sum + detail.total,
+            0
+          );
         });
+
 
         return acc;
       }, {});
@@ -311,6 +357,7 @@ export default async function handler(
       date_to: formattedDateTo,
       total,
       rowData2,
+      totalAmount,
     });
 
     const publicDir = path.join(process.cwd(), "public");
