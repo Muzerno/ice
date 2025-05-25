@@ -18,6 +18,7 @@ export default function Page() {
             setCarLocation(res);
         }
         
+        
     };
     return (
         <LayoutComponent>
