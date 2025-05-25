@@ -163,7 +163,6 @@ const ReportPage = () => {
           setTotalAmount(totalItems);
           setSummaryData(summaryRowData);
           console.log("summaryRowData", summaryRowData);
-          
         } else if (exportType === "delivery") {
           const groupedData = response.reduce((acc: any, item: any) => {
             const lineName = item?.line?.line_name || item?.car?.car_number;
@@ -453,7 +452,7 @@ const ReportPage = () => {
           (sum: number, detail: any) => sum + detail.amount,
           0
         );
-        return <div>{totalAmount}</div>;
+        return <div>{totalAmount} ถุง</div>;
       },
     },
   ];
