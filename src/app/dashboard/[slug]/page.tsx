@@ -1,5 +1,6 @@
 "use client";
 import { getExportData } from "@/utils/dashboardService";
+import LayoutComponent from "@/components/Layout";
 import { findAllTransportationLine } from "@/utils/transpotationService";
 import { Table, Select, DatePicker, Avatar, Divider, Button, Spin } from "antd";
 import useMessage from "antd/es/message/useMessage";
@@ -9,6 +10,7 @@ import { useParams, useRouter } from "next/navigation";
 import "./page.css"; // เพิ่มไฟล์ CSS สำหรับปรับแต่ง
 
 import React, { useEffect, useState } from "react";
+import dayjs from "dayjs";
 
 const Page = () => {
   const router = useRouter();
@@ -194,7 +196,7 @@ const Page = () => {
             const deliveryDetails = drop.delivery_details || [];
 
             deliveryDetails.forEach((detail: any) => {
-              const productId = detail?.product?.id;
+              const productId = detail?.product?.ice_id;
               if (!productId) return;
 
               if (!acc[key].ice_details[productId]) {
@@ -212,7 +214,10 @@ const Page = () => {
             });
           });
 
-          acc[key].total_amount += item.amount;
+          acc[key].total_amount = Object.values(acc[key].ice_details).reduce(
+            (sum: number, detail: any) => sum + detail.total,
+            0
+          );
           return acc;
         }, {});
 
@@ -254,7 +259,7 @@ const Page = () => {
             };
           }
 
-          const productId = item.products.id;
+          const productId = item.products.ice_id;
           if (!acc[dateOnly].products[productId]) {
             acc[dateOnly].products[productId] = {
               ...item.products,
@@ -339,17 +344,15 @@ const Page = () => {
       },
     },
     {
-      title: "ชื่อน้ำแข็ง / ถุง  ",
+      title: "ชื่อน้ำแข็ง / ถุง",
       dataIndex: "products",
       key: "name",
-      render: (item: any) => {
-        return item.map((item: any) => {
-          return (
-            <div key={item.index}>
-              {item.name} x {item.manufacture_amount}
-            </div>
-          );
-        });
+      render: (products: any[]) => {
+        return products.map((product: any, index: number) => (
+          <div key={product.ice_id || index}>
+            {product.name} x {product.manufacture_amount}
+          </div>
+        ));
       },
     },
     {
@@ -451,7 +454,8 @@ const Page = () => {
       render: (items: any[]) => {
         return items.map((item: any) => (
           <div key={item.index}>
-            {item.name} x {item.amount} = {item.total} บาท
+            {item.name} ({item.price} บาท/ถุง) x {item.amount} = {item.total}{" "}
+            บาท
           </div>
         ));
       },
@@ -527,6 +531,7 @@ const Page = () => {
 
   return (
     <Spin tip="Loading..." spinning={!isLoading}>
+      <LayoutComponent>
       <div>
         {contextHolder}
         <div className="flex justify-start mt-10 items-center">
@@ -589,6 +594,7 @@ const Page = () => {
               <span className="pr-2">วันที่</span>
               <DatePicker
                 format={"YYYY-MM-DD"}
+                maxDate={dayjs()}
                 onChange={(value, dateString) => {
                   if (typeof dateString === "string") {
                     setDateFrom(format(new Date(dateString), "yyyy-MM-dd"));
@@ -601,6 +607,7 @@ const Page = () => {
               <span className="pr-2">ถึง</span>
               <DatePicker
                 format={"YYYY-MM-DD"}
+                maxDate={dayjs()}
                 onChange={(value, dateString) => {
                   if (typeof dateString === "string") {
                     setDateTo(format(new Date(dateString), "yyyy-MM-dd"));
@@ -679,6 +686,7 @@ const Page = () => {
           </Button>
         </div>
       </div>
+      </LayoutComponent>
     </Spin>
   );
 };
