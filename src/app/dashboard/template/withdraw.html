@@ -349,6 +349,7 @@
                 -webkit-print-color-adjust: exact;
                 padding: 12px !important;
                 font-size: 14px !important;
+                margin-bottom: 12px !important;
             }
             
             .section-title {
@@ -420,7 +421,8 @@
         <div class="report-container">
             <div class="header">
                 <div class="logo-container">
-                    <img src="http://localhost:3000/api/logo" alt="Logo" class="logo">
+                    <img src="http://localhost:3000/api/logo" alt="Logo"
+                        class="logo">
                     <div class="company-info">
                         <div class="company-name">ห้างหุ้นส่วนจำกัด
                             โรงน้ำแข็งหลอดศรีนวล</div>
@@ -443,6 +445,47 @@
                     📅 วันที่: {{date_from}} ถึง {{date_to}}
                 </div>
 
+                <!-- 🔼 ย้ายส่วนสรุปขึ้นก่อน -->
+                <div class style="margin-top: 20px;">
+                    <h4 class="summary-title">📈 สรุปรายการทั้งหมด</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ลำดับ</th>
+                                <th>ชื่อน้ำแข็ง</th>
+                                <th style="width: 100px;">จำนวนรวม</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each rowData2}}
+                            <tr>
+                                <td
+                                    style="text-align: center; font-weight: 500;">{{index}}</td>
+                                <td style="font-weight: 500;">🧊
+                                    {{ice_name}}</td>
+                                <td style="text-align: right; font-weight: 600;"
+                                    class="number-highlight">
+                                    {{total_amount}} ถุง
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="3"
+                                    style="text-align: center;">ไม่มีข้อมูลสรุป</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+
+                    <div class="total-summary">
+                        🎯 รวมทั้งหมด:
+                        <span
+                            style="font-size: 20px; font-weight: 800;">{{totalAmount}}</span>
+                        รายการ
+                    </div>
+                </div>
+
+                <!-- ตารางหลัก -->
                 <table>
                     <thead>
                         <tr>
@@ -463,12 +506,12 @@
                             <td>{{car_number}}</td>
                             <td>
                                 {{#each withdraw_details}}
-                                🧊 {{product.name}} {{amount}}<br>
+                                🧊 {{product.name}} {{amount}} ถุง<br>
                                 {{/each}}
                             </td>
                             <td style="text-align: right;"
                                 class="number-highlight">
-                                {{amount}}
+                                {{amount}} ถุง
                             </td>
                         </tr>
                         {{/each}}
@@ -481,40 +524,6 @@
                         style="font-size: 20px; font-weight: 800;">{{total}}</span>
                     รายการ
                 </div>
-
-                <div class="" style="margin-top: 40px;">
-                <h4 class="summary-title">📈 สรุปรายการทั้งหมด</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">ลำดับ</th>
-                            <th>ชื่อน้ำแข็ง</th>
-                            <th style="width: 100px;">จำนวนรวม</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#each rowData2}}
-                        <tr>
-                            <td style="text-align: center; font-weight: 500;">{{index}}</td>
-                            <td style="font-weight: 500;">🧊 {{ice_name}}</td>
-                            <td style="text-align: right; font-weight: 600;" class="number-highlight">
-                                {{total_amount}}
-                            </td>
-                        </tr>
-                        {{else}}
-                        <tr>
-                            <td colspan="3" style="text-align: center;">ไม่มีข้อมูลสรุป</td>
-                        </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-
-                <div class="total-summary">
-                    🎯 รวมทั้งหมด:
-                    <span style="font-size: 20px; font-weight: 800;">{{totalAmount}}</span>
-                    รายการ
-                </div>
-            </div>
             </div>
         </div>
     </body>

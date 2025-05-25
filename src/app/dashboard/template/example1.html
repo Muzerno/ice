@@ -354,6 +354,7 @@
                 -webkit-print-color-adjust: exact;
                 padding: 12px !important;
                 font-size: 14px !important;
+                margin-bottom: 12px !important;
             }
             
             .section-title {
@@ -448,6 +449,37 @@
                     📅 ช่วงเวลา: {{date_from}} ถึง {{date_to}}
                 </div>
 
+                <div class="summary-section">
+                    <h4 class="summary-title">📈 สรุปรายการทั้งหมด</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ลำดับ</th>
+                                <th>ชื่อน้ำแข็ง</th>
+                                <th style="width: 100px;">จำนวนรวม</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each rowData2}}
+                            <tr>
+                                <td
+                                    style="text-align: center; font-weight: 500;">{{index}}</td>
+                                <td style="font-weight: 500;">🧊
+                                    {{product_name}}</td>
+                                <td style="text-align: right; font-weight: 600;"
+                                    class="number-highlight">{{manufacture_amount}} ถุง</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+
+                    <div class="total-summary">
+                        🎯 รวมทั้งหมด: <span
+                            style="font-size: 20px; font-weight: 800;">{{total}}</span>
+                        รายการ
+                    </div>
+                </div>
+
                 {{#each rowData}}
                 <div class="daily-section">
                     <div class="section-title">
@@ -468,7 +500,7 @@
                                     style="text-align: center; font-weight: 500;">{{index}}</td>
                                 <td style="font-weight: 500;">🧊 {{name}}</td>
                                 <td style="text-align: right; font-weight: 600;"
-                                    class="number-highlight">{{manufacture_amount}}</td>
+                                    class="number-highlight">{{manufacture_amount}} ถุง</td>
                             </tr>
                             {{/each}}
                             <tr class="total-row">
@@ -483,36 +515,6 @@
                 </div>
                 {{/each}}
 
-                <div class="summary-section">
-                    <h4 class="summary-title">📈 สรุปรายการทั้งหมด</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 60px;">ลำดับ</th>
-                                <th>ชื่อน้ำแข็ง</th>
-                                <th style="width: 100px;">จำนวนรวม</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#each rowData2}}
-                            <tr>
-                                <td
-                                    style="text-align: center; font-weight: 500;">{{index}}</td>
-                                <td style="font-weight: 500;">🧊
-                                    {{product_name}}</td>
-                                <td style="text-align: right; font-weight: 600;"
-                                    class="number-highlight">{{manufacture_amount}}</td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-
-                    <div class="total-summary">
-                        🎯 รวมทั้งหมด: <span
-                            style="font-size: 20px; font-weight: 800;">{{total}}</span>
-                        รายการ
-                    </div>
-                </div>
             </div>
         </div>
     </body>
