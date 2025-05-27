@@ -203,7 +203,6 @@ const OrderVip = () => {
   const fetchCustomerId = async () => {
     try {
       const res = await getNewCustomer();
-      console.log("New customer ID:", res.data.newCustomerId); // 👈 debug ตรงนี้
       form.setFieldsValue({ customer_id: res.data.newCustomerId });
     } catch (error) {
       messageApi.error("ไม่สามารถดึงรหัสลูกค้าได้");
@@ -263,7 +262,6 @@ const OrderVip = () => {
 
   const fetchCarData = async () => {
     const res = await findAllCarWithLine();
-    console.log(res);
 
     if (res.success === true) {
       setCarData(res.data);
@@ -306,8 +304,6 @@ const OrderVip = () => {
           detail: cus.customer_id,
           address: cus.address,
         }));
-
-      console.log(customerLocation);
 
       setCustomerMarkers(customerLocation);
     }
@@ -367,6 +363,7 @@ const OrderVip = () => {
                     setMarker={setLocation}
                     setTrueAddress={setTrueAddress}
                     isOpenButton={true}
+                    isOpenButtonMap={true}
                     customerLocation={customerMarkers}
                   />
                 </Col>

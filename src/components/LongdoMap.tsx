@@ -104,8 +104,17 @@ interface LongdoMapProps {
   setMarker?: any;
   setTrueAddress?: any;
   isOpenButton?: boolean;
+  isOpenButtonMap?: boolean;
   customerLocation?: any[];
   carLocation?: any[];
+  updateLocaltion?: (carId: string, location: { latitude: number; longitude: number }) => Promise<void>;
+  userLogin?: {
+    user?: {
+      transportation_car?: {
+        car_id: string;
+      };
+    };
+  };
 }
 
 const LongdoMap: React.FC<LongdoMapProps> = ({
@@ -114,8 +123,11 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
   setMarker,
   setTrueAddress,
   isOpenButton,
+  isOpenButtonMap,
   customerLocation,
   carLocation,
+  updateLocaltion,
+  userLogin,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any | null>(null);
@@ -286,6 +298,69 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
     }
   };
 
+  const centerToCar = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async ({ coords }) => {
+          const { latitude, longitude } = coords;
+          
+          // อัพเดทตำแหน่งรถในฐานข้อมูล
+          if (updateLocaltion && userLogin?.user?.transportation_car?.car_id) {
+            try {
+              await updateLocaltion(userLogin.user.transportation_car.car_id, { 
+                latitude, 
+                longitude 
+              });
+            } catch (error) {
+              console.error("Failed to update car location:", error);
+            }
+          }
+
+          // เซ็ตแผนที่ให้ไปยังตำแหน่งปัจจุบันของรถ
+          if (mapInstance.current) {
+            const carLocation = { 
+              lon: longitude, 
+              lat: latitude 
+            };
+            
+            // ย้ายแผนที่ไปยังตำแหน่งรถ
+            mapInstance.current.location(carLocation);
+            
+            // เพิ่ม marker สำหรับตำแหน่งปัจจุบันของรถ
+            const carMarker = new window.longdo.Marker(
+              carLocation,
+              {
+                title: "ตำแหน่งปัจจุบันของรถ",
+                detail: `พิกัด: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+                size: { width: 200, height: 100 },
+                icon: {
+                  url: "https://map.longdo.com/mmmap/images/pin_mark.png", // หรือใช้ไอคอนรถที่คุณต้องการ
+                  offset: { x: 12, y: 45 }
+                }
+              }
+            );
+            
+            mapInstance.current.Overlays.add(carMarker);
+            
+            // เซ็ตระดับซูม
+            mapInstance.current.zoom(15);
+          }
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("ไม่สามารถหาตำแหน่งปัจจุบันได้ กรุณาตรวจสอบการตั้งค่า GPS");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      alert("เบราว์เซอร์ของคุณไม่รองรับการหาตำแหน่ง GPS");
+    }
+  };
+
   const trueAddress = async (currentLocation: any) => {
     const res = await getTrueLocation(currentLocation.lat, currentLocation.lon);
     if (res) {
@@ -296,14 +371,20 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
   return (
     <div>
       <div ref={mapRef} style={{ width, height }} />
+
       {isOpenButton && (
-        <Button
-          type="default"
-          className="w-full mt-2 "
-          onClick={(e) => setLocation()}
-        >
-          ตําแหน่งปัจจุบัน
-        </Button>
+        <div className="flex flex-col gap-2 mt-2">
+          <Button type="primary" onClick={setLocation}>
+            ตำแหน่งปัจจุบันของฉัน
+          </Button>
+        </div>
+      )}
+      {isOpenButtonMap && (
+        <div className="flex flex-col gap-2 mt-2">
+          <Button type="primary" onClick={centerToCar}>
+            ตำแหน่งปัจจุบันของรถ
+          </Button>
+        </div>
       )}
     </div>
   );
