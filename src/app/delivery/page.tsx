@@ -50,6 +50,7 @@ const DeliveryPage = () => {
   const [openModal, setOpenModal] = useState(false);
   const [productSelect, setProductSelect] = useState<any>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+
   const mergedData = [
     ...dropDayly.map((item) => ({ ...item, type: "ประจำวัน" })),
     ...dropOrder.map((item) => ({ ...item, type: "พิเศษ" })),
@@ -71,13 +72,28 @@ const DeliveryPage = () => {
         userLogin?.user?.transportation_car?.car_id,
         dayjs(selectDate).format("YYYY-MM-DD")
       );
-      console.log(res);
 
-      console.log(res);
       if (res) {
-        setDropDayly(res.drop_dayly);
-        setDropOrder(res.drop_order);
-        setData(res);
+        const stepMap = new Map(
+          res.normal_points.map((np: any) => [np.cus_id, np.step])
+        );
+
+        const sortByStep = (a: any, b: any) => {
+          const stepA = stepMap.get(a.customer_id) ?? Infinity;
+          const stepB = stepMap.get(b.customer_id) ?? Infinity;
+          return stepA - stepB;
+        };
+
+        const sortedDropDayly = [...res.drop_dayly].sort(sortByStep);
+        const sortedDropOrder = [...res.drop_order].sort(sortByStep);
+
+        setDropDayly(sortedDropDayly);
+        setDropOrder(sortedDropOrder);
+        setData({
+          ...res,
+          drop_dayly: sortedDropDayly,
+          drop_order: sortedDropOrder,
+        });
       }
     }
   };
@@ -177,18 +193,6 @@ const DeliveryPage = () => {
     setOpenModal(false);
   };
 
-  const handleOpenModalDetail = (item: any) => {
-    // setProductSelect(item)
-    setDetailData(item.customer_order.order_customer_details);
-    setOpenDetail(true);
-    let totalPrice = 0;
-
-    for (const product of item.customer_order.order_customer_details) {
-      totalPrice += product.product.price * product.amount;
-    }
-    setTotalPrice(totalPrice);
-  };
-
   const handleCloseModalDetail = () => {
     setOpenDetail(false);
   };
@@ -216,248 +220,6 @@ const DeliveryPage = () => {
       messageApi.error("เกิดข้อผิดพลาดในการยกเลิก");
     }
   };
-
-  const columnDropDayly = [
-    {
-      title: "ชื่อลูกค้า",
-      dataIndex: "customer",
-      key: "customer",
-      render: (item: any) => item?.name,
-    },
-    {
-      title: "เบอร์โทรศัพท์",
-      dataIndex: "customer",
-      key: "customer",
-      render: (item: any) => item?.telephone,
-    },
-    {
-      title: "ที่อยู่",
-      dataIndex: "customer",
-      key: "customer",
-      render: (item: any) => {
-        if (!item?.address) return "-";
-
-        const [manualAddress, mapAddressPart] = item.address.split(
-          "\n\n[ที่อยู่จากแผนที่]: "
-        );
-
-        let mapAddress = null;
-        if (mapAddressPart) {
-          try {
-            mapAddress = JSON.parse(mapAddressPart);
-          } catch (err) {
-            console.error("Failed to parse map address:", err);
-            return (
-              <div>
-                <div>{manualAddress || "-"}</div>
-                <div className="text-gray-500">{mapAddressPart}</div>
-              </div>
-            );
-          }
-        }
-
-        return (
-          <div>
-            <div>{manualAddress || "-"}</div>
-            {mapAddress && (
-              <div className="text-gray-500">
-                {mapAddress.road && <span>{mapAddress.road}</span>}
-                {mapAddress.subdistrict && (
-                  <span>, {mapAddress.subdistrict.replace("ต.", "ตำบล")}</span>
-                )}
-                {mapAddress.district && (
-                  <span>, {mapAddress.district.replace("อ.", "อำเภอ")}</span>
-                )}
-                {mapAddress.province && (
-                  <span>, {mapAddress.province.replace("จ.", "จังหวัด")}</span>
-                )}
-                {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
-              </div>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      title: "สถานะการจัดส่ง",
-      dataIndex: "drop_status",
-      key: "drop_status",
-      render: (item: any) => {
-        if (item === "inprocess" || item === "inprogress") {
-          return <span className="text-orange-300">กําลังจัดส่ง</span>;
-        }
-        if (item === "success") {
-          return <span className="text-green-400">สําเร็จ</span>;
-        }
-        if (item === "cancel") {
-          return <span className="text-red-400">ยกเลิก</span>;
-        }
-      },
-    },
-    {
-      title: "อัพเดตสถานะ",
-      key: "action",
-      render: (item: any) => (
-        <div className="flex">
-          {item.drop_status === "success" && (
-            <Button
-              type="primary"
-              className="!bg-green-300"
-              onClick={() => handleOpenModal(item.delivery_details)}
-            >
-              รายการจัดส่ง
-            </Button>
-          )}
-          {item.drop_status === "inprogress" && (
-            <>
-              <Popconfirm
-                onConfirm={() => handleSuccess(item.drop_id)}
-                title="ยืนยันการจัดส่ง"
-              >
-                <Button
-                  type="primary"
-                  icon={<CheckOutlined className="text-green-400" />}
-                ></Button>
-              </Popconfirm>
-              <Popconfirm
-                onConfirm={() => handleFail(item.drop_id)}
-                title="ยกเลิกการจัดส่ง"
-              >
-                <Button
-                  type="primary"
-                  danger
-                  className="ml-2"
-                  icon={<CloseOutlined className="text-red-400" />}
-                ></Button>
-              </Popconfirm>
-            </>
-          )}
-        </div>
-      ),
-    },
-  ];
-
-  const columnDropOrder = [
-    {
-      title: "ชื่อลูกค้า",
-      dataIndex: "customer",
-      key: "customer",
-      render: (item: any) => item?.name,
-    },
-    {
-      title: "เบอร์โทรศัพท์",
-      dataIndex: "customer",
-      key: "customer",
-      render: (item: any) => item?.telephone,
-    },
-    {
-      title: "ที่อยู่",
-      dataIndex: "customer",
-      key: "customer",
-      render: (item: any) => {
-        if (!item?.address) return "-";
-
-        const [manualAddress, mapAddressPart] = item.address.split(
-          "\n\n[ที่อยู่จากแผนที่]: "
-        );
-
-        let mapAddress = null;
-        if (mapAddressPart) {
-          try {
-            mapAddress = JSON.parse(mapAddressPart);
-          } catch (err) {
-            console.error("Failed to parse map address:", err);
-            return (
-              <div>
-                <div>{manualAddress || "-"}</div>
-                <div className="text-gray-500">{mapAddressPart}</div>
-              </div>
-            );
-          }
-        }
-
-        return (
-          <div>
-            <div>{manualAddress || "-"}</div>
-            {mapAddress && (
-              <div className="text-gray-500">
-                {mapAddress.road && <span>{mapAddress.road}</span>}
-                {mapAddress.subdistrict && (
-                  <span>, {mapAddress.subdistrict.replace("ต.", "ตำบล")}</span>
-                )}
-                {mapAddress.district && (
-                  <span>, {mapAddress.district.replace("อ.", "อำเภอ")}</span>
-                )}
-                {mapAddress.province && (
-                  <span>, {mapAddress.province.replace("จ.", "จังหวัด")}</span>
-                )}
-                {mapAddress.postcode && <span> {mapAddress.postcode}</span>}
-              </div>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      title: "สถานะการจัดส่ง",
-      dataIndex: "drop_status",
-      key: "drop_status",
-      render: (item: any) => {
-        if (item === "inprocess" || item === "inprogress") {
-          return <span className="text-orange-300">กําลังจัดส่ง</span>;
-        }
-        if (item === "success") {
-          return <span className="text-green-400">สําเร็จ</span>;
-        }
-        if (item === "cancel") {
-          return <span className="text-red-400">ยกเลิก</span>;
-        }
-      },
-    },
-    {
-      title: "อัพเดตสถานะ",
-      key: "action",
-      render: (item: any) => (
-        <div className="flex">
-          {item.drop_status === "success" && (
-            <Button
-              type="primary"
-              className="!bg-green-300"
-              onClick={() => handleOpenModal(item.delivery_details)}
-            >
-              รายการจัดส่ง
-            </Button>
-          )}
-          {item.drop_status === "inprogress" && (
-            <>
-              <Popconfirm
-                onConfirm={() => handleSuccess(item.drop_id)}
-                title="ยืนยันการจัดส่ง"
-                description="แน่ใจหรือไม่"
-              >
-                <Button
-                  type="primary"
-                  icon={<CheckOutlined className="text-green-400" />}
-                ></Button>
-              </Popconfirm>
-              <Popconfirm
-                onConfirm={() => handleFail(item.drop_id)}
-                title="ยกเลิกการจัดส่ง"
-                description="แน่ใจหรือไม่"
-              >
-                <Button
-                  type="primary"
-                  danger
-                  className="ml-2"
-                  icon={<CloseOutlined className="text-red-400" />}
-                ></Button>
-              </Popconfirm>
-            </>
-          )}
-        </div>
-      ),
-    },
-  ];
 
   const columnDrop = [
     {
@@ -535,7 +297,7 @@ const DeliveryPage = () => {
       title: "หมายเหตุ",
       dataIndex: "note",
       key: "note",
-      render: (item: any) => item ? item : "-",
+      render: (item: any) => (item ? item : "-"),
     },
     {
       title: "สถานะการจัดส่ง",

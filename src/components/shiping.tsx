@@ -31,6 +31,7 @@ import {
 import useMessage from "antd/es/message/useMessage";
 import { useEffect, useState } from "react";
 import SortableCustomerTable from "./SortableCustomerTable";
+import LongdoMap from "@/components/LongdoMap";
 
 const Shipping = () => {
   const [carData, setCarData] = useState<any[]>([]);
@@ -46,6 +47,7 @@ const Shipping = () => {
   const [rowSelectList, setRowSelectList] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentIndex2, setCurrentIndex2] = useState(0);
+    const [dataInMap, setDataInMap] = useState<any>([]);
   const [editingLine, setEditingLine] = useState<any>(null);
   const [assignedCustomers, setAssignedCustomers] = useState<Set<number>>(
     new Set()
@@ -182,12 +184,6 @@ const Shipping = () => {
     },
   ];
   const customerColumns = [
-    // {
-    //     title: 'ลำดับ',
-    //     dataIndex: 'id',
-    //     key: 'id',
-    //     render: (text: any, record: any, index: any) => currentIndex2 + index + 1
-    // },
     {
       title: "ชื่อ",
       dataIndex: "name",
@@ -381,7 +377,6 @@ const Shipping = () => {
   };
 
   const deleteLine = async (lineId: number, cusId: number) => {
-    
     console.log("Deleting:", { lineId, cusId });
     const res = await deleteCustomerFromLine(lineId, cusId);
     if (res.status === 200) {
@@ -455,10 +450,23 @@ const Shipping = () => {
   };
 
   const handleOpenModalCustomer = (value: any) => {
-    setEditingLine(value);
-    setOpenModalCustomer(true);
-    setSelectCustomer(value.customer);
-  };
+  setEditingLine(value);
+  setOpenModalCustomer(true);
+  setSelectCustomer(value.customer);
+
+  // เตรียมข้อมูลหมุดลูกค้า
+  const markers = (value.customer || [])
+    .filter((cust: any) => cust.latitude && cust.longitude)
+    .map((cust: any) => ({
+      latitude: cust.latitude,
+      longitude: cust.longitude,
+      name: cust.name,
+      address: cust.address,
+      customer: cust, // สำหรับการแสดงใน LongdoMap
+    }));
+
+  setDataInMap(markers); // ส่งให้ LongdoMap ผ่าน props
+};
 
   useEffect(() => {
     getCustomer();
@@ -473,23 +481,6 @@ const Shipping = () => {
         <Col span={16} className="pr-2">
           <Row>
             <Col>
-              <div>
-                <Card title="ข้อมูลลูกค้า" className="w-full  ">
-                  <div className="h-[300px] overflow-y-scroll">
-                    <Table
-                      columns={customerColumns}
-                      rowSelection={{
-                        type: "checkbox",
-                        ...rowSelection,
-                      }}
-                      rowKey={(record) => record.customer_id} // ใช้ customer_id แทน id
-                      pagination={false}
-                      dataSource={customerData}
-                      onChange={handlePaginationChange2}
-                    ></Table>
-                  </div>
-                </Card>
-              </div>
               <div className="mt-5 w-full">
                 <Card title="ข้อมูลสายการเดินรถ" className="w-full h-full">
                   <div className=" h-[300px] overflow-y-scroll">
@@ -499,6 +490,25 @@ const Shipping = () => {
                       className="h-full"
                       onChange={handlePaginationChange}
                       dataSource={transportationData}
+                    />
+                  </div>
+                </Card>
+              </div>
+              <div>
+                <Card title="ข้อมูลลูกค้า" className="w-full  ">
+                  <div className="h-[300px] overflow-y-scroll">
+                    <Table
+                      columns={customerColumns}
+                      rowSelection={{
+                        type: "checkbox",
+                        ...rowSelection,
+                      }}
+                      rowKey={(record) => record.customer_id}
+                      pagination={false}
+                      dataSource={customerData.filter(
+                        (record) => !assignedCustomers.has(record.customer_id)
+                      )}
+                      onChange={handlePaginationChange2}
                     />
                   </div>
                 </Card>
@@ -579,6 +589,12 @@ const Shipping = () => {
               setSelectCustomer(updatedData);
             }}
           />
+          <div className="mt-5">
+            <Col span={24}>
+                <LongdoMap customerLocation={dataInMap} />
+              </Col>
+          </div>
+          
         </Card>
       </Modal>
     </div>
