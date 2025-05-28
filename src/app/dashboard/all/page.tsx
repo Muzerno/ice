@@ -46,6 +46,12 @@ const ReportPage = () => {
   }, []);
 
   useEffect(() => {
+  if (transportationData.length === 1) {
+    setSelectLine(transportationData[0].line_id);
+  }
+}, [transportationData]);
+
+  useEffect(() => {
     if (exportType) {
       const selectedReport = reportTypes.find(
         (report) => report.value === exportType
@@ -463,9 +469,8 @@ const ReportPage = () => {
         setExportData(rowData);
         setTotal(total);
         setShowTable(true);
-        setDateFromDisplay(dateFrom); // สมมุติเป็น string เช่น "2025-05-01"
+        setDateFromDisplay(dateFrom);
         setDateToDisplay(dateTo);
-        setSummaryData(summaryData);
 
         messageApi.success("ดึงข้อมูลรายงานสำเร็จ");
       } else {
@@ -525,7 +530,9 @@ const ReportPage = () => {
       key: "amount",
       render: (products: any[]) => {
         return products?.map((product, index) => (
-          <div key={product.ice_id || index}>{product.manufacture_amount}</div>
+          <div key={product.ice_id || index}>
+            {product.manufacture_amount} ถุง
+          </div>
         ));
       },
     },
@@ -533,6 +540,9 @@ const ReportPage = () => {
       title: "จำนวนรวม",
       dataIndex: "manufacture_amount_total",
       key: "manufacture_amount_total",
+      render: (item: any) => {
+        return item + " ถุง";
+      },
     },
   ];
 
@@ -1205,29 +1215,25 @@ const ReportPage = () => {
 
           {/* Total Display - Only show for money and delivery reports */}
           {showTable &&
-            (exportType === "money" ||
-              exportType === "stock" ||
+            (exportType === "stock" ||
               exportType === "withdraw" ||
               exportType === "manufacture") && (
               <div className="flex justify-end mt-5 p-5 gap-2">
-                <div className="text-xl text-start">รวมเป็นเงินทั้งสิ้น : </div>
+                <div className="text-xl text-start">รวมทั้งหมด : </div>
                 <div className="text-xl text-start font-bold ">
                   {total.toLocaleString()} {unit}
                 </div>
               </div>
             )}
 
-          {/* Back Button */}
-          {/* <div className="flex justify-center mt-5 p-5">
-            <Button
-              size="large"
-              type="primary"
-              style={{ backgroundColor: "lightblue" }}
-              onClick={() => router.back()}
-            >
-              ย้อนกลับ
-            </Button>
-          </div> */}
+          {showTable && exportType === "money" && (
+            <div className="flex justify-end mt-5 p-5 gap-2">
+              <div className="text-xl text-start">รวมเป็นเงินทั้งสิ้น : </div>
+              <div className="text-xl text-start font-bold ">
+                {total.toLocaleString()} {unit}
+              </div>
+            </div>
+          )}
         </div>
       </LayoutComponent>
     </Spin>

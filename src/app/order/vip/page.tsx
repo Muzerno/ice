@@ -40,15 +40,12 @@ const OrderVip = () => {
   const roleKey = userLogin?.user?.role?.role_key;
   const user = userLogin?.user;
 
-  console.log(user);
+  console.log();
   
   const [carData, setCarData] = useState<any[]>([]);
 
   const [form] = Form.useForm();
-  const [formEdit] = Form.useForm();
   const [messageApi, contextHolder] = useMessage();
-
-  const [selectedCar, setSelectedCar] = useState<number | null>();
   const [customerData, setCustomerData] = useState<any>([]);
   const [transportationData, setTransportationData] = useState<any>([]);
   const [selectCustomer, setSelectCustomer] = useState([]);
