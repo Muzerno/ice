@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>รายงานการเบิกน้ำแข็ง</title>
+        <title>รายงานการผลิตน้ำแข็ง</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet">
         <style>
         * {
             margin: 0;
@@ -176,9 +181,9 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             page-break-inside: avoid;
         }
-        
+
         th {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #3b82f6 100%);
             color: white;
             padding: 10px 12px;
             text-align: left;
@@ -321,6 +326,7 @@
             .daily-section {
                 page-break-inside: avoid;
                 margin-bottom: 20px !important;
+                margin-top: 20px !important;
             }
             
             .summary-section {
@@ -381,18 +387,6 @@
                 height: 50px !important;
                 font-size: 20px !important;
             }
-
-            .flex-col {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.flex-row {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  flex-wrap: wrap;
-}
         }
 
         @media (max-width: 768px) {
@@ -446,29 +440,22 @@
                     </div>
                 </div>
                 <div class="report-title">
-                    <span class="ice-icon">🧊</span>
-                    รายงานการเบิกน้ำแข็ง
-                    <span class="ice-icon">🧊</span>
+                    <span class="ice-icon">❄️</span>
+                    รายงานสินค้าคงคลัง
+                    <span class="ice-icon">❄️</span>
                 </div>
             </div>
 
             <div class="content">
-                <div class="date-range">
-                    📅 วันที่: {{date_from}} ถึง {{date_to}}
-                </div>
 
-                <!-- ส่วนที่ 1: สรุปตามประเภทน้ำแข็ง -->
-                <div class="section">
-                    <h4 class="section-title">
-                        <span class="icon">📈</span>
-                        สรุปรายการตามประเภทน้ำแข็ง
-                    </h4>
+                <div class="summary-section">
+                    <h4 class="summary-title">📈 สรุปรายการสินค้าในระบบ</h4>
                     <table>
                         <thead>
                             <tr>
                                 <th style="width: 60px;">ลำดับ</th>
                                 <th>ชื่อน้ำแข็ง</th>
-                                <th style="width: 120px;">จำนวนรวม</th>
+                                <th style="width: 100px;">จำนวนรวม</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -477,146 +464,77 @@
                                 <td
                                     style="text-align: center; font-weight: 500;">{{index}}</td>
                                 <td style="font-weight: 500;">🧊
-                                    {{ice_name}}</td>
+                                    {{product_name}}</td>
                                 <td style="text-align: right; font-weight: 600;"
-                                    class="number-highlight">
-                                    {{total_amount}} ถุง
-                                </td>
-                            </tr>
-                            {{else}}
-                            <tr>
-                                <td colspan="3"
-                                    class="no-data">ไม่มีข้อมูลสรุป</td>
+                                    class="number-highlight">{{amount}} ถุง
+                                    ถุง</td>
                             </tr>
                             {{/each}}
                         </tbody>
                     </table>
+
                 </div>
 
-                <!-- ส่วนที่ 2: รายงานแยกตามวันที่ (รวมทุกสาย) -->
-                <div class="section">
+                <div class="daily-section">
                     <h4 class="section-title">
                         <span class="icon">📅</span>
-                        รายงานแยกตามวันที่ (รวมทุกสาย)
+                        รายงานแยกตามทะเบียนรถ
                     </h4>
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 50px;">ลำดับ</th>
-                                <th style="width: 100px;">วันที่</th>
-                                <th style="width: 100px;">รหัสสินค้า</th>
-                                <th style="width: 200px;">ชื่อน้ำแข็ง</th>
-                                <th style="width: 100px;">จำนวน</th>
+                                <th style="width: 60px;">ลำดับ</th>
+                                <th style="width: 120px;">ทะเบียนรถ</th>
+                                <th style="width: 120px;">รหัสสินค้า</th>
+                                <th style="width: 200px;">ชื่อสินค้า</th>
+                                <th style="width: 100px;">จำนวนในคลัง</th>
                                 <th style="width: 100px;">จำนวนรวม</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {{#each withdrawByDay}}
-                            <tr>
-                                <td style="text-align: center;">{{index}}</td>
-                                <td
-                                    style="text-align: center; font-weight: 500;">{{date_time}}</td>
-                                <td colspan="3" class="product-details">
-                                    <div
-                                        style="display: flex; flex-direction: column; gap: 6px;">
-                                        {{#each withdraw_details}}
-                                        <div
-                                            style="display: flex; gap: 20px; justify-content: space-between; min-width: 400px;">
-                                            <div
-                                                style="width: 80px;">{{ice_id}}</div>
-                                            <div
-                                                style="flex: 1; width: 200px">🧊
-                                                {{product.name}}</div>
-                                            <div
-                                                style="text-align:center; font-size: 11px;"
-                                                class="number-highlight">{{amount}}
-                                                ถุง</div>
-                                        </div>
-                                        {{/each}}
-                                    </div>
-                                </td>
-
-                                <td style="text-align: right;"
-                                    class="number-highlight">
-                                    {{amount}} ถุง
-                                </td>
-                            </tr>
-                            {{else}}
-                            <tr>
-                                <td colspan="4"
-                                    class="no-data">ไม่มีข้อมูลรายวัน</td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- ส่วนที่ 3: รายงานแยกตามสาย-วัน (รายละเอียด) -->
-                <div class="section">
-                    <h4 class="section-title">
-                        <span class="icon">🚐</span>
-                        รายงานแยกตามสายการเดินรถ-วัน (รายละเอียด)
-                    </h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">ลำดับ</th>
-                                <th style="width: 90px;">วันที่</th>
-                                <th>ชื่อสาย</th>
-                                <th style="width: 100px;">เลขทะเบียนรถ</th>
-                                <th style="width: 80px;">รหัสสินค้า</th>
-                                <th style="width: 180px;">ชื่อน้ำแข็ง</th>
-                                <th style="width: 80x;">จำนวน</th>
-                                <th style="width: 80px;">จำนวนรวม</th>
-                            </tr>
-                        </thead>
-                        <tbody>
                             {{#each rowData}}
+                            {{!-- เริ่มกลุ่มของรถ --}}
                             <tr>
-                                <td style="text-align: center;">{{index}}</td>
+                                <td rowspan="{{stock_items.length}}"
+                                    style="text-align: center; font-weight: 600;">{{index}}</td>
+                                <td rowspan="{{stock_items.length}}"
+                                    style="font-weight: 700;">{{car_number}}</td>
+
+                                {{!-- แถวแรกของสินค้ากลุ่มนี้ --}}
                                 <td
-                                    style="text-align: center;">{{date_time}}</td>
-                                <td style="font-weight: 500;">{{line_name}}</td>
-                                <td
-                                    style="text-align: center; font-weight: 500;">{{car_number}}</td>
-                                <td colspan="3" class="product-details">
-                                    <div
-                                        style="display: flex; flex-direction: column; gap: 6px;">
-                                        {{#each withdraw_details}}
-                                        <div
-                                            style="display: flex; gap: 20px; justify-content: space-between; min-width: 300px;">
-                                            <div
-                                                style="width: 60px;">{{ice_id}}</div>
-                                            <div
-                                                style="flex: 1;">🧊
-                                                {{product.name}}</div>
-                                            <div
-                                                style="text-align:center; font-size: 11px;"
-                                                class="number-highlight">{{amount}}
-                                                ถุง</div>
-                                        </div>
-                                        {{/each}}
-                                    </div>
+                                    style="font-weight: 500;">{{stock_items.[0].ice_id}}</td>
+                                <td style="font-weight: 500;">🧊
+                                    {{stock_items.[0].product_name}}</td>
+                                <td style="text-align: right; font-weight: 600;"
+                                    class="number-highlight">
+                                    {{stock_items.[0].amount}} ถุง
                                 </td>
-                                <td style="text-align: right;"
+                                <td rowspan="{{stock_items.length}}"
+                                    style="text-align: right; font-weight: 700;" class="number-highlight">
+                                    {{total_stock}} ถุง
+                                </td>
+                            </tr>
+
+                            {{!-- แถวถัดไปของสินค้ารถคันนี้ --}}
+                            {{#each stock_items}}
+                            {{#unless @first}}
+                            <tr>
+                                <td style="font-weight: 500;">{{ice_id}}</td>
+                                <td style="font-weight: 500;">🧊
+                                    {{product_name}}</td>
+                                <td style="text-align: right; font-weight: 600;"
                                     class="number-highlight">
                                     {{amount}} ถุง
                                 </td>
                             </tr>
-                            {{else}}
-                            <tr>
-                                <td colspan="6"
-                                    class="no-data">ไม่มีข้อมูลรายละเอียด</td>
-                            </tr>
+                            {{/unless}}
+                            {{/each}}
                             {{/each}}
                         </tbody>
+
                     </table>
-                    <div class="total-summary">
-                        🎯 รวมทั้งหมด: <span
-                            style="font-size: 20px; font-weight: 800;">{{total}}</span>
-                        ถุง
-                    </div>
                 </div>
+
             </div>
         </div>
     </body>

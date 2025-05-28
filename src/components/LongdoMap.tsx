@@ -1,8 +1,10 @@
 "use client";
 import { getTrueLocation } from "@/utils/mapsService";
-import { Button, Input } from "antd";
-import { de } from "date-fns/locale";
+import { Button } from "antd";
+import { LocateFixed, Car } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useContext } from 'react';
+import { UserContext } from '@/context/userContext';
 
 declare global {
   interface Window {
@@ -107,14 +109,10 @@ interface LongdoMapProps {
   isOpenButtonMap?: boolean;
   customerLocation?: any[];
   carLocation?: any[];
-  updateLocaltion?: (carId: string, location: { latitude: number; longitude: number }) => Promise<void>;
-  userLogin?: {
-    user?: {
-      transportation_car?: {
-        car_id: string;
-      };
-    };
-  };
+  updateLocaltion?: (
+    carId: string,
+    location: { latitude: number; longitude: number }
+  ) => Promise<void>;
 }
 
 const LongdoMap: React.FC<LongdoMapProps> = ({
@@ -127,13 +125,18 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
   customerLocation,
   carLocation,
   updateLocaltion,
-  userLogin,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any | null>(null);
   const [locations, setLocations] = useState<{ lon: number; lat: number }[]>(
     []
   );
+
+   const { userLogin } = useContext(UserContext);
+  const roleKey = userLogin?.user?.role?.role_key;
+
+  console.log('roleKey from context:', roleKey);
+
 
   const safeParseJSON = (input: string) => {
     try {
@@ -299,17 +302,17 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
   };
 
   const centerToCar = () => {
-    if ('geolocation' in navigator) {
+    if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async ({ coords }) => {
           const { latitude, longitude } = coords;
-          
+
           // อัพเดทตำแหน่งรถในฐานข้อมูล
           if (updateLocaltion && userLogin?.user?.transportation_car?.car_id) {
             try {
-              await updateLocaltion(userLogin.user.transportation_car.car_id, { 
-                latitude, 
-                longitude 
+              await updateLocaltion(userLogin.user.transportation_car.car_id, {
+                latitude,
+                longitude,
               });
             } catch (error) {
               console.error("Failed to update car location:", error);
@@ -318,30 +321,27 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
 
           // เซ็ตแผนที่ให้ไปยังตำแหน่งปัจจุบันของรถ
           if (mapInstance.current) {
-            const carLocation = { 
-              lon: longitude, 
-              lat: latitude 
+            const carLocation = {
+              lon: longitude,
+              lat: latitude,
             };
-            
+
             // ย้ายแผนที่ไปยังตำแหน่งรถ
             mapInstance.current.location(carLocation);
-            
+
             // เพิ่ม marker สำหรับตำแหน่งปัจจุบันของรถ
-            const carMarker = new window.longdo.Marker(
-              carLocation,
-              {
-                title: "ตำแหน่งปัจจุบันของรถ",
-                detail: `พิกัด: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-                size: { width: 200, height: 100 },
-                icon: {
-                  url: "https://map.longdo.com/mmmap/images/pin_mark.png", // หรือใช้ไอคอนรถที่คุณต้องการ
-                  offset: { x: 12, y: 45 }
-                }
-              }
-            );
-            
+            const carMarker = new window.longdo.Marker(carLocation, {
+              title: "ตำแหน่งปัจจุบันของรถ",
+              detail: `พิกัด: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+              size: { width: 200, height: 100 },
+              // icon: {
+              //   url: "https://map.longdo.com/mmmap/images/pin_mark.png", // หรือใช้ไอคอนรถที่คุณต้องการ
+              //   offset: { x: 12, y: 45 }
+              // }
+            });
+
             mapInstance.current.Overlays.add(carMarker);
-            
+
             // เซ็ตระดับซูม
             mapInstance.current.zoom(15);
           }
@@ -353,7 +353,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 0
+          maximumAge: 0,
         }
       );
     } else {
@@ -371,17 +371,27 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
   return (
     <div>
       <div ref={mapRef} style={{ width, height }} />
-
       {isOpenButton && (
         <div className="flex flex-col gap-2 mt-2">
-          <Button type="primary" onClick={setLocation}>
-            ตำแหน่งปัจจุบันของฉัน
+          <Button
+            type="primary"
+            icon={<LocateFixed />}
+            onClick={setLocation}
+            className="flex items-center"
+          >
+            ตำแหน่งปัจจุบัน
           </Button>
         </div>
       )}
-      {isOpenButtonMap && (
+
+      {isOpenButtonMap && roleKey === 'deliver' && (
         <div className="flex flex-col gap-2 mt-2">
-          <Button type="primary" onClick={centerToCar}>
+          <Button
+            type="default"
+            icon={<Car />}
+            onClick={centerToCar}
+            className="flex items-center"
+          >
             ตำแหน่งปัจจุบันของรถ
           </Button>
         </div>

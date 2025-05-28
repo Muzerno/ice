@@ -326,6 +326,7 @@
             .daily-section {
                 page-break-inside: avoid;
                 margin-bottom: 20px !important;
+                margin-top: 20px !important;
             }
             
             .summary-section {
@@ -426,7 +427,8 @@
         <div class="report-container">
             <div class="header">
                 <div class="logo-container">
-                        <img src="http://localhost:3000/api/logo" alt="Logo" class="logo">
+                    <img src="http://localhost:3000/api/logo" alt="Logo"
+                        class="logo">
                     <div class="company-info">
                         <div class="company-name">ห้างหุ้นส่วนจำกัด
                             โรงน้ำแข็งหลอดศรีนวล</div>
@@ -467,17 +469,18 @@
                                 <td style="font-weight: 500;">🧊
                                     {{product_name}}</td>
                                 <td style="text-align: right; font-weight: 600;"
-                                    class="number-highlight">{{manufacture_amount}} ถุง</td>
+                                    class="number-highlight">{{manufacture_amount}}
+                                    ถุง</td>
                             </tr>
                             {{/each}}
                         </tbody>
                     </table>
 
-                    <div class="total-summary">
+                    <!-- <div class="total-summary">
                         🎯 รวมทั้งหมด: <span
                             style="font-size: 20px; font-weight: 800;">{{total}}</span>
                         รายการ
-                    </div>
+                    </div> -->
                 </div>
 
                 {{#each rowData}}
@@ -489,7 +492,8 @@
                         <thead>
                             <tr>
                                 <th style="width: 60px;">ลำดับ</th>
-                                <th>ชื่อน้ำแข็ง</th>
+                                <th style="width: 120px;">รหัสน้ำแข็ง</th>
+                                <th style="width: 300px;">ชื่อน้ำแข็ง</th>
                                 <th style="width: 100px;">จำนวน</th>
                             </tr>
                         </thead>
@@ -498,13 +502,15 @@
                             <tr>
                                 <td
                                     style="text-align: center; font-weight: 500;">{{index}}</td>
+                                <td style="font-weight: 500;">{{ice_id}}</td>
                                 <td style="font-weight: 500;">🧊 {{name}}</td>
                                 <td style="text-align: right; font-weight: 600;"
-                                    class="number-highlight">{{manufacture_amount}} ถุง</td>
+                                    class="number-highlight">{{manufacture_amount}}
+                                    ถุง</td>
                             </tr>
                             {{/each}}
                             <tr class="total-row">
-                                <td colspan="2"
+                                <td colspan="3"
                                     style="text-align: right; font-size: 16px;">📊
                                     รวม:</td>
                                 <td
