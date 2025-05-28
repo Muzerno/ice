@@ -32,6 +32,7 @@ export default async function handler(
     const result = await AxiosInstances.patch("/dashboard/export", body);
     let rowData: any[] = [];
     let rowData2: any[] = [];
+    let withdrawByDay: any[] = [];
     let total = 0;
     let totalAmount = 0;
     if (type === "manufacture" && result.data) {
@@ -130,7 +131,7 @@ export default async function handler(
         "withdraw.html"
       );
 
-      // Group data by line_name and date_time
+      // 👉 แยกตามสาย-วัน (เดิม)
       const groupedData = result.data.reduce((acc: any, item: any) => {
         const key = `${item.transportation_car.Lines[0].line_name}-${format(
           new Date(item.date_time),
@@ -147,26 +148,27 @@ export default async function handler(
           };
         }
         const totalWithdrawAmount = item.withdraw_details.reduce(
-          (sum: number, detail: any) => sum + detail.amount,
+          (sum: number, detail: any) => sum + (detail.amount || 0),
           0
         );
         acc[key].amount += totalWithdrawAmount;
         acc[key].items.push(item);
-
         acc[key].withdraw_details.push(...item.withdraw_details);
         return acc;
       }, {});
 
       // Convert grouped data to array
-      rowData = Object.values(groupedData).map((group: any, index: number) => ({
-        index: index + 1,
-        line_name: group.line_name,
-        date_time: group.date_time,
-        amount: group.amount,
-        items: group.items,
-        car_number: group.car_number,
-        withdraw_details: group.withdraw_details,
-      }));
+      rowData = Object.values(groupedData).map(
+        (group: any, index: number) => ({
+          index: index + 1,
+          line_name: group.line_name,
+          date_time: group.date_time,
+          amount: group.amount,
+          items: group.items,
+          car_number: group.car_number,
+          withdraw_details: group.withdraw_details,
+        })
+      );
 
       // Calculate total amount
       total = rowData.reduce(
@@ -174,40 +176,90 @@ export default async function handler(
         0
       );
 
-      // === 🔽 สร้าง summaryData และ totalAmount ===
-      const summaryMap = new Map<string, { total: number; items: any[] }>();
+      const totalItems = rowData.reduce((sum: number, group: any) => {
+        return (
+          sum +
+          group.withdraw_details.reduce(
+            (itemSum: number, detail: any) => itemSum + detail.amount,
+            0
+          )
+        );
+      }, 0);
 
-      rowData.forEach((group: any) => {
-        group.withdraw_details.forEach((detail: any) => {
-          const name = detail.product?.name || "ไม่ทราบชื่อ";
-          const amount = detail.amount;
+      // 👉 แยกตามวันที่ (รวมทุกสาย) - แก้ไขเพื่อรวม ice_id เดียวกัน
+      const withdrawByDayData = Object.values(
+        result.data.reduce((acc: any, item: any) => {
+          const dateKey = format(new Date(item.date_time), "dd/MM/yyyy");
 
-          if (summaryMap.has(name)) {
-            const entry = summaryMap.get(name)!;
-            entry.total += amount;
-            entry.items.push(detail);
-          } else {
-            summaryMap.set(name, {
-              total: amount,
-              items: [detail],
-            });
+          if (!acc[dateKey]) {
+            acc[dateKey] = {
+              date_time: dateKey,
+              items: [],
+              withdraw_details_grouped: {}, // เปลี่ยนเป็น object เพื่อจัดกลุ่ม
+              amount: 0,
+            };
           }
-        });
-      });
 
-      rowData2 = Array.from(summaryMap.entries()).map(
-        ([ice_name, data], index) => ({
+          // จัดกลุ่ม withdraw_details ตาม ice_id
+          item.withdraw_details.forEach((detail: any) => {
+            const iceId = detail.ice_id;
+            if (!acc[dateKey].withdraw_details_grouped[iceId]) {
+              acc[dateKey].withdraw_details_grouped[iceId] = {
+                ice_id: detail.ice_id,
+                product: detail.product,
+                amount: 0,
+              };
+            }
+            acc[dateKey].withdraw_details_grouped[iceId].amount +=
+              detail.amount;
+          });
+
+          const totalWithdrawAmount = item.withdraw_details.reduce(
+            (sum: number, detail: any) => sum + (detail.amount || 0),
+            0
+          );
+
+          acc[dateKey].amount += totalWithdrawAmount;
+          acc[dateKey].items.push(item);
+
+          return acc;
+        }, {})
+      ).map((group: any, index: number) => ({
+        index: index + 1,
+        date_time: group.date_time,
+        items: group.items,
+        withdraw_details: Object.values(group.withdraw_details_grouped), // แปลงกลับเป็น array
+        amount: group.amount,
+      }));
+
+      // 👉 สรุปตามประเภทน้ำแข็ง (เดิม)
+      const iceSummary = result.data.reduce((acc: any, item: any) => {
+        item.withdraw_details.forEach((detail: any) => {
+          const productName = detail.product.name;
+          if (!acc[productName]) {
+            acc[productName] = {
+              ice_name: productName,
+              total_amount: 0,
+            };
+          }
+          acc[productName].total_amount += detail.amount;
+        });
+        return acc;
+      }, {});
+
+      const summaryRowData = Object.values(iceSummary).map(
+        (item: any, index: number) => ({
           index: index + 1,
-          ice_name,
-          total_amount: data.total,
-          items: data.items,
+          ice_name: item.ice_name,
+          total_amount: item.total_amount,
         })
       );
 
-      totalAmount = rowData2.reduce(
-        (sum, item) => sum + item.total_amount,
-        0
-      );
+      // Set all data for template
+      rowData2 = summaryRowData;
+      totalAmount = totalItems;
+      withdrawByDay = withdrawByDayData;
+
     }
 
     if (type === "money" && result.data) {
@@ -299,50 +351,94 @@ export default async function handler(
       );
     }
 
-    if (type === "delivery" && result.data) {
+    if (type === "stock" && result.data) {
       htmlFilePath = path.join(
         process.cwd(),
         "src",
         "app",
         "dashboard",
         "template",
-        "delivery.html"
+        "stock.html"
       );
-      // จัดกลุ่มข้อมูลตาม line_name
-      const groupedData = result.data.reduce((acc: any, item: any) => {
-        const lineName = item?.line?.line_name || item?.car?.car_number;
-        const customerName = item?.customer?.name || item?.customer_order?.name;
 
-        if (!acc[lineName]) {
-          acc[lineName] = {
-            line_name: lineName,
-            customers: new Set(),
+      const stockInCar = result.data.stockInCar || [];
+      const products = result.data.products || [];
+
+      // Group ข้อมูล stock แยกตามรถ
+      const groupedData = stockInCar.reduce((acc: any, item: any) => {
+        const carId = item?.car?.car_id;
+        const carNumber = item?.car?.car_number || `รถหมายเลข ${carId}`;
+        const key = `${carId}-${carNumber}`;
+
+        if (!acc[key]) {
+          acc[key] = {
+            car_id: carId,
+            car_number: carNumber,
+            stock_items_grouped: {}, // รวมสินค้า ice_id เดียวกัน
+            total_stock: 0,
           };
         }
-        if (customerName) {
-          acc[lineName].customers.add(customerName);
+
+        const iceId = item.ice_id;
+        if (!acc[key].stock_items_grouped[iceId]) {
+          acc[key].stock_items_grouped[iceId] = {
+            ice_id: iceId,
+            product_name: item?.product?.name || "ไม่ระบุชื่อสินค้า",
+            amount: 0,
+          };
         }
+
+        acc[key].stock_items_grouped[iceId].amount += item.amount || 0;
+        acc[key].total_stock += item.amount || 0;
+
         return acc;
       }, {});
 
-      // แปลงข้อมูลที่จัดกลุ่มแล้วเป็น array
+      // เติมสินค้าใน products ที่ไม่มีอยู่ในรถ (amount = 0)
+      Object.values(groupedData).forEach((group: any) => {
+        products.forEach((product: any) => {
+          const iceId = product.ice_id;
+          if (!group.stock_items_grouped[iceId]) {
+            group.stock_items_grouped[iceId] = {
+              ice_id: iceId,
+              product_name: product.name || "ไม่ระบุชื่อสินค้า",
+              amount: 0,
+            };
+          }
+        });
+      });
+
+      // แปลงกลับเป็น array สำหรับใช้ใน HTML template
       rowData = Object.values(groupedData).map((group: any, index: number) => ({
         index: index + 1,
-        line_name: group.line_name,
-        customers: Array.from(group.customers as Set<string>).map(
-          (name: string, index: number) => ({
-            index: index + 1,
-            customer_name: name,
-          })
-        ),
+        car_id: group.car_id,
+        car_number: group.car_number,
+        stock_items: Object.values(group.stock_items_grouped).map((item: any, itemIndex: number) => ({
+          ...item,
+          index: itemIndex + 1 // เพิ่ม index สำหรับแต่ละ item
+        })),
+        total_stock: group.total_stock,
       }));
 
-      // คำนวณจำนวน customer ทั้งหมด
+      // แปลงเป็น array และเรียงลำดับ
+      const summaryData = products.map((product: any, index: number) => ({
+        index: index + 1,
+        ice_id: product.ice_id,
+        product_name: product.name || "ไม่ระบุชื่อสินค้า",
+        amount: product.amount || 0, // ใช้ amount จาก products โดยตรง
+      }));
+
+      // ตั้งค่า rowData2 เป็น summaryData สำหรับใช้ใน template
+      rowData2 = summaryData;
+
+      // รวมยอดทั้งหมดทุกคัน
       total = rowData.reduce(
-        (sum: number, group: any) => sum + group.customers.length,
+        (sum: number, group: any) => sum + group.total_stock,
         0
       );
     }
+
+
     const htmlTemplate = await fs.readFile(htmlFilePath, "utf-8");
     const template = Handlebars.compile(htmlTemplate);
     const formattedDateFrom = date_from
@@ -357,6 +453,7 @@ export default async function handler(
       date_to: formattedDateTo,
       total,
       rowData2,
+      withdrawByDay,
       totalAmount,
     });
 

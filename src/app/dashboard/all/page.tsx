@@ -11,6 +11,7 @@ import "./page.css";
 
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { title } from "process";
 
 const ReportPage = () => {
   const router = useRouter();
@@ -27,13 +28,17 @@ const ReportPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [unit, setUnit] = useState("");
   const [showTable, setShowTable] = useState<boolean>(false);
+  const [dateFromDisplay, setDateFromDisplay] = useState<string | null>(null);
+  const [dateToDisplay, setDateToDisplay] = useState<string | null>(null);
+  const [withdrawByDay, setWithdrawByDay] = useState<any[]>([]);
+  const [productData, setProductData] = useState<any[]>([]);
 
   // Report type options
   const reportTypes = [
     { value: "manufacture", label: "รายงานการผลิต", unit: "รายการ" },
     { value: "withdraw", label: "รายงานการเบิก", unit: "รายการ" },
     { value: "money", label: "รายงานการเงิน", unit: "บาท" },
-    { value: "delivery", label: "รายงานการจัดสายรถ", unit: "รายการ" },
+    { value: "stock", label: "รายงานสินค้าคงคลัง", unit: "รายการ" },
   ];
 
   useEffect(() => {
@@ -49,6 +54,7 @@ const ReportPage = () => {
       setShowTable(false); // Hide table when type changes
       setExportData([]); // Clear previous data
       setSummaryData([]); // Clear summary data
+      setProductData([]);
       setTotal(0);
     }
   }, [exportType]);
@@ -66,7 +72,7 @@ const ReportPage = () => {
       return;
     }
 
-    if (!dateFrom || !dateTo) {
+    if (exportType !== "stock" && (!dateFrom || !dateTo)) {
       messageApi.error("กรุณาเลือกช่วงวันที่");
       return;
     }
@@ -81,11 +87,17 @@ const ReportPage = () => {
         selectLine
       );
 
-      if (response.length > 0) {
+      if (
+        (exportType === "stock" && response.stockInCar?.length > 0) ||
+        (exportType !== "stock" &&
+          Array.isArray(response) &&
+          response.length > 0)
+      ) {
         let rowData: any[] = [];
         let total: number = 0;
 
         if (exportType === "withdraw") {
+          // 👉 แยกตามสาย-วัน (เดิม)
           const groupedData = response.reduce((acc: any, item: any) => {
             const key = `${item.transportation_car.Lines[0].line_name}-${format(
               new Date(item.date_time),
@@ -102,7 +114,7 @@ const ReportPage = () => {
               };
             }
             const totalWithdrawAmount = item.withdraw_details.reduce(
-              (sum: number, detail: any) => sum + detail.amount || 0,
+              (sum: number, detail: any) => sum + (detail.amount || 0),
               0
             );
             acc[key].amount += totalWithdrawAmount;
@@ -138,6 +150,53 @@ const ReportPage = () => {
             );
           }, 0);
 
+          // 👉 แยกตามวันที่ (รวมทุกสาย) - แก้ไขเพื่อรวม ice_id เดียวกัน
+          const withdrawByDayData = Object.values(
+            response.reduce((acc: any, item: any) => {
+              const dateKey = format(new Date(item.date_time), "dd/MM/yyyy");
+
+              if (!acc[dateKey]) {
+                acc[dateKey] = {
+                  date_time: dateKey,
+                  items: [],
+                  withdraw_details_grouped: {}, // เปลี่ยนเป็น object เพื่อจัดกลุ่ม
+                  amount: 0,
+                };
+              }
+
+              // จัดกลุ่ม withdraw_details ตาม ice_id
+              item.withdraw_details.forEach((detail: any) => {
+                const iceId = detail.ice_id;
+                if (!acc[dateKey].withdraw_details_grouped[iceId]) {
+                  acc[dateKey].withdraw_details_grouped[iceId] = {
+                    ice_id: detail.ice_id,
+                    product: detail.product,
+                    amount: 0,
+                  };
+                }
+                acc[dateKey].withdraw_details_grouped[iceId].amount +=
+                  detail.amount;
+              });
+
+              const totalWithdrawAmount = item.withdraw_details.reduce(
+                (sum: number, detail: any) => sum + (detail.amount || 0),
+                0
+              );
+
+              acc[dateKey].amount += totalWithdrawAmount;
+              acc[dateKey].items.push(item);
+
+              return acc;
+            }, {})
+          ).map((group: any, index: number) => ({
+            index: index + 1,
+            date_time: group.date_time,
+            items: group.items,
+            withdraw_details: Object.values(group.withdraw_details_grouped), // แปลงกลับเป็น array
+            amount: group.amount,
+          }));
+
+          // 👉 สรุปตามประเภทน้ำแข็ง (เดิม)
           const iceSummary = response.reduce((acc: any, item: any) => {
             item.withdraw_details.forEach((detail: any) => {
               const productName = detail.product.name;
@@ -162,39 +221,102 @@ const ReportPage = () => {
 
           setTotalAmount(totalItems);
           setSummaryData(summaryRowData);
-          console.log("summaryRowData", summaryRowData);
-        } else if (exportType === "delivery") {
-          const groupedData = response.reduce((acc: any, item: any) => {
-            const lineName = item?.line?.line_name || item?.car?.car_number;
-            const customerName = item?.customer?.name;
+          setWithdrawByDay(withdrawByDayData);
+        } else if (exportType === "stock") {
+          const stockInCar = response?.stockInCar || [];
+          const products = response?.products || [];
 
-            if (!acc[lineName]) {
-              acc[lineName] = {
-                line_name: lineName,
-                customers: new Set(),
+          console.log("stockInCar", stockInCar);
+          console.log("products", products);
+
+          setProductData(products);
+
+          // Group ข้อมูล stock แยกตามรถ
+          const groupedData = stockInCar.reduce((acc: any, item: any) => {
+            const carId = item?.car?.car_id;
+            const carNumber = item?.car?.car_number || `รถหมายเลข ${carId}`;
+            const key = `${carId}-${carNumber}`;
+
+            if (!acc[key]) {
+              acc[key] = {
+                car_id: carId,
+                car_number: carNumber,
+                stock_items_grouped: {},
+                total_stock: 0,
               };
             }
-            if (customerName) {
-              acc[lineName].customers.add(customerName);
+
+            const iceId = item.ice_id;
+            if (!acc[key].stock_items_grouped[iceId]) {
+              acc[key].stock_items_grouped[iceId] = {
+                ice_id: iceId,
+                product_name: item?.product?.name || "ไม่ระบุชื่อสินค้า",
+                amount: 0,
+              };
             }
+
+            acc[key].stock_items_grouped[iceId].amount += item.amount || 0;
+            acc[key].total_stock += item.amount || 0;
+
             return acc;
           }, {});
 
+          // เติมสินค้าใน products ที่ไม่มีอยู่ในรถ (amount = 0)
+          Object.values(groupedData).forEach((group: any) => {
+            products.forEach((product: any) => {
+              const iceId = product.ice_id;
+              if (!group.stock_items_grouped[iceId]) {
+                group.stock_items_grouped[iceId] = {
+                  ice_id: iceId,
+                  product_name: product.name || "ไม่ระบุชื่อสินค้า",
+                  amount: 0,
+                };
+              }
+            });
+          });
+
+          // แปลงกลับเป็น array สำหรับ Table
           rowData = Object.values(groupedData).map(
             (group: any, index: number) => ({
               index: index + 1,
-              line_name: group.line_name,
-              customers: Array.from(group.customers as Set<string>).map(
-                (name: string, index: number) => ({
-                  index: index + 1,
-                  customer_name: name,
-                })
-              ),
+              car_id: group.car_id,
+              car_number: group.car_number,
+              stock_items: Object.values(group.stock_items_grouped),
+              total_stock: group.total_stock,
             })
           );
 
+          // **เพิ่มส่วนนี้: สร้าง summaryData**
+          const summaryMap = new Map();
+
+          // รวมข้อมูลจากทุกรถ
+          rowData.forEach((car: any) => {
+            car.stock_items.forEach((item: any) => {
+              const key = item.ice_id;
+              if (summaryMap.has(key)) {
+                summaryMap.get(key).amount += item.amount;
+              } else {
+                summaryMap.set(key, {
+                  ice_id: item.ice_id,
+                  product_name: item.product_name,
+                  amount: item.amount,
+                });
+              }
+            });
+          });
+
+          // แปลงเป็น array และเรียงลำดับ
+          const summaryData = products.map((product: any, index: number) => ({
+            index: index + 1,
+            ice_id: product.ice_id,
+            product_name: product.name || "ไม่ระบุชื่อสินค้า",
+            amount: product.amount || 0, // ใช้ amount จาก products โดยตรง
+          }));
+
+          console.log("Summary Data:", summaryData);
+
           total = rowData.reduce(
-            (sum: number, group: any) => sum + group.customers.length,
+            (sum: number, group: any) => sum + group.total_stock,
             0
           );
         } else if (exportType === "money") {
@@ -341,6 +463,10 @@ const ReportPage = () => {
         setExportData(rowData);
         setTotal(total);
         setShowTable(true);
+        setDateFromDisplay(dateFrom); // สมมุติเป็น string เช่น "2025-05-01"
+        setDateToDisplay(dateTo);
+        setSummaryData(summaryData);
+
         messageApi.success("ดึงข้อมูลรายงานสำเร็จ");
       } else {
         messageApi.error("ไม่พบข้อมูล");
@@ -374,14 +500,32 @@ const ReportPage = () => {
       },
     },
     {
-      title: "ชื่อน้ำแข็ง / ถุง",
+      title: "รหัสสินค้า",
+      dataIndex: "products",
+      key: "ice_id",
+      render: (products: any[]) => {
+        return products?.map((product, index) => (
+          <div key={product.ice_id || index}>{product.ice_id}</div>
+        ));
+      },
+    },
+    {
+      title: "ชื่อน้ำแข็ง",
       dataIndex: "products",
       key: "name",
       render: (products: any[]) => {
-        return products?.map((product: any, index: number) => (
-          <div key={product.ice_id || index}>
-            {product.name} x {product.manufacture_amount}
-          </div>
+        return products?.map((product, index) => (
+          <div key={product.ice_id || index}>{product.name}</div>
+        ));
+      },
+    },
+    {
+      title: "จำนวน (ถุง)",
+      dataIndex: "products",
+      key: "amount",
+      render: (products: any[]) => {
+        return products?.map((product, index) => (
+          <div key={product.ice_id || index}>{product.manufacture_amount}</div>
         ));
       },
     },
@@ -423,17 +567,25 @@ const ReportPage = () => {
       key: "car_number",
     },
     {
-      title: "ชื่อน้ำแข็ง / ถุง",
+      title: "รหัสสินค้า",
+      dataIndex: "withdraw_details",
+      key: "ice_id",
+      render: (withdraw_details: any[]) => {
+        return withdraw_details?.map((withdraw_details, index) => (
+          <div key={withdraw_details.ice_id || index}>
+            {withdraw_details.ice_id}
+          </div>
+        ));
+      },
+    },
+    {
+      title: "ชื่อน้ำแข็ง",
       dataIndex: "items",
       key: "name",
       render: (items: any) => {
         return items?.map((item: any) => {
           const withdrawDetails = item.withdraw_details.map((item: any) => {
-            return (
-              <div key={item.index}>
-                {item.product.name} x {item.amount}
-              </div>
-            );
+            return <div key={item.index}>{item.product.name}</div>;
           });
           return (
             <div key={item.index}>
@@ -441,6 +593,16 @@ const ReportPage = () => {
             </div>
           );
         });
+      },
+    },
+    {
+      title: "จำนวน (ถุง)",
+      dataIndex: "withdraw_details",
+      key: "amount",
+      render: (item: any[]) => {
+        return item?.map((item) => (
+          <div key={item.index}>{item.amount} ถุง</div>
+        ));
       },
     },
     {
@@ -477,16 +639,35 @@ const ReportPage = () => {
       key: "line_name",
     },
     {
-      title: "รายละเอียด",
+      title: "ชื่อน้ำแข็ง",
       dataIndex: "ice_list",
-      key: "ice_list",
+      key: "name",
       render: (items: any[]) => {
-        return items?.map((item: any) => (
-          <div key={item.index}>
-            {item.name} ({item.price} บาท/ถุง) x {item.amount} = {item.total}{" "}
-            บาท
-          </div>
-        ));
+        return items?.map((item, idx) => <div key={idx}>{item.name}</div>);
+      },
+    },
+    {
+      title: "ราคาต่อถุง (บาท)",
+      dataIndex: "ice_list",
+      key: "price",
+      render: (items: any[]) => {
+        return items?.map((item, idx) => <div key={idx}>{item.price}</div>);
+      },
+    },
+    {
+      title: "จำนวนถุง",
+      dataIndex: "ice_list",
+      key: "amount",
+      render: (items: any[]) => {
+        return items?.map((item, idx) => <div key={idx}>{item.amount}</div>);
+      },
+    },
+    {
+      title: "ราคารวม (บาท)",
+      dataIndex: "ice_list",
+      key: "total",
+      render: (items: any[]) => {
+        return items?.map((item, idx) => <div key={idx}>{item.total}</div>);
       },
     },
     {
@@ -537,33 +718,147 @@ const ReportPage = () => {
     },
   ];
 
-  const columnsDelivery = [
+  const columnsStock = [
+    {
+      title: "ลำดับ",
+      key: "index",
+      render: (_: any, __: any, idx: number) => idx + 1,
+    },
+    {
+      title: "ทะเบียนรถ",
+      dataIndex: "car_number",
+      key: "car_number",
+      render: (car_number: string) => (
+        <div>
+          <strong>{car_number}</strong>
+        </div>
+      ),
+    },
+    {
+      title: "รหัสสินค้า",
+      dataIndex: "stock_items",
+      key: "ice_id",
+      render: (stock_items: any[]) =>
+        stock_items?.map((item, index) => (
+          <div key={index} className="mb-1">
+            {item.ice_id}
+          </div>
+        )),
+    },
+    {
+      title: "ชื่อสินค้า",
+      dataIndex: "stock_items",
+      key: "product_name",
+      render: (stock_items: any[]) =>
+        stock_items?.map((item, index) => (
+          <div key={index} className="mb-1">
+            {item.product_name}
+          </div>
+        )),
+    },
+    {
+      title: "จำนวนในคลัง (ถุง)",
+      dataIndex: "stock_items",
+      key: "amount",
+      render: (stock_items: any[]) =>
+        stock_items?.map((item, index) => (
+          <div key={index} className="mb-1">
+            {item.amount} ถุง
+          </div>
+        )),
+    },
+    {
+      title: "รวมทั้งหมด",
+      dataIndex: "total_stock",
+      key: "total_stock",
+      render: (total_stock: number) => (
+        <div className="font-bold">{total_stock} ถุง</div>
+      ),
+    },
+  ];
+
+  const columnsWithdrawByday = [
     {
       title: "ลำดับ",
       dataIndex: "",
       key: "",
-      render: (item: any, index: number, idx: number) => {
+      render: (item: any, record: any, idx: number) => {
         return idx + 1;
       },
     },
     {
-      title: "ชื่อสายรถ",
-      dataIndex: "line_name",
-      key: "line_name",
+      title: "วันที่",
+      dataIndex: "date_time",
+      key: "date_time",
+      render: (item: any) => {
+        return item;
+      },
     },
     {
-      title: "ชื่อลูกค้า",
-      dataIndex: "customers",
-      key: "customers",
-      render: (item: any) => {
-        return item?.map((item: any, indexs: number) => {
-          return (
-            <div key={indexs}>
-              {indexs + 1}. {item.customer_name}
-            </div>
-          );
-        });
+      title: "รหัสสินค้า",
+      dataIndex: "withdraw_details",
+      key: "ice_id",
+      render: (withdraw_details: any[]) => {
+        return withdraw_details?.map((detail, index) => (
+          <div key={detail.ice_id || index}>{detail.ice_id}</div>
+        ));
       },
+    },
+    {
+      title: "ชื่อน้ำแข็ง",
+      dataIndex: "withdraw_details",
+      key: "name",
+      render: (withdraw_details: any[]) => {
+        return withdraw_details?.map((detail, index) => (
+          <div key={detail.ice_id || index}>{detail.product.name}</div>
+        ));
+      },
+    },
+    {
+      title: "จำนวน (ถุง)",
+      dataIndex: "withdraw_details",
+      key: "amount",
+      render: (withdraw_details: any[]) => {
+        return withdraw_details?.map((detail, index) => (
+          <div key={detail.ice_id || index}>{detail.amount} ถุง</div>
+        ));
+      },
+    },
+    {
+      title: "จำนวนรวม",
+      dataIndex: "amount",
+      key: "amount",
+      render: (_: any, record: any) => {
+        const totalAmount = record.withdraw_details?.reduce(
+          (sum: number, detail: any) => sum + detail.amount,
+          0
+        );
+        return <div>{totalAmount} ถุง</div>;
+      },
+    },
+  ];
+
+  const columnsProduct = [
+    {
+      title: "รหัสสินค้า",
+      dataIndex: "ice_id",
+      key: "ice_id",
+    },
+    {
+      title: "ชื่อสินค้า",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "ราคา",
+      dataIndex: "price",
+      key: "price",
+      render: (price: number) => `${price.toLocaleString()} บาท`,
+    },
+    {
+      title: "จำนวนคงเหลือ",
+      dataIndex: "amount",
+      key: "amount",
     },
   ];
 
@@ -605,8 +900,8 @@ const ReportPage = () => {
         return columnsWithdraw;
       case "money":
         return columnsMoney;
-      case "delivery":
-        return columnsDelivery;
+      case "stock":
+        return columnsStock;
       default:
         return [];
     }
@@ -618,7 +913,13 @@ const ReportPage = () => {
   };
 
   const shouldShowLineSelector = () => {
-    return exportType && ["delivery", "withdraw", "money"].includes(exportType);
+    return exportType && ["withdraw", "money"].includes(exportType);
+  };
+
+  const shouldShowLineSelectorDay = () => {
+    return (
+      exportType && ["withdraw", "money", "manufacture"].includes(exportType)
+    );
   };
 
   return (
@@ -695,34 +996,40 @@ const ReportPage = () => {
 
             {/* Date Range Picker */}
             <div className="flex justify-center">
-              <div className="pr-5">
-                <span className="pr-2">วันที่:</span>
-                <DatePicker
-                  format={"YYYY-MM-DD"}
-                  maxDate={dayjs()}
-                  onChange={(value, dateString) => {
-                    if (typeof dateString === "string") {
-                      setDateFrom(format(new Date(dateString), "yyyy-MM-dd"));
-                    }
-                  }}
-                  size="large"
-                  placeholder="เริ่มต้น"
-                />
-              </div>
-              <div className="pr-5">
-                <span className="pr-2">ถึง:</span>
-                <DatePicker
-                  format={"YYYY-MM-DD"}
-                  maxDate={dayjs()}
-                  onChange={(value, dateString) => {
-                    if (typeof dateString === "string") {
-                      setDateTo(format(new Date(dateString), "yyyy-MM-dd"));
-                    }
-                  }}
-                  size="large"
-                  placeholder="สิ้นสุด"
-                />
-              </div>
+              {shouldShowLineSelectorDay() && (
+                <>
+                  <div className="pr-5">
+                    <span className="pr-2">วันที่:</span>
+                    <DatePicker
+                      format={"YYYY-MM-DD"}
+                      maxDate={dayjs()}
+                      onChange={(value, dateString) => {
+                        if (typeof dateString === "string") {
+                          setDateFrom(
+                            format(new Date(dateString), "yyyy-MM-dd")
+                          );
+                        }
+                      }}
+                      size="large"
+                      placeholder="เริ่มต้น"
+                    />
+                  </div>
+                  <div className="pr-5">
+                    <span className="pr-2">ถึง:</span>
+                    <DatePicker
+                      format={"YYYY-MM-DD"}
+                      maxDate={dayjs()}
+                      onChange={(value, dateString) => {
+                        if (typeof dateString === "string") {
+                          setDateTo(format(new Date(dateString), "yyyy-MM-dd"));
+                        }
+                      }}
+                      size="large"
+                      placeholder="สิ้นสุด"
+                    />
+                  </div>
+                </>
+              )}
 
               {/* Action Buttons */}
               <div className="flex justify-center items-center">
@@ -757,6 +1064,13 @@ const ReportPage = () => {
                     <h3 className="text-lg font-semibold mb-3 text-center">
                       สรุปการผลิตน้ำแข็งแยกตามประเภท
                     </h3>
+                    {dateFromDisplay && dateToDisplay && (
+                      <p className="text-sm text-gray-600 text-center mb-3">
+                        {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                          "D MMM YYYY"
+                        )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                      </p>
+                    )}
                     <Table
                       className="custom-table"
                       style={{ width: "100%" }}
@@ -766,17 +1080,19 @@ const ReportPage = () => {
                       size="small"
                       bordered
                     />
-                    <div className="flex justify-end mt-3">
-                      <div className="text-md font-semibold">
-                        รวมจำนวนถุงทั้งหมด: {total.toLocaleString()} ถุง
-                      </div>
-                    </div>
                   </div>
                   <Divider />
                   <div className="mb-3">
-                    <h3 className="text-lg font-semibold text-center">
+                    <h3 className="text-lg font-semibold mb-3 text-center">
                       รายละเอียดการผลิตแต่ละวัน
                     </h3>
+                    {dateFromDisplay && dateToDisplay && (
+                      <p className="text-sm text-gray-600 text-center mb-3">
+                        {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                          "D MMM YYYY"
+                        )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                      </p>
+                    )}
                   </div>
                 </>
               )}
@@ -788,6 +1104,13 @@ const ReportPage = () => {
                     <h3 className="text-lg font-semibold mb-3 text-center">
                       สรุปการเบิกน้ำแข็งแยกตามประเภท
                     </h3>
+                    {dateFromDisplay && dateToDisplay && (
+                      <p className="text-sm text-gray-600 text-center mb-3">
+                        {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                          "D MMM YYYY"
+                        )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                      </p>
+                    )}
                     <Table
                       className="custom-table"
                       style={{ width: "100%" }}
@@ -797,17 +1120,74 @@ const ReportPage = () => {
                       size="small"
                       bordered
                     />
-                    <div className="flex justify-end mt-3">
-                      <div className="text-md font-semibold">
-                        รวมจำนวนถุงทั้งหมด: {totalAmount.toLocaleString()} ถุง
-                      </div>
-                    </div>
                   </div>
+
                   <Divider />
-                  <div className="mb-3">
-                    <h3 className="text-lg font-semibold text-center">
-                      รายละเอียดการเบิกแต่ละวัน
+
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-3 text-center">
+                      สรุปการเบิกน้ำแข็งแยกวัน
                     </h3>
+                    {dateFromDisplay && dateToDisplay && (
+                      <p className="text-sm text-gray-600 text-center mb-3">
+                        {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                          "D MMM YYYY"
+                        )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                      </p>
+                    )}
+                    <Table
+                      className="custom-table"
+                      style={{ width: "100%" }}
+                      dataSource={withdrawByDay}
+                      columns={columnsWithdrawByday}
+                      pagination={false}
+                      size="small"
+                      bordered
+                    />
+                  </div>
+
+                  <Divider />
+
+                  <div className="mb-3">
+                    <h3 className="text-lg font-semibold text-center mb-3">
+                      รายละเอียดการเบิกตามสาย
+                    </h3>
+                    {dateFromDisplay && dateToDisplay && (
+                      <p className="text-sm text-gray-600 text-center mb-3">
+                        {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                          "D MMM YYYY"
+                        )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {exportType === "stock" && productData.length > 0 && (
+                <>
+                  <Divider />
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-3 text-center">
+                      📈 สรุปรายการสินค้าในระบบ
+                    </h3>
+                    {dateFromDisplay && dateToDisplay && (
+                      <p className="text-sm text-gray-600 text-center mb-3">
+                        {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                          "D MMM YYYY"
+                        )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                      </p>
+                    )}
+                    <Table
+                      className="custom-table"
+                      style={{ width: "100%" }}
+                      dataSource={productData}
+                      columns={columnsProduct}
+                      pagination={false}
+                      size="small"
+                      bordered
+                      scroll={{ x: "max-content" }}
+                      rowKey="ice_id"
+                    />
                   </div>
                 </>
               )}
@@ -826,12 +1206,12 @@ const ReportPage = () => {
           {/* Total Display - Only show for money and delivery reports */}
           {showTable &&
             (exportType === "money" ||
-              exportType === "delivery" ||
+              exportType === "stock" ||
               exportType === "withdraw" ||
               exportType === "manufacture") && (
-              <div className="flex justify-end mt-5 p-5">
-                <div className="text-sm text-start">รวมทั้งหมด: </div>
-                <div className="text-sm text-start font-bold">
+              <div className="flex justify-end mt-5 p-5 gap-2">
+                <div className="text-xl text-start">รวมเป็นเงินทั้งสิ้น : </div>
+                <div className="text-xl text-start font-bold ">
                   {total.toLocaleString()} {unit}
                 </div>
               </div>

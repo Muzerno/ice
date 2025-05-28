@@ -12,21 +12,13 @@ import {
 } from "@/utils/orderService";
 import { findAllProductDrowdown } from "@/utils/productService";
 import {
-  createCar,
-  createTransportationLine,
-  deleteCar,
-  deleteTransportationLine,
-  deleteTransportationLineWithIds,
   findAllCarWithLine,
   findAllTransportationLine,
-  updateCar,
 } from "@/utils/transpotationService";
-import { findAllUser, findAllUserDeliver } from "@/utils/userService";
-import { DeleteOutlined, TeamOutlined, ToolOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
-  Checkbox,
   Col,
   Form,
   Input,
@@ -39,12 +31,17 @@ import {
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import useMessage from "antd/es/message/useMessage";
-import { UUID } from "crypto";
-import { title } from "process";
 import { useEffect, useState } from "react";
-import { render } from "react-dom";
+import { useContext } from "react";
+import { UserContext } from "@/context/userContext";
 
 const OrderVip = () => {
+  const { userLogin } = useContext(UserContext);
+  const roleKey = userLogin?.user?.role?.role_key;
+  const user = userLogin?.user;
+
+  console.log(user);
+  
   const [carData, setCarData] = useState<any[]>([]);
 
   const [form] = Form.useForm();
@@ -148,20 +145,24 @@ const OrderVip = () => {
     {
       title: "",
       key: "button",
-      render: (item: any) => (
-        <div className="flex justify-end">
-          {/* <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>สินค้าที่สั่ง</Button> */}
-          <Popconfirm
-            title="Delete the car"
-            description="แน่ใจหรือไม่"
-            onConfirm={() => deleteOrder(item.customer_id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button danger type="primary" icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </div>
-      ),
+      render: (item: any) => {
+        if (roleKey === "deliver") return null;
+
+        return (
+          <div className="flex justify-end">
+            {/* <Button type="primary" className="mr-2" icon={<TeamOutlined />} onClick={() => handleOpenModalCustomer(item)}>สินค้าที่สั่ง</Button> */}
+            <Popconfirm
+              title="Delete the car"
+              description="แน่ใจหรือไม่"
+              onConfirm={() => deleteOrder(item.customer_id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button danger type="primary" icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </div>
+        );
+      },
     },
   ];
 
@@ -184,10 +185,6 @@ const OrderVip = () => {
       key: "amount",
     },
   ];
-
-  const filteredCustomers = customerMarkers.filter(
-    (cus: any) => cus.car_id === selectedCarId
-  );
 
   const fetchProduct = async () => {
     const res = await findAllProductDrowdown();
@@ -273,11 +270,6 @@ const OrderVip = () => {
     if (res) {
       setTransportationData(res.data);
     }
-  };
-
-  const handleOpenModalCustomer = (value: any) => {
-    setOpenModalCustomer(true);
-    setSelectCustomer(value.order_customer_details);
   };
 
   useEffect(() => {
@@ -501,29 +493,10 @@ const OrderVip = () => {
                       name={"address"}
                       className="w-full"
                       label="ที่อยู่"
-                      rules={[
-                        { required: true, message: "กรอกที่อยู่" },
-                      ]}
+                      rules={[{ required: true, message: "กรอกที่อยู่" }]}
                     >
                       <TextArea rows={5} placeholder="กรอกที่อยู่" />
                     </Form.Item>
-                    {/* <Form.Item
-                      name={"manual_address"}
-                      className="w-full"
-                      label="ที่อยู่ (กรอกเอง)"
-                      rules={[
-                        { required: true, message: "กรอกที่อยู่ด้วยตนเอง" },
-                      ]}
-                    >
-                      <TextArea rows={2} placeholder="กรอกที่อยู่ด้วยตนเอง" />
-                    </Form.Item>
-                    <Form.Item name="map_address" label="ที่อยู่จากแผนที่">
-                      <TextArea
-                        rows={2}
-                        disabled
-                        placeholder="ที่อยู่ที่ดึงจากแผนที่"
-                      />
-                    </Form.Item> */}
                     <Row>
                       <Col span={24}>
                         <Form.Item name="note" label="หมายเหตุ">
