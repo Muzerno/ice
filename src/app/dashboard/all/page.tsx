@@ -37,8 +37,8 @@ const ReportPage = () => {
   const reportTypes = [
     { value: "manufacture", label: "รายงานการผลิต", unit: "รายการ" },
     { value: "withdraw", label: "รายงานการเบิก", unit: "รายการ" },
-    { value: "money", label: "รายงานการเงิน", unit: "บาท" },
     { value: "stock", label: "รายงานสินค้าคงคลัง", unit: "รายการ" },
+    { value: "money", label: "รายงานการจัดส่ง", unit: "บาท" },
   ];
 
   useEffect(() => {
@@ -46,10 +46,10 @@ const ReportPage = () => {
   }, []);
 
   useEffect(() => {
-  if (transportationData.length === 1) {
-    setSelectLine(transportationData[0].line_id);
-  }
-}, [transportationData]);
+    if (transportationData.length === 1) {
+      setSelectLine(transportationData[0].line_id);
+    }
+  }, [transportationData]);
 
   useEffect(() => {
     if (exportType) {
@@ -317,6 +317,7 @@ const ReportPage = () => {
             ice_id: product.ice_id,
             product_name: product.name || "ไม่ระบุชื่อสินค้า",
             amount: product.amount || 0, // ใช้ amount จาก products โดยตรง
+            price: product.price || 0,
           }));
 
           console.log("Summary Data:", summaryData);
@@ -489,23 +490,25 @@ const ReportPage = () => {
 
   const columnsManufacture = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       dataIndex: "",
       key: "",
+      align: "center",
       render: (item: any, index: number, idx: number) => {
         return idx + 1;
       },
     },
     {
-      title: "วันที่",
+      title: <div style={{ textAlign: "center" }}>วันที่</div>,
       dataIndex: "date_time",
       key: "date_time",
+      align: "center",
       render: (item: any) => {
         return item;
       },
     },
     {
-      title: "รหัสสินค้า",
+      title: <div style={{ textAlign: "center" }}>รหัสสินค้า</div>,
       dataIndex: "products",
       key: "ice_id",
       render: (products: any[]) => {
@@ -515,7 +518,7 @@ const ReportPage = () => {
       },
     },
     {
-      title: "ชื่อน้ำแข็ง",
+      title: <div style={{ textAlign: "center" }}>ชื่อน้ำแข็ง</div>,
       dataIndex: "products",
       key: "name",
       render: (products: any[]) => {
@@ -525,59 +528,56 @@ const ReportPage = () => {
       },
     },
     {
-      title: "จำนวน (ถุง)",
+      title: <div style={{ textAlign: "center" }}>จำนวน (ถุง)</div>,
       dataIndex: "products",
       key: "amount",
+      align: "center",
       render: (products: any[]) => {
         return products?.map((product, index) => (
-          <div key={product.ice_id || index}>
-            {product.manufacture_amount} ถุง
-          </div>
+          <div key={product.ice_id || index}>{product.manufacture_amount}</div>
         ));
       },
     },
     {
-      title: "จำนวนรวม",
+      title: <div style={{ textAlign: "center" }}>จำนวนรวม (ถุง)</div>,
       dataIndex: "manufacture_amount_total",
       key: "manufacture_amount_total",
-      render: (item: any) => {
-        return item + " ถุง";
-      },
+      align: "center",
     },
   ];
 
   const columnsWithdraw = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       dataIndex: "",
       key: "",
+      align: "center",
       render: (item: any, index: number, idx: number) => {
         return idx + 1;
       },
     },
     {
-      title: "วันที่",
+      title: <div style={{ textAlign: "center" }}>วันที่</div>,
       dataIndex: "date_time",
       key: "date_time",
+      align: "center",
       render: (item: any) => {
         return item;
       },
     },
     {
-      title: "ชื่อสาย",
-      dataIndex: "line_name",
-      key: "line_name",
-      render: (item: any) => {
-        return item;
-      },
+      title: <div style={{ textAlign: "center" }}>ชื่อสาย / เลขทะเบียนรถ</div>,
+      key: "line_car",
+      align: "center",
+      render: (_: any, record: any) => (
+        <div>
+          <div>{record.line_name} / {record.car_number}</div>
+        </div>
+      ),
     },
+
     {
-      title: "เลขทะเบียนรถ",
-      dataIndex: "car_number",
-      key: "car_number",
-    },
-    {
-      title: "รหัสสินค้า",
+      title: <div style={{ textAlign: "center" }}>รหัสสินค้า</div>,
       dataIndex: "withdraw_details",
       key: "ice_id",
       render: (withdraw_details: any[]) => {
@@ -589,7 +589,7 @@ const ReportPage = () => {
       },
     },
     {
-      title: "ชื่อน้ำแข็ง",
+      title: <div style={{ textAlign: "center" }}>ชื่อน้ำแข็ง</div>,
       dataIndex: "items",
       key: "name",
       render: (items: any) => {
@@ -606,136 +606,146 @@ const ReportPage = () => {
       },
     },
     {
-      title: "จำนวน (ถุง)",
+      title: <div style={{ textAlign: "center" }}>จำนวน (ถุง)</div>,
       dataIndex: "withdraw_details",
       key: "amount",
+      align: "center",
       render: (item: any[]) => {
-        return item?.map((item) => (
-          <div key={item.index}>{item.amount} ถุง</div>
-        ));
+        return item?.map((item) => <div key={item.index}>{item.amount}</div>);
       },
     },
     {
-      title: "จำนวนรวม",
+      title: <div style={{ textAlign: "center" }}>จำนวนรวม (ถุง)</div>,
       dataIndex: "amount",
       key: "amount",
+      align: "center",
       render: (_: any, record: any) => {
         const totalAmount = record.withdraw_details?.reduce(
           (sum: number, detail: any) => sum + detail.amount,
           0
         );
-        return <div>{totalAmount} ถุง</div>;
+        return <div>{totalAmount}</div>;
       },
     },
   ];
 
   const columnsMoney = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       dataIndex: "indexs",
       key: "indexs",
-      render: (item: any, index: number, idx: number) => {
-        return idx + 1;
-      },
+      render: (item: any, index: number, idx: number) => idx + 1,
+      align: "center",
     },
     {
-      title: "วันที่",
+      title: <div style={{ textAlign: "center" }}>วันที่</div>,
       dataIndex: "date",
       key: "date",
     },
     {
-      title: "ชื่อสาย",
+      title: <div style={{ textAlign: "center" }}>ชื่อสาย</div>,
       dataIndex: "line_name",
       key: "line_name",
     },
     {
-      title: "ชื่อน้ำแข็ง",
+      title: <div style={{ textAlign: "center" }}>ชื่อน้ำแข็ง</div>,
       dataIndex: "ice_list",
       key: "name",
-      render: (items: any[]) => {
-        return items?.map((item, idx) => <div key={idx}>{item.name}</div>);
-      },
+      width: 250,
+      render: (items: any[]) =>
+        items?.map((item, idx) => <div key={idx}>{item.name}</div>),
     },
     {
-      title: "ราคาต่อถุง (บาท)",
+      title: <div style={{ textAlign: "center" }}>ราคาต่อถุง (บาท)</div>,
       dataIndex: "ice_list",
       key: "price",
-      render: (items: any[]) => {
-        return items?.map((item, idx) => <div key={idx}>{item.price}</div>);
-      },
+      align: "right",
+      width: 125,
+      render: (items: any[]) =>
+        items?.map((item, idx) => (
+          <div key={idx}>{item.price.toLocaleString()}</div>
+        )),
     },
     {
-      title: "จำนวนถุง",
+      title: <div style={{ textAlign: "center" }}>จำนวนถุง (ถุง)</div>,
       dataIndex: "ice_list",
       key: "amount",
-      render: (items: any[]) => {
-        return items?.map((item, idx) => <div key={idx}>{item.amount}</div>);
-      },
+      align: "center",
+      width: 125,
+      render: (items: any[]) =>
+        items?.map((item, idx) => <div key={idx}>{item.amount}</div>),
     },
     {
-      title: "ราคารวม (บาท)",
+      title: <div style={{ textAlign: "center" }}>เงินรวม (บาท)</div>,
       dataIndex: "ice_list",
       key: "total",
-      render: (items: any[]) => {
-        return items?.map((item, idx) => <div key={idx}>{item.total}</div>);
-      },
+      align: "right",
+      render: (items: any[]) =>
+        items?.map((item, idx) => (
+          <div key={idx}>{item.total.toLocaleString()}</div>
+        )),
     },
     {
-      title: "จำนวนเงินรวม",
+      title: <div style={{ textAlign: "center" }}>จำนวนเงินรวม (บาท)</div>,
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (item: any) => {
-        return `${item} บาท`;
-      },
+      align: "right",
+      width: 175,
+      render: (item: any) => item?.toLocaleString(),
     },
   ];
 
   const columnsSummaryManufacture = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       dataIndex: "index",
       key: "index",
+      align: "center",
     },
     {
-      title: "ชื่อน้ำแข็ง",
+      title: <div style={{ textAlign: "center" }}>ชื่อน้ำแข็ง</div>,
       dataIndex: "product_name",
       key: "product_name",
     },
     {
-      title: "จำนวนรวม (ถุง)",
+      title: <div style={{ textAlign: "center" }}>จำนวนรวม (ถุง)</div>,
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (amount: number) => `${amount.toLocaleString()} ถุง`,
+      align: "center",
+      render: (amount: number) => `${amount.toLocaleString()}`,
     },
   ];
 
   const columnsSummaryWithdraw = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       dataIndex: "index",
       key: "index",
+      align: "center",
     },
     {
-      title: "ชื่อน้ำแข็ง",
+      title: <div style={{ textAlign: "center" }}>ชื่อน้ำแข็ง</div>,
       dataIndex: "ice_name",
       key: "ice_name",
     },
     {
-      title: "จำนวนรวม (ถุง)",
+      title: <div style={{ textAlign: "center" }}>จำนวนรวม (ถุง)</div>,
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (amount: number) => `${amount.toLocaleString()} ถุง`,
+      align: "center",
+      render: (amount: number) => `${amount.toLocaleString()}`,
     },
   ];
 
   const columnsStock = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       key: "index",
+      align: "center",
       render: (_: any, __: any, idx: number) => idx + 1,
     },
     {
-      title: "ทะเบียนรถ",
+      title: <div style={{ textAlign: "center" }}>ทะเบียนรถ</div>,
       dataIndex: "car_number",
       key: "car_number",
       render: (car_number: string) => (
@@ -745,7 +755,7 @@ const ReportPage = () => {
       ),
     },
     {
-      title: "รหัสสินค้า",
+      title: <div style={{ textAlign: "center" }}>รหัสสินค้า</div>,
       dataIndex: "stock_items",
       key: "ice_id",
       render: (stock_items: any[]) =>
@@ -756,7 +766,7 @@ const ReportPage = () => {
         )),
     },
     {
-      title: "ชื่อสินค้า",
+      title: <div style={{ textAlign: "center" }}>ชื่อสินค้า</div>,
       dataIndex: "stock_items",
       key: "product_name",
       render: (stock_items: any[]) =>
@@ -767,45 +777,51 @@ const ReportPage = () => {
         )),
     },
     {
-      title: "จำนวนในคลัง (ถุง)",
+      title: <div style={{ textAlign: "center" }}>จำนวนในคลัง (ถุง)</div>,
       dataIndex: "stock_items",
       key: "amount",
+      align: "center",
       render: (stock_items: any[]) =>
         stock_items?.map((item, index) => (
           <div key={index} className="mb-1">
-            {item.amount} ถุง
+            {item.amount}
           </div>
         )),
     },
     {
-      title: "รวมทั้งหมด",
+      title: <div style={{ textAlign: "center" }}>รวมทั้งหมด (ถุง)</div>,
       dataIndex: "total_stock",
       key: "total_stock",
-      render: (total_stock: number) => (
-        <div className="font-bold">{total_stock} ถุง</div>
+      align: "center",
+      render: (total_stock: number, _: any, idx: number) => (
+        <div key={idx} className="font-bold">
+          {total_stock}
+        </div>
       ),
     },
   ];
 
   const columnsWithdrawByday = [
     {
-      title: "ลำดับ",
+      title: <div style={{ textAlign: "center" }}>ลำดับ</div>,
       dataIndex: "",
       key: "",
+      align: "center",
       render: (item: any, record: any, idx: number) => {
         return idx + 1;
       },
     },
     {
-      title: "วันที่",
+      title: <div style={{ textAlign: "center" }}>วันที่</div>,
       dataIndex: "date_time",
       key: "date_time",
+      align: "center",
       render: (item: any) => {
         return item;
       },
     },
     {
-      title: "รหัสสินค้า",
+      title: <div style={{ textAlign: "center" }}>รหัสสินค้า</div>,
       dataIndex: "withdraw_details",
       key: "ice_id",
       render: (withdraw_details: any[]) => {
@@ -815,7 +831,7 @@ const ReportPage = () => {
       },
     },
     {
-      title: "ชื่อน้ำแข็ง",
+      title: <div style={{ textAlign: "center" }}>ชื่อน้ำแข็ง</div>,
       dataIndex: "withdraw_details",
       key: "name",
       render: (withdraw_details: any[]) => {
@@ -825,32 +841,34 @@ const ReportPage = () => {
       },
     },
     {
-      title: "จำนวน (ถุง)",
+      title: <div style={{ textAlign: "center" }}>จำนวน (ถุง)</div>,
       dataIndex: "withdraw_details",
       key: "amount",
+      align: "center",
       render: (withdraw_details: any[]) => {
         return withdraw_details?.map((detail, index) => (
-          <div key={detail.ice_id || index}>{detail.amount} ถุง</div>
+          <div key={detail.ice_id || index}>{detail.amount}</div>
         ));
       },
     },
     {
-      title: "จำนวนรวม",
+      title: <div style={{ textAlign: "center" }}>จำนวนรวม (ถุง)</div>,
       dataIndex: "amount",
       key: "amount",
+      align: "center",
       render: (_: any, record: any) => {
         const totalAmount = record.withdraw_details?.reduce(
           (sum: number, detail: any) => sum + detail.amount,
           0
         );
-        return <div>{totalAmount} ถุง</div>;
+        return <div>{totalAmount}</div>;
       },
     },
   ];
 
   const columnsProduct = [
     {
-      title: "รหัสสินค้า",
+      title: <div style={{ textAlign: "center" }}>รหัสสินค้า</div>,
       dataIndex: "ice_id",
       key: "ice_id",
     },
@@ -860,15 +878,17 @@ const ReportPage = () => {
       key: "name",
     },
     {
-      title: "ราคา",
+      title: <div style={{ textAlign: "center" }}>ราคา (บาท)</div>,
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `${price.toLocaleString()} บาท`,
+      align: "right",
+      render: (price: number) => `${price.toLocaleString()}`,
     },
     {
-      title: "จำนวนคงเหลือ",
+      title: <div style={{ textAlign: "center" }}>จำนวนคงเหลือ (ถุง)</div>,
       dataIndex: "amount",
       key: "amount",
+      align: "center",
     },
   ];
 
@@ -1072,7 +1092,7 @@ const ReportPage = () => {
                 <>
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3 text-center">
-                      สรุปการผลิตน้ำแข็งแยกตามประเภท
+                      สรุปการผลิตสินค้าแยกตามประเภท
                     </h3>
                     {dateFromDisplay && dateToDisplay && (
                       <p className="text-sm text-gray-600 text-center mb-3">
@@ -1112,7 +1132,7 @@ const ReportPage = () => {
                 <>
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3 text-center">
-                      สรุปการเบิกน้ำแข็งแยกตามประเภท
+                      สรุปการเบิกสินค้าแยกตามประเภท
                     </h3>
                     {dateFromDisplay && dateToDisplay && (
                       <p className="text-sm text-gray-600 text-center mb-3">
@@ -1136,7 +1156,7 @@ const ReportPage = () => {
 
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3 text-center">
-                      สรุปการเบิกน้ำแข็งแยกวัน
+ รายงานแยกตามวันที่ (รวมทกสาย)
                     </h3>
                     {dateFromDisplay && dateToDisplay && (
                       <p className="text-sm text-gray-600 text-center mb-3">
@@ -1160,7 +1180,7 @@ const ReportPage = () => {
 
                   <div className="mb-3">
                     <h3 className="text-lg font-semibold text-center mb-3">
-                      รายละเอียดการเบิกตามสาย
+                       รายงานแยกตามสายการเดินรถ-วัน (รายละเอียด)
                     </h3>
                     {dateFromDisplay && dateToDisplay && (
                       <p className="text-sm text-gray-600 text-center mb-3">

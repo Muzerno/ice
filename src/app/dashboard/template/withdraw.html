@@ -447,7 +447,7 @@
                 </div>
                 <div class="report-title">
                     <span class="ice-icon">🧊</span>
-                    รายงานการเบิกน้ำแข็ง
+                    รายงานการเบิกสินค้า
                     <span class="ice-icon">🧊</span>
                 </div>
             </div>
@@ -461,14 +461,14 @@
                 <div class="section">
                     <h4 class="section-title">
                         <span class="icon">📈</span>
-                        สรุปรายการตามประเภทน้ำแข็ง
+                        สรุปการเบิกสินค้าแยกตามประเภท
                     </h4>
                     <table>
                         <thead>
                             <tr>
                                 <th style="width: 60px;">ลำดับ</th>
                                 <th>ชื่อน้ำแข็ง</th>
-                                <th style="width: 120px;">จำนวนรวม</th>
+                                <th style="width: 120px;">จำนวนรวม (ถุง)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -478,9 +478,10 @@
                                     style="text-align: center; font-weight: 500;">{{index}}</td>
                                 <td style="font-weight: 500;">🧊
                                     {{ice_name}}</td>
-                                <td style="text-align: right; font-weight: 600;"
+                                <td
+                                    style="text-align: center; font-weight: 600;"
                                     class="number-highlight">
-                                    {{total_amount}} ถุง
+                                    {{total_amount}}
                                 </td>
                             </tr>
                             {{else}}
@@ -506,8 +507,7 @@
                                 <th style="width: 100px;">วันที่</th>
                                 <th style="width: 100px;">รหัสสินค้า</th>
                                 <th style="width: 200px;">ชื่อน้ำแข็ง</th>
-                                <th style="width: 100px;">จำนวน</th>
-                                <th style="width: 100px;">จำนวนรวม</th>
+                                <th style="width: 100px;">จำนวน (ถุง)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -525,21 +525,24 @@
                                             <div
                                                 style="width: 80px;">{{ice_id}}</div>
                                             <div
-                                                style="flex: 1; width: 200px">🧊
+                                                style="flex: 1;">🧊
                                                 {{product.name}}</div>
                                             <div
                                                 style="text-align:center; font-size: 11px;"
                                                 class="number-highlight">{{amount}}
-                                                ถุง</div>
+                                            </div>
                                         </div>
                                         {{/each}}
                                     </div>
                                 </td>
 
+                            </tr>
+                            <tr>
+                                <td colspan="4"
+                                    style="text-align: right; font-weight: bold;">รวมทั้งหมด
+                                    (ถุง)</td>
                                 <td style="text-align: right;"
-                                    class="number-highlight">
-                                    {{amount}} ถุง
-                                </td>
+                                    class="number-highlight">{{amount}}</td>
                             </tr>
                             {{else}}
                             <tr>
@@ -562,12 +565,10 @@
                             <tr>
                                 <th style="width: 50px;">ลำดับ</th>
                                 <th style="width: 90px;">วันที่</th>
-                                <th>ชื่อสาย</th>
-                                <th style="width: 100px;">เลขทะเบียนรถ</th>
+                                <th style="width: 100px;">ชื่อสาย / เลขทะเบียนรถ</th>
                                 <th style="width: 80px;">รหัสสินค้า</th>
                                 <th style="width: 180px;">ชื่อน้ำแข็ง</th>
-                                <th style="width: 80x;">จำนวน</th>
-                                <th style="width: 80px;">จำนวนรวม</th>
+                                <th style="width: 80x;">จำนวน (ถุง)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -576,40 +577,41 @@
                                 <td style="text-align: center;">{{index}}</td>
                                 <td
                                     style="text-align: center;">{{date_time}}</td>
-                                <td style="font-weight: 500;">{{line_name}}</td>
                                 <td
-                                    style="text-align: center; font-weight: 500;">{{car_number}}</td>
+                                    style="text-align: center; font-weight: 500;">{{line_name}} / {{car_number}}</td>
                                 <td colspan="3" class="product-details">
                                     <div
                                         style="display: flex; flex-direction: column; gap: 6px;">
                                         {{#each withdraw_details}}
                                         <div
-                                            style="display: flex; gap: 20px; justify-content: space-between; min-width: 300px;">
+                                            style="display: flex; justify-content: space-between; min-width: 100px;">
                                             <div
                                                 style="width: 60px;">{{ice_id}}</div>
-                                            <div
-                                                style="flex: 1;">🧊
+                                            <div style="flex: 1;">🧊
                                                 {{product.name}}</div>
                                             <div
-                                                style="text-align:center; font-size: 11px;"
-                                                class="number-highlight">{{amount}}
-                                                ถุง</div>
+                                                style="text-align: center; font-size: 11px;"
+                                                class="number-highlight">{{amount}}</div>
                                         </div>
                                         {{/each}}
                                     </div>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"
+                                    style="text-align: right; font-weight: bold;">รวมทั้งหมด
+                                    (ถุง)</td>
                                 <td style="text-align: right;"
-                                    class="number-highlight">
-                                    {{amount}} ถุง
-                                </td>
+                                    class="number-highlight">{{amount}}</td>
                             </tr>
                             {{else}}
                             <tr>
-                                <td colspan="6"
+                                <td colspan="8"
                                     class="no-data">ไม่มีข้อมูลรายละเอียด</td>
                             </tr>
                             {{/each}}
                         </tbody>
+
                     </table>
                     <div class="total-summary">
                         🎯 รวมทั้งหมด: <span

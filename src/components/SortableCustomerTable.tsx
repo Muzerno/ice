@@ -13,9 +13,9 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Table, Modal, Button } from "antd";
+import { Table, Modal, Button, Space } from "antd";
 import { useState, useEffect, useRef } from "react";
-import { DeleteOutlined } from "@ant-design/icons";
+import { UpOutlined, DownOutlined, DeleteOutlined } from '@ant-design/icons';
 
 function Row(props: any) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -45,6 +45,8 @@ export default function SortableCustomerTable({
   data,
   onReorder,
   deleteLine,
+  onMoveUp, 
+  onMoveDown 
 }: any) {
   const [items, setItems] = useState(data || []);
   const isInitialized = useRef(false);
@@ -121,21 +123,48 @@ export default function SortableCustomerTable({
       content: "คุณแน่ใจหรือไม่ว่าต้องการลบลูกค้ารายนี้?",
       okText: "ใช่",
       cancelText: "ไม่",
-      centered: true, // ✅ เพิ่ม centered modal ให้แน่ใจว่าไม่หลุดจอ
+      centered: true,
       onOk: () => {
         deleteLine(lineId, cusId);
       },
     });
   };
 
+  // ฟังก์ชันสำหรับเลื่อนรายการขึ้น/ลง
+  const handleMoveUp = (index: number) => {
+    if (index > 0) {
+      const newData = [...items];
+      [newData[index], newData[index - 1]] = [newData[index - 1], newData[index]];
+      
+      // อัปเดต step ให้เป็นลำดับใหม่
+      const updatedData = newData.map((item: any, idx: number) => ({
+        ...item,
+        step: idx + 1,
+      }));
+      
+      setItems(updatedData);
+      onMoveUp(index);
+    }
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index < items.length - 1) {
+      const newData = [...items];
+      [newData[index], newData[index + 1]] = [newData[index + 1], newData[index]];
+      
+      // อัปเดต step ให้เป็นลำดับใหม่
+      const updatedData = newData.map((item: any, idx: number) => ({
+        ...item,
+        step: idx + 1,
+      }));
+      
+      setItems(updatedData);
+      onMoveDown(index);
+    }
+  };
+
   return (
     <div>
-      {/* Debug info */}
-      <div style={{ marginBottom: 16, fontSize: "12px", color: "#666" }}>
-        Debug: {items.length} items loaded
-        {items.map((item) => ` | ${item.customer_id}:${item.step}`)}
-      </div>
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -150,6 +179,93 @@ export default function SortableCustomerTable({
             rowKey="customer_id"
             dataSource={items}
             columns={[
+              {
+                title: "การดำเนินการ",
+                key: "action",
+                width: 200,
+                align: "center",
+                render: (text, record, index) => (
+                  <div
+                    style={{
+                      pointerEvents: "auto",
+                      cursor: "default",
+                    }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                    }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={<UpOutlined />}
+                        size="small"
+                        disabled={index === 0}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleMoveUp(index);
+                        }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        title="เลื่อนขึ้น"
+                      />
+                      <Button
+                        type="text"
+                        icon={<DownOutlined />}
+                        size="small"
+                        disabled={index === items.length - 1} // แก้ไขจาก data.length เป็น items.length
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleMoveDown(index);
+                        }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        title="เลื่อนลง"
+                      />
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log("Delete button clicked for:", record.customer_id);
+                          handleDelete(record.line_id, record.customer_id);
+                        }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onPointerDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        title="ลบ"
+                      />
+                    </Space>
+                  </div>
+                ),
+              },
               {
                 title: "ลำดับ",
                 dataIndex: "step",
@@ -243,53 +359,7 @@ export default function SortableCustomerTable({
                   );
                 },
               },
-              {
-                title: "",
-                key: "button",
-                align: "right",
-                width: 80,
-                render: (item: any) => (
-                  <div
-                    style={{
-                      pointerEvents: "auto", // ให้ pointer events ทำงานใน div นี้
-                      cursor: "default", // เปลี่ยน cursor เป็นปกติ
-                    }}
-                    onPointerDown={(e) => {
-                      e.stopPropagation(); // หยุด DnD events
-                    }}
-                    onMouseDown={(e) => {
-                      e.stopPropagation(); // หยุด DnD events
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // หยุด DnD events
-                    }}
-                  >
-                    <Button
-                      danger
-                      type="primary"
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log(
-                          "Delete button clicked for:",
-                          item.customer_id
-                        );
-                        handleDelete(item.line_id, item.customer_id);
-                      }}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onPointerDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    />
-                  </div>
-                ),
-              },
+              // ลบคอลัมน์ปุ่มลบที่ซ้ำซ้อนออก เพราะมีในคอลัมน์การดำเนินการแล้ว
             ]}
             scroll={{ x: "max-content" }}
             pagination={false}
