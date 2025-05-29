@@ -426,6 +426,7 @@ export default async function handler(
         ice_id: product.ice_id,
         product_name: product.name || "ไม่ระบุชื่อสินค้า",
         amount: product.amount || 0, // ใช้ amount จาก products โดยตรง
+        price: product.price || 0,
       }));
 
       // ตั้งค่า rowData2 เป็น summaryData สำหรับใช้ใน template
@@ -436,6 +437,7 @@ export default async function handler(
         (sum: number, group: any) => sum + group.total_stock,
         0
       );
+      
     }
 
 

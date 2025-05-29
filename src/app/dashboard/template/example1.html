@@ -208,12 +208,7 @@
             background-color: #fafbff;
         }
 
-        .total-row td {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            font-weight: 600;
-            color: #d35400;
-            border-top: 2px solid #e67e22;
-        }
+
 
         .summary-section {
             margin-top: 40px;
@@ -345,10 +340,6 @@
                 font-size: 11px !important;
             }
             
-            .total-row td {
-                background: #ffecd2 !important;
-                -webkit-print-color-adjust: exact;
-            }
             
             .total-summary {
                 background: #667eea !important;
@@ -441,7 +432,7 @@
                 </div>
                 <div class="report-title">
                     <span class="ice-icon">❄️</span>
-                    รายงานการผลิตน้ำแข็ง
+                    รายงานการผลิตสินค้า
                     <span class="ice-icon">❄️</span>
                 </div>
             </div>
@@ -452,13 +443,13 @@
                 </div>
 
                 <div class="summary-section">
-                    <h4 class="summary-title">📈 สรุปรายการทั้งหมด</h4>
+                    <h4 class="summary-title">📈 สรุปการผลิตสินค้าแยกตามประเภท</h4>
                     <table>
                         <thead>
                             <tr>
                                 <th style="width: 60px;">ลำดับ</th>
                                 <th>ชื่อน้ำแข็ง</th>
-                                <th style="width: 100px;">จำนวนรวม</th>
+                                <th style="width: 100px; ">จำนวนรวม (ถุง)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -468,9 +459,9 @@
                                     style="text-align: center; font-weight: 500;">{{index}}</td>
                                 <td style="font-weight: 500;">🧊
                                     {{product_name}}</td>
-                                <td style="text-align: right; font-weight: 600;"
+                                <td style="text-align: center; font-weight: 600;"
                                     class="number-highlight">{{manufacture_amount}}
-                                    ถุง</td>
+                                    </td>
                             </tr>
                             {{/each}}
                         </tbody>
@@ -485,6 +476,7 @@
 
                 {{#each rowData}}
                 <div class="daily-section">
+                    <h4 class="summary-title">📈 รายละเอียดการผลิตแต่ละวัน</h4>
                     <div class="section-title">
                         📋 วันที่ {{date_time}}
                     </div>
@@ -494,7 +486,7 @@
                                 <th style="width: 60px;">ลำดับ</th>
                                 <th style="width: 120px;">รหัสน้ำแข็ง</th>
                                 <th style="width: 300px;">ชื่อน้ำแข็ง</th>
-                                <th style="width: 100px;">จำนวน</th>
+                                <th style="width: 100px;">จำนวน (ถุง)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -504,9 +496,9 @@
                                     style="text-align: center; font-weight: 500;">{{index}}</td>
                                 <td style="font-weight: 500;">{{ice_id}}</td>
                                 <td style="font-weight: 500;">🧊 {{name}}</td>
-                                <td style="text-align: right; font-weight: 600;"
+                                <td style="text-align: center; font-weight: 600;"
                                     class="number-highlight">{{manufacture_amount}}
-                                    ถุง</td>
+                                    </td>
                             </tr>
                             {{/each}}
                             <tr class="total-row">
@@ -514,7 +506,7 @@
                                     style="text-align: right; font-size: 16px;">📊
                                     รวม:</td>
                                 <td
-                                    style="text-align: right; font-size: 18px; font-weight: 700;">{{manufacture_amount_total}}</td>
+                                    style="text-align: center; font-size: 18px; font-weight: 700;" class="number-highlight">{{manufacture_amount_total}}</td>
                             </tr>
                         </tbody>
                     </table>

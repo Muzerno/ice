@@ -47,7 +47,7 @@ const Shipping = () => {
   const [rowSelectList, setRowSelectList] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentIndex2, setCurrentIndex2] = useState(0);
-    const [dataInMap, setDataInMap] = useState<any>([]);
+  const [dataInMap, setDataInMap] = useState<any>([]);
   const [editingLine, setEditingLine] = useState<any>(null);
   const [assignedCustomers, setAssignedCustomers] = useState<Set<number>>(
     new Set()
@@ -450,23 +450,23 @@ const Shipping = () => {
   };
 
   const handleOpenModalCustomer = (value: any) => {
-  setEditingLine(value);
-  setOpenModalCustomer(true);
-  setSelectCustomer(value.customer);
+    setEditingLine(value);
+    setOpenModalCustomer(true);
+    setSelectCustomer(value.customer);
 
-  // เตรียมข้อมูลหมุดลูกค้า
-  const markers = (value.customer || [])
-    .filter((cust: any) => cust.latitude && cust.longitude)
-    .map((cust: any) => ({
-      latitude: cust.latitude,
-      longitude: cust.longitude,
-      name: cust.name,
-      address: cust.address,
-      customer: cust, // สำหรับการแสดงใน LongdoMap
-    }));
+    // เตรียมข้อมูลหมุดลูกค้า
+    const markers = (value.customer || [])
+      .filter((cust: any) => cust.latitude && cust.longitude)
+      .map((cust: any) => ({
+        latitude: cust.latitude,
+        longitude: cust.longitude,
+        name: cust.name,
+        address: cust.address,
+        customer: cust, // สำหรับการแสดงใน LongdoMap
+      }));
 
-  setDataInMap(markers); // ส่งให้ LongdoMap ผ่าน props
-};
+    setDataInMap(markers); // ส่งให้ LongdoMap ผ่าน props
+  };
 
   useEffect(() => {
     getCustomer();
@@ -568,15 +568,16 @@ const Shipping = () => {
         open={openModalCustomer}
         onCancel={() => setOpenModalCustomer(false)}
         onOk={handleConfirmOrder}
-        title="จัดลำดับลูกค้าในสายรถ"
+        title={`จัดลำดับลูกค้าในสายรถ ${editingLine?.line_name || ""}`}
         okText="ยืนยันการจัดลำดับ"
         cancelText="ยกเลิก"
       >
-        <Card title={`จัดลำดับลูกค้าในสายรถ ${editingLine?.line_name || ""}`}>
+        <Card>
           <div style={{ marginBottom: 16 }}>
             <p>ลูกค้าทั้งหมด: {selectCustomer.length} คน</p>
-            <p>ลากและวางเพื่อเปลี่ยนลำดับ</p>
+            <p>ลากและวางหรือใช้ลูกศรเพื่อเปลี่ยนลำดับ</p>
           </div>
+
           <SortableCustomerTable
             data={selectCustomer}
             deleteLine={deleteLine}
@@ -588,13 +589,46 @@ const Shipping = () => {
               }));
               setSelectCustomer(updatedData);
             }}
+            // เพิ่ม props สำหรับการควบคุมด้วยลูกศร
+            onMoveUp={(index) => {
+              if (index > 0) {
+                const newData = [...selectCustomer];
+                [newData[index], newData[index - 1]] = [
+                  newData[index - 1],
+                  newData[index],
+                ];
+
+                // อัปเดต step ให้เป็นลำดับใหม่
+                const updatedData = newData.map((item, idx) => ({
+                  ...item,
+                  step: idx + 1,
+                }));
+                setSelectCustomer(updatedData);
+              }
+            }}
+            onMoveDown={(index) => {
+              if (index < selectCustomer.length - 1) {
+                const newData = [...selectCustomer];
+                [newData[index], newData[index + 1]] = [
+                  newData[index + 1],
+                  newData[index],
+                ];
+
+                // อัปเดต step ให้เป็นลำดับใหม่
+                const updatedData = newData.map((item, idx) => ({
+                  ...item,
+                  step: idx + 1,
+                }));
+                setSelectCustomer(updatedData);
+              }
+            }}
           />
+
           <div className="mt-5">
             <Col span={24}>
-                <LongdoMap customerLocation={dataInMap} />
-              </Col>
+              <LongdoMap customerLocation={dataInMap} />
+            </Col>
           </div>
-          
         </Card>
       </Modal>
     </div>
