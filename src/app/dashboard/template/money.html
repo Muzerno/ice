@@ -420,7 +420,8 @@
         <div class="report-container">
             <div class="header">
                 <div class="logo-container">
-                    <img src="http://localhost:3000/api/logo" alt="Logo" class="logo">
+                    <img src="http://localhost:3000/api/logo" alt="Logo"
+                        class="logo">
                     <div class="company-info">
                         <div class="company-name">ห้างหุ้นส่วนจำกัด
                             โรงน้ำแข็งหลอดศรีนวล</div>
@@ -487,14 +488,22 @@
                             <td colspan="6" style="text-align: right;">รวม:</td>
                             <td style="text-align: right;">{{total_amount}}</td>
                         </tr>
+                        <tr>
+                            <td colspan="7"
+                                style="text-align: right; font-weight: bold; font-size: 16px;">
+                                รวมเป็นเงิน {{total_amount}} บาท
+                                ({{total_amount_text}})
+                            </td>
+                        </tr>
+
                     </tbody>
                 </table>
                 {{/each}}
 
                 <div class="total-summary">
                     🎯 รวมเป็นเงินทั้งสิ้น:
-                    <span style="font-size: 20px; font-weight: 800;">{{total}}</span>
-                    บาท
+                    <span
+                        style="font-size: 20px; font-weight: 800;">{{total}} บาท</span>
                 </div>
             </div>
         </body>
