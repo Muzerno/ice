@@ -115,7 +115,6 @@ const Order = () => {
       if (res && Array.isArray(res)) {
         // ตรวจสอบว่า res เป็น array
         setStockInCarData(res);
-        // คำนวณจำนวนน้ำแข็งทั้งหมด
         const totalIce = res.reduce(
           (sum, item) => sum + (item.stock_amount || 0),
           0
@@ -172,12 +171,19 @@ const Order = () => {
         return;
       }
 
-      const totalSelectedAmount = Object.values(selectedProductsAmount).reduce(
-        (sum, amount) => sum + amount,
+      const totalSelectedAmount = selectedProducts.reduce(
+        (sum, productId) => sum + (selectedProductsAmount[productId] || 0),
         0
       );
-      if (totalSelectedAmount > 40) {
-        messageApi.error("ไม่สามารถเลือกสินค้ารวมเกิน 40 รายการได้");
+
+      // เช็คจำนวนในรถบวกกับจำนวนที่จะเบิก
+      const currentStockInCar = stockInCar || 0;
+      const totalAfterWithdraw = currentStockInCar + totalSelectedAmount;
+
+      if (totalAfterWithdraw > 40) {
+        messageApi.error(
+          `จำนวนที่เลือก (${totalSelectedAmount} ถุง) รวมกับจำนวนในรถ (${currentStockInCar} ถุง) = ${totalAfterWithdraw} ถุง เกิน 40 ถุง`
+        );
         return;
       }
 
@@ -213,6 +219,20 @@ const Order = () => {
     } catch (error) {
       messageApi.error("เกิดข้อผิดพลาดในการเบิกสินค้า");
     }
+  };
+
+  const canSelectProducts = () => {
+    const currentStockInCar = stockInCar || 0;
+    return currentStockInCar < 40;
+  };
+
+  // แสดงข้อความเตือนเมื่อน้ำแข็งในรถเต็ม
+  const getStockWarningMessage = () => {
+    const currentStockInCar = stockInCar || 0;
+    if (currentStockInCar >= 40) {
+      return "🚫 รถคันนี้มีน้ำแข็ง 40 ถุงแล้ว ไม่สามารถเบิกเพิ่มได้";
+    }
+    return null;
   };
 
   const fetchCarData = async () => {
@@ -273,12 +293,6 @@ const Order = () => {
   ];
 
   const ProductColumns = [
-    // {
-    //     title: "ลำดับ",
-    //     dataIndex: "id",
-    //     key: "id",
-    //     render: (text: any, record: any, index: any) => currentIndex + index + 1
-    // },
     {
       title: "รหัสสินค้า",
       dataIndex: "ice_id",
@@ -303,34 +317,6 @@ const Order = () => {
   ];
 
   const ProductSelectColumns = [
-    // {
-    //     title: 'เลือก',
-    //     dataIndex: 'id',
-    //     key: 'id',
-    //     width: "5%",
-    //     render: (item: any) => {
-    //         return (
-    //             <Checkbox
-    //                 key={item}
-    //                 checked={selectedProducts.includes(item)}
-    //                 onChange={(e) => {
-    //                     if (e.target.checked) {
-    //                         setSelectedProducts([...selectedProducts, item]);
-    //                     } else {
-    //                         setSelectedProducts(
-    //                             selectedProducts.filter((id) => id !== item)
-    //                         );
-    //                         setSelectedProductsAmount((prevAmounts) => {
-    //                             const newAmounts = { ...prevAmounts };
-    //                             delete newAmounts[item];
-    //                             return newAmounts;
-    //                         });
-    //                     }
-    //                 }}
-    //             />
-    //         );
-    //     }
-    // },
     {
       title: "ชื่อสินค้า",
       dataIndex: "name",
@@ -343,10 +329,12 @@ const Order = () => {
       width: 160,
       render: (item: any) => {
         const isSelected = selectedProducts.includes(item.ice_id);
+        const canSelect = canSelectProducts();
+
         return (
           <div className="flex justify-center">
             <Button
-              disabled={!isSelected}
+              disabled={!isSelected || !canSelect}
               onClick={() => {
                 setSelectedProductsAmount((prevAmounts) => ({
                   ...prevAmounts,
@@ -364,18 +352,39 @@ const Order = () => {
               value={selectedProductsAmount[item.ice_id] || 0}
               onChange={(e) => {
                 const newAmount = parseInt(e.target.value) || 0;
+                const currentStockInCar = stockInCar || 0;
+                const maxAllowed = 40 - currentStockInCar;
+
+                if (newAmount > maxAllowed) {
+                  messageApi.warning(
+                    `จำนวนสูงสุดที่สามารถเบิกได้คือ ${maxAllowed} ถุง (เหลือที่ว่างในรถ)`
+                  );
+                  return;
+                }
+
                 setSelectedProductsAmount((prevAmounts) => ({
                   ...prevAmounts,
                   [item.ice_id]: Math.min(newAmount, item.amount),
                 }));
               }}
-              disabled={!isSelected}
+              disabled={!isSelected || !canSelect}
             />
             <Button
-              disabled={!isSelected}
+              disabled={!isSelected || !canSelect}
               onClick={() => {
                 setSelectedProductsAmount((prevAmounts) => {
-                  const newAmount = (prevAmounts[item.ice_id] || 0) + 1;
+                  const currentAmount = prevAmounts[item.ice_id] || 0;
+                  const currentStockInCar = stockInCar || 0;
+                  const maxAllowed = 40 - currentStockInCar;
+
+                  if (currentAmount >= maxAllowed) {
+                    messageApi.warning(
+                      `จำนวนสูงสุดที่สามารถเบิกได้คือ ${maxAllowed} ถุง (เหลือที่ว่างในรถ)`
+                    );
+                    return prevAmounts;
+                  }
+
+                  const newAmount = currentAmount + 1;
                   return {
                     ...prevAmounts,
                     [item.ice_id]: Math.min(newAmount, item.amount),
@@ -524,8 +533,14 @@ const Order = () => {
                   />
                 </Form.Item>
                 {stockInCar !== null && stockInCarData.length > 0 && (
-                  <div className="text-right text-sm text-blue-500 mb-2 flex justify-between items-center">
-                    <span>❄️ คงเหลือน้ำแข็งในรถ: {stockInCar} ถุง</span>
+                  <div className="text-right text-sm mb-2 flex justify-between items-center">
+                    <span
+                      className={
+                        stockInCar >= 40 ? "text-red-500" : "text-blue-500"
+                      }
+                    >
+                      ❄️ คงเหลือน้ำแข็งในรถ: {stockInCar} ถุง
+                    </span>
                     <Button
                       type="link"
                       icon={<InfoCircleOutlined />}
@@ -536,15 +551,32 @@ const Order = () => {
                     </Button>
                   </div>
                 )}
+                {getStockWarningMessage() && (
+                  <div className="text-center text-red-500 text-sm mb-3 p-2 bg-red-50 rounded">
+                    {getStockWarningMessage()}
+                  </div>
+                )}
                 <Table
                   rowKey={(ice_id: any) => ice_id.ice_id}
-                  rowSelection={{ ...rowSelection }}
+                  rowSelection={{
+                    ...rowSelection,
+                    getCheckboxProps: (record: any) => ({
+                      disabled: !canSelectProducts(), // ปิดการเลือกเมื่อรถเต็ม
+                    }),
+                  }}
                   columns={ProductSelectColumns}
                   dataSource={productData}
                   pagination={{ pageSize: 5 }}
                 />
 
-                <Button type="primary" className=" w-full" htmlType="submit">
+                <Button
+                  type="primary"
+                  className="w-full"
+                  htmlType="submit"
+                  disabled={
+                    !canSelectProducts() || selectedProducts.length === 0
+                  }
+                >
                   บันทึก
                 </Button>
               </Form>

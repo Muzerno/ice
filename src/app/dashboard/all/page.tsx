@@ -72,6 +72,58 @@ const ReportPage = () => {
     }
   };
 
+  function numberToThaiText(num: number): string {
+    const numberText = [
+      "ศูนย์",
+      "หนึ่ง",
+      "สอง",
+      "สาม",
+      "สี่",
+      "ห้า",
+      "หก",
+      "เจ็ด",
+      "แปด",
+      "เก้า",
+    ];
+    const positionText = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+    if (isNaN(num)) return "";
+
+    const [intPart, decimalPartRaw] = num.toFixed(2).split(".");
+    const decimalPart = parseInt(decimalPartRaw) > 0 ? decimalPartRaw : "";
+
+    function convertSection(section: string): string {
+      let result = "";
+      const len = section.length;
+      for (let i = 0; i < len; i++) {
+        const digit = parseInt(section.charAt(i));
+        if (digit === 0) continue;
+
+        if (i === len - 1 && digit === 1 && len > 1) {
+          result += "เอ็ด";
+        } else if (i === len - 2 && digit === 2) {
+          result += "ยี่";
+        } else if (i === len - 2 && digit === 1) {
+          result += "";
+        } else {
+          result += numberText[digit];
+        }
+
+        result += positionText[len - i - 1];
+      }
+      return result;
+    }
+
+    let bahtText = convertSection(intPart) + "บาท";
+    if (decimalPart) {
+      bahtText += convertSection(decimalPart) + "สตางค์";
+    } else {
+      bahtText += "ถ้วน";
+    }
+
+    return bahtText;
+  }
+
   const getExport = async () => {
     if (!exportType) {
       messageApi.error("กรุณาเลือกประเภทรายงาน");
@@ -387,6 +439,7 @@ const ReportPage = () => {
                 })
               ),
               total_amount: group.total_amount,
+              total_in_text: numberToThaiText(total),
             })
           );
 
@@ -571,7 +624,9 @@ const ReportPage = () => {
       align: "center",
       render: (_: any, record: any) => (
         <div>
-          <div>{record.line_name} / {record.car_number}</div>
+          <div>
+            {record.line_name} / {record.car_number}
+          </div>
         </div>
       ),
     },
@@ -1156,7 +1211,7 @@ const ReportPage = () => {
 
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3 text-center">
- รายงานแยกตามวันที่ (รวมทกสาย)
+                      รายงานแยกตามวันที่ (รวมทกสาย)
                     </h3>
                     {dateFromDisplay && dateToDisplay && (
                       <p className="text-sm text-gray-600 text-center mb-3">
@@ -1180,7 +1235,7 @@ const ReportPage = () => {
 
                   <div className="mb-3">
                     <h3 className="text-lg font-semibold text-center mb-3">
-                       รายงานแยกตามสายการเดินรถ-วัน (รายละเอียด)
+                      รายงานแยกตามสายการเดินรถ-วัน (รายละเอียด)
                     </h3>
                     {dateFromDisplay && dateToDisplay && (
                       <p className="text-sm text-gray-600 text-center mb-3">

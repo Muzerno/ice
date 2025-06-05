@@ -15,6 +15,44 @@ export default async function handler(
   const logoPath = path.join(process.cwd(), "public", "logo.jpg");
   const { type, date_from, date_to, line } = req.query;
 
+  function numberToThaiText(num: number): string {
+    const ones = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+    const tens = ['', 'สิบ', 'ยี่สิบ', 'สามสิบ', 'สี่สิบ', 'ห้าสิบ', 'หกสิบ', 'เจ็ดสิบ', 'แปดสิบ', 'เก้าสิบ'];
+    const positions = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+
+    if (num === 0) return 'ศูนย์บาท';
+
+    let result = '';
+    let numStr = Math.floor(num).toString();
+    let len = numStr.length;
+
+    for (let i = 0; i < len; i++) {
+      let digit = parseInt(numStr[i]);
+      let position = len - i - 1;
+
+      if (digit === 0) continue;
+
+      // กรณีพิเศษสำหรับ 1x (สิบเอ็ด, ยี่สิบเอ็ด, etc.)
+      if (position === 0 && digit === 1 && len > 1) {
+        result += 'เอ็ด';
+      }
+      // กรณีพิเศษสำหรับ 2x ในหลักสิบ
+      else if (position === 1 && digit === 2) {
+        result += 'ยี่สิบ';
+      }
+      // กรณีพิเศษสำหรับ 1x ในหลักสิบ
+      else if (position === 1 && digit === 1) {
+        result += 'สิบ';
+      }
+      else {
+        result += ones[digit];
+        if (position > 0) result += positions[position];
+      }
+    }
+
+    return result + 'บาท';
+  }
+
   try {
     // ตรวจสอบว่าไฟล์ logo มีอยู่จริง
     try {
@@ -35,6 +73,8 @@ export default async function handler(
     let withdrawByDay: any[] = [];
     let total = 0;
     let totalAmount = 0;
+    let totalText = "";
+
     if (type === "manufacture" && result.data) {
       htmlFilePath = path.join(
         process.cwd(),
@@ -343,12 +383,17 @@ export default async function handler(
           })
         ),
         total_amount: group.total_amount,
+        total_amount_text: numberToThaiText(group.total_amount),
       }));
+
 
       total = rowData.reduce(
         (sum: number, group: any) => sum + group.total_amount,
         0
       );
+
+      // สร้างตัวแปรใหม่สำหรับข้อความภาษาไทย
+      totalText = numberToThaiText(total);
     }
 
     if (type === "stock" && result.data) {
@@ -437,7 +482,7 @@ export default async function handler(
         (sum: number, group: any) => sum + group.total_stock,
         0
       );
-      
+
     }
 
 
@@ -457,6 +502,7 @@ export default async function handler(
       rowData2,
       withdrawByDay,
       totalAmount,
+      totalText
     });
 
     const publicDir = path.join(process.cwd(), "public");
