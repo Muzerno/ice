@@ -451,6 +451,7 @@
                             <th>ลําดับ</th>
                             <th>วันที่</th>
                             <th>ชื่อสาย</th>
+                            <th>สถานะ</th>
                             <th>ชื่อน้ำแข็ง</th>
                             <th>ราคาต่อถุง (บาท)</th>
                             <th>จำนวน (ถุง)</th>
@@ -462,12 +463,20 @@
                         {{#each ice_list}}
                         <tr>
                             {{#if @first}}
-                            <td rowspan="{{../ice_list.length}}"
-                                style="width: 50px;">{{../index}}</td>
+                            <td
+                                rowspan="{{../ice_list.length}}">{{../index}}</td>
                             <td
                                 rowspan="{{../ice_list.length}}">{{../date}}</td>
                             <td
                                 rowspan="{{../ice_list.length}}">{{../line_name}}</td>
+                            <td rowspan="{{../ice_list.length}}">
+                                {{#if ../status_confirmed}}
+                                <span style="color: green;">✓ ส่งเงินแล้ว</span>
+                                {{else}}
+                                <span style="color: orange;">⏱
+                                    รอการส่งเงิน</span>
+                                {{/if}}
+                            </td>
                             {{/if}}
                             <td>{{name}}</td>
                             <td style="text-align: right;">{{price}}</td>
@@ -477,33 +486,35 @@
                         {{/each}}
                         {{else}}
                         <tr>
-                            <td>{{indexs}}</td>
+                            <td>{{index}}</td>
                             <td>{{date}}</td>
                             <td>{{line_name}}</td>
+                            <td>
+                                {{#if status_confirmed}}
+                                <span style="color: green;">✓ ยืนยันแล้ว</span>
+                                {{else}}
+                                <span style="color: orange;">⏱
+                                    รอการยืนยัน</span>
+                                {{/if}}
+                            </td>
                             <td colspan="4"
                                 style="text-align: center;">ไม่มีข้อมูลน้ำแข็ง</td>
                         </tr>
                         {{/if}}
                         <tr>
-                            <td colspan="6" style="text-align: right;">รวม:</td>
-                            <td style="text-align: right;">{{total_amount}}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="7"
-                                style="text-align: right; font-weight: bold; font-size: 16px;">
-                                รวมเป็นเงิน {{total_amount}} บาท
+                            <td colspan="8" style="text-align: right;">
+                                รวม: {{total_amount}} บาท
                                 ({{total_amount_text}})
                             </td>
                         </tr>
-
                     </tbody>
                 </table>
                 {{/each}}
 
                 <div class="total-summary">
                     🎯 รวมเป็นเงินทั้งสิ้น:
-                    <span
-                        style="font-size: 20px; font-weight: 800;">{{total}} บาท</span>
+                    <span style="font-size: 20px; font-weight: 800;">{{total}}
+                        บาท</span>
                 </div>
             </div>
         </body>

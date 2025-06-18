@@ -148,13 +148,31 @@ const DeliveryPage = () => {
         return;
       }
 
+      // ตรวจสอบข้อมูลรถก่อนส่ง
+      const carId = userLogin?.user?.transportation_car?.car_id;
+      const lineId = userLogin?.user?.transportation_car?.line_id;
+
+      if (!carId) {
+        messageApi.error("ไม่พบข้อมูลรถ กรุณาลองใหม่อีกครั้ง");
+        return;
+      }
+
+      console.log("Sending data:", {
+        drop_id: id,
+        products: selectedProducts,
+        product_amount: selectedProductsAmount,
+        line_id: lineId,
+        car_id: carId,
+        delivery_status: "success",
+      });
+
       // 1. เรียก API และรอผลลัพธ์
       const { data: res, error } = await updateDeliveryStatus(id, {
         drop_id: id,
         products: selectedProducts,
         product_amount: selectedProductsAmount,
-        line_id: userLogin?.user?.transportation_car?.line_id,
-        car_id: userLogin?.user?.transportation_car?.car_id,
+        line_id: lineId,
+        car_id: carId,
         delivery_status: "success",
       });
 
@@ -199,12 +217,31 @@ const DeliveryPage = () => {
 
   const handleFail = async (id: number) => {
     try {
-      // ส่งข้อมูลให้ครบถ้วนตามที่ Backend ต้องการ
+      // ตรวจสอบข้อมูลรถก่อนส่ง
+      const carId = userLogin?.user?.transportation_car?.car_id;
+      const lineId = userLogin?.user?.transportation_car?.line_id;
+
+      if (!carId) {
+        messageApi.error("ไม่พบข้อมูลรถ กรุณาลองใหม่อีกครั้ง");
+        return;
+      }
+
+      console.log("Canceling delivery:", {
+        drop_id: id,
+        products: [],
+        product_amount: {},
+        line_id: lineId,
+        car_id: carId,
+        delivery_status: "cancel",
+      });
+
+      // ส่งข้อมูลให้ครบถ้วนตามที่ Backend ต้องการ (เพิ่ม line_id)
       const { data: res, error } = await updateDeliveryStatus(id, {
         drop_id: id,
         products: [], // ส่ง array ว่างเพราะเป็นการยกเลิก
         product_amount: {}, // ส่ง object ว่าง
-        car_id: userLogin?.user?.transportation_car?.car_id,
+        line_id: lineId, // เพิ่ม line_id
+        car_id: carId,
         delivery_status: "cancel",
       });
 
@@ -515,7 +552,7 @@ const DeliveryPage = () => {
               <DatePicker
                 size="large"
                 defaultValue={selectDate}
-                format={"YYYY-MM-DD"}
+                format={"DD-MM-YYYY"}
                 onChange={(value, dateString) => setSelectDate(dateString)}
               />
             </div>

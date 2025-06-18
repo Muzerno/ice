@@ -40,8 +40,6 @@ const OrderVip = () => {
   const roleKey = userLogin?.user?.role?.role_key;
   const user = userLogin?.user;
 
-  console.log();
-  
   const [carData, setCarData] = useState<any[]>([]);
 
   const [form] = Form.useForm();
@@ -206,16 +204,13 @@ const OrderVip = () => {
   const onFinish = async (values: any) => {
     console.log(values);
 
-    // const combinedAddress = `${values.manual_address}\n\n[ที่อยู่จากแผนที่]: ${values.map_address}`;
     const payload = {
       customer_id: values.customer_id,
-      customer_name: values.customer_name,
-      telephone: values.telephone,
       line_id: values.line_id,
       car_id: values.car_id,
       latitude: values.latitude,
       longitude: values.longitude,
-      address: values.address,
+      // address: values.address,
       note: values.note,
     };
 
@@ -384,7 +379,7 @@ const OrderVip = () => {
                       <Input type="text" disabled />
                     </Form.Item>
 
-                    <Form.Item
+                    {/* <Form.Item
                       key={"customer_name"}
                       name={"customer_name"}
                       className="w-full"
@@ -407,7 +402,7 @@ const OrderVip = () => {
                       ]}
                     >
                       <Input />
-                    </Form.Item>
+                    </Form.Item> */}
                     <Form.Item
                       name="line_id" // ต้องมี name property ตรงกับ payload
                       noStyle
@@ -456,7 +451,12 @@ const OrderVip = () => {
                           }
                         }}
                       >
-                        {carData.map((item: any) => (
+                        {(roleKey === "deliver"
+                          ? carData.filter(
+                              (car: any) => car.user_id === user.id
+                            )
+                          : carData
+                        ).map((item: any) => (
                           <Select.Option key={item.car_id} value={item.car_id}>
                             {item.car_number} - {item.users?.firstname} -{" "}
                             {item.users?.lastname}
@@ -486,14 +486,14 @@ const OrderVip = () => {
                     >
                       <Input value={location?.lon} disabled />
                     </Form.Item>
-                    <Form.Item
+                    {/* <Form.Item
                       name={"address"}
                       className="w-full"
                       label="ที่อยู่"
                       rules={[{ required: true, message: "กรอกที่อยู่" }]}
                     >
                       <TextArea rows={5} placeholder="กรอกที่อยู่" />
-                    </Form.Item>
+                    </Form.Item> */}
                     <Row>
                       <Col span={24}>
                         <Form.Item name="note" label="หมายเหตุ">

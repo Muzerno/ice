@@ -8,7 +8,7 @@ interface UserContextValue {
 }
 const UserContext = createContext<UserContextValue>({
     userLogin: null,
-    setUserLogin: () => { },
+    setUserLogin: () => {},
 });
 
 const UserProvider = ({ children }: PropsWithChildren) => {

@@ -2,7 +2,7 @@
 import { getExportData } from "@/utils/dashboardService";
 import LayoutComponent from "@/components/Layout";
 import { findAllTransportationLine } from "@/utils/transpotationService";
-import { Table, Select, DatePicker, Avatar, Divider, Button, Spin } from "antd";
+import { Table, Select, DatePicker, Avatar, Divider, Button, Spin, Tag } from "antd";
 import useMessage from "antd/es/message/useMessage";
 import axios from "axios";
 import { format } from "date-fns";
@@ -390,6 +390,7 @@ const ReportPage = () => {
                 date: date,
                 ice_details: {},
                 total_amount: 0,
+                status: item.status,
               };
             }
 
@@ -428,6 +429,7 @@ const ReportPage = () => {
               index: index + 1,
               date: group.date,
               line_name: group.line_name,
+              status: group.status,
               ice_list: Object.values(group.ice_details).map(
                 (ice: any, iceIndex: number) => ({
                   index: iceIndex + 1,
@@ -747,6 +749,19 @@ const ReportPage = () => {
       align: "right",
       width: 175,
       render: (item: any) => item?.toLocaleString(),
+    },
+    {
+      title: <div style={{ textAlign: "center" }}>สถานะ</div>,
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (item: any) => {
+        return (
+          <Tag color={item === "confirmed" ? "green" : "orange"}>
+            {item === "confirmed" ? "ส่งเงินแล้ว" : "รอการส่งเงิน"}
+          </Tag>
+        );
+      },
     },
   ];
 
@@ -1086,13 +1101,11 @@ const ReportPage = () => {
                   <div className="pr-5">
                     <span className="pr-2">วันที่:</span>
                     <DatePicker
-                      format={"YYYY-MM-DD"}
+                      format={"DD-MM-YYYY"}
                       maxDate={dayjs()}
-                      onChange={(value, dateString) => {
-                        if (typeof dateString === "string") {
-                          setDateFrom(
-                            format(new Date(dateString), "yyyy-MM-dd")
-                          );
+                      onChange={(value) => {
+                        if (value) {
+                          setDateFrom(value.format("YYYY-MM-DD"));
                         }
                       }}
                       size="large"
@@ -1102,11 +1115,11 @@ const ReportPage = () => {
                   <div className="pr-5">
                     <span className="pr-2">ถึง:</span>
                     <DatePicker
-                      format={"YYYY-MM-DD"}
+                      format={"DD-MM-YYYY"}
                       maxDate={dayjs()}
-                      onChange={(value, dateString) => {
-                        if (typeof dateString === "string") {
-                          setDateTo(format(new Date(dateString), "yyyy-MM-dd"));
+                      onChange={(value) => {
+                        if (value) {
+                          setDateTo(value.format("YYYY-MM-DD"));
                         }
                       }}
                       size="large"
@@ -1276,7 +1289,16 @@ const ReportPage = () => {
                   </div>
                 </>
               )}
-
+              <h3 className="text-lg font-semibold mb-3 text-center">
+                📈 สินค้าคงเหลือในรถแยกตามทะเบียน
+              </h3>
+              {dateFromDisplay && dateToDisplay && (
+                <p className="text-sm text-gray-600 text-center mb-3">
+                  {`จากวันที่ ${dayjs(dateFromDisplay).format(
+                    "D MMM YYYY"
+                  )} ถึง ${dayjs(dateToDisplay).format("D MMM YYYY")}`}
+                </p>
+              )}
               <Table
                 className="custom-table"
                 style={{ width: "100%" }}

@@ -329,13 +329,13 @@ export default async function handler(
           const date = format(new Date(item.date_time), "dd/MM/yyyy");
           const key = `${lineName}-${date}`;
 
-          // 🛑 สร้าง key เฉพาะเมื่อเจอ delivery ที่มีข้อมูลจริง
           if (!acc[key]) {
             acc[key] = {
               line_name: lineName,
               date: date,
               ice_details: {},
               total_amount: 0,
+              status: item.status,
             };
           }
 
@@ -372,6 +372,8 @@ export default async function handler(
         index: index + 1,
         date: group.date,
         line_name: group.line_name,
+        status: group.status,
+        status_confirmed: group.status === "confirmed",
         ice_list: Object.values(group.ice_details).map(
           (ice: any, iceIndex: number) => ({
             index: iceIndex + 1,
@@ -385,6 +387,9 @@ export default async function handler(
         total_amount: group.total_amount,
         total_amount_text: numberToThaiText(group.total_amount),
       }));
+
+      console.log("rowData", rowData);
+      
 
 
       total = rowData.reduce(

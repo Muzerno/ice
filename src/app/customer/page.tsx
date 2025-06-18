@@ -22,7 +22,7 @@ import {
   updateCustomer,
   getNewCustomer,
 } from "@/utils/customerService";
-import { RestOutlined, ToolOutlined } from "@ant-design/icons";
+import { RestOutlined, EditOutlined } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
 import { render } from "react-dom";
 import EditUserModal from "@/components/editUserModal";
@@ -118,7 +118,7 @@ const CustomerManagement = () => {
           <Button
             type="primary"
             className="!bg-yellow-300 mr-1"
-            icon={<ToolOutlined />}
+            icon={<EditOutlined />}
             onClick={() => {
               setSeleteUUid(item.customer_id);
               setOpenModalEdit(true);

@@ -1,4 +1,4 @@
-import { format } from "date-fns"
+
 import AxiosInstances from "./axiosInstance"
 
 
@@ -13,16 +13,29 @@ export async function findAllDashboard() {
 
 export async function moneyPage(date: string) {
     try {
+        // ตอนนี้ date ถูกส่งมาถูก format แล้ว (YYYY-MM-DD)
         const dashboard = await AxiosInstances.get(`/dashboard/money`, {
             params: {
-                date_time: format(new Date(date), 'yyyy-MM-dd')
-            }
-        })
-        return Promise.resolve(dashboard.data)
+                date_time: date,
+            },
+        });
+        return Promise.resolve(dashboard.data);
     } catch (error) {
-        return Promise.reject(error)
+        return Promise.reject(error);
     }
 }
+
+export const updateMoneyStatus = async (money_id: number, status: string) => {
+    try {
+        const response = await AxiosInstances.patch(`/dashboard/money/status/${money_id}`, {
+            status,
+        });
+        return response.data;
+    } catch (err) {
+        console.error("Error updating money status:", err);
+        throw err;
+    }
+};
 
 export async function updateLocaltion(car_id: number, body: { latitude: number, longitude: number }) {
     try {
@@ -42,7 +55,7 @@ export async function getLocationCar() {
     }
 }
 
-export async function getExportData(dateFrom: string, dateTo: string, type: string, line: string | null ) {
+export async function getExportData(dateFrom: string, dateTo: string, type: string, line: string | null) {
     try {
         const exportData = await AxiosInstances.patch(`/dashboard/export`, {
             type: type,

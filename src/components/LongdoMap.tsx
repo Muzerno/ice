@@ -3,8 +3,8 @@ import { getTrueLocation } from "@/utils/mapsService";
 import { Button } from "antd";
 import { LocateFixed, Car } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { useContext } from 'react';
-import { UserContext } from '@/context/userContext';
+import { useContext } from "react";
+import { UserContext } from "@/context/userContext";
 
 declare global {
   interface Window {
@@ -132,11 +132,8 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
     []
   );
 
-   const { userLogin } = useContext(UserContext);
+  const { userLogin } = useContext(UserContext);
   const roleKey = userLogin?.user?.role?.role_key;
-
-  console.log('roleKey from context:', roleKey);
-
 
   const safeParseJSON = (input: string) => {
     try {
@@ -194,9 +191,13 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
     if (customerLocation && mapInstance.current) {
       mapInstance.current.Overlays.clear();
 
+      console.log("customerLocation", customerLocation);
+      
+      
       customerLocation.forEach((location) => {
         const lon = parseFloat(location.longitude);
         const lat = parseFloat(location.latitude);
+        
 
         if (!isNaN(lon) && !isNaN(lat)) {
           let name = "";
@@ -205,7 +206,9 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
             map: "",
           };
 
-          if (location.customer) {
+          const note = location.note?.trim() ? location.note.trim() : "-";
+
+          if (location.customer) {        
             name = location.customer.name;
             addressInfo = parseFullAddress(location.customer.address);
           } else if (location.customer_order) {
@@ -215,6 +218,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
             // fallback กรณีที่ไม่มี customer หรือ customer_order แต่มี name และ address ตรง ๆ
             name = location.name || "-";
             addressInfo = parseFullAddress(location.address || "");
+
           }
 
           const marker = new window.longdo.Marker(
@@ -223,7 +227,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
               title: name,
               detail: `${addressInfo.manual}${
                 addressInfo.map ? "\n" + addressInfo.map : ""
-              }`,
+              }\nหมายเหตุ: ${note}`,
               size: { width: 200, height: 100 },
             }
           );
@@ -319,30 +323,29 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
             }
           }
 
-          // เซ็ตแผนที่ให้ไปยังตำแหน่งปัจจุบันของรถ
           if (mapInstance.current) {
             const carLocation = {
               lon: longitude,
               lat: latitude,
             };
 
-            // ย้ายแผนที่ไปยังตำแหน่งรถ
             mapInstance.current.location(carLocation);
 
-            // เพิ่ม marker สำหรับตำแหน่งปัจจุบันของรถ
+            // ส่งตำแหน่งและที่อยู่ผ่าน setMarker และ setTrueAddress
+            if (setMarker) {
+              setMarker(carLocation);
+            }
+
+            // เรียก trueAddress เพื่อหาที่อยู่จากพิกัด
+            trueAddress(carLocation);
+
             const carMarker = new window.longdo.Marker(carLocation, {
               title: "ตำแหน่งปัจจุบันของรถ",
               detail: `พิกัด: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
               size: { width: 200, height: 100 },
-              // icon: {
-              //   url: "https://map.longdo.com/mmmap/images/pin_mark.png", // หรือใช้ไอคอนรถที่คุณต้องการ
-              //   offset: { x: 12, y: 45 }
-              // }
             });
 
             mapInstance.current.Overlays.add(carMarker);
-
-            // เซ็ตระดับซูม
             mapInstance.current.zoom(15);
           }
         },
@@ -363,7 +366,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
 
   const trueAddress = async (currentLocation: any) => {
     const res = await getTrueLocation(currentLocation.lat, currentLocation.lon);
-    if (res) {
+    if (res && setTrueAddress) {
       setTrueAddress(res);
     }
   };
@@ -371,7 +374,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
   return (
     <div>
       <div ref={mapRef} style={{ width, height }} />
-      {isOpenButton && (
+      {isOpenButton && roleKey !== "deliver" && (
         <div className="flex flex-col gap-2 mt-2">
           <Button
             type="primary"
@@ -384,7 +387,7 @@ const LongdoMap: React.FC<LongdoMapProps> = ({
         </div>
       )}
 
-      {isOpenButtonMap && roleKey === 'deliver' && (
+      {isOpenButtonMap && roleKey === "deliver" && (
         <div className="flex flex-col gap-2 mt-2">
           <Button
             type="default"

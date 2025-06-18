@@ -272,7 +272,7 @@ const Order = () => {
       title: "วันที่เบิก",
       dataIndex: "date_time",
       key: "date_time",
-      render: (item: any) => format(item, "yyyy-MM-dd"),
+      render: (item: any) => format(item, "dd-MM-yyyy"),
     },
     {
       title: "รายละเอียดการเบิก",
