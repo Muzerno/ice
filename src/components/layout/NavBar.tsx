@@ -39,8 +39,8 @@ const NavBarComponent = (props: IProps) => {
         
         if (userLogin.user.role.role_key !== 'deliver') return
         
-        console.log('User role:', userLogin.user.role.role_key)
-        console.log('Car ID:', userLogin.user.transportation_car?.car_id)
+        // console.log('User role:', userLogin.user.role.role_key)
+        // console.log('Car ID:', userLogin.user.transportation_car?.car_id)
         
         // เริ่มติดตามตำแหน่งทันที
         fetchLocation();
@@ -59,7 +59,6 @@ const NavBarComponent = (props: IProps) => {
     }, [userLogin]);
 
     const fetchLocation = () => {
-        console.log('Starting location fetch...')
         
         // ตรวจสอบว่ามี car_id หรือไม่
         if (!userLogin?.user?.transportation_car?.car_id) {
@@ -72,7 +71,6 @@ const NavBarComponent = (props: IProps) => {
             navigator.geolocation.getCurrentPosition(
                 async ({ coords }) => {
                     const { latitude, longitude } = coords;
-                    console.log('Location obtained:', { latitude, longitude })
                     
                     try {
                         const result = await updateLocaltion(
@@ -157,10 +155,6 @@ const NavBarComponent = (props: IProps) => {
                     </Menu.SubMenu>
                 )}
 
-                {(role.roleKey === 'admin' || role.roleKey === 'owner') && (
-                    <Menu.Item key="maps" icon={<EnvironmentOutlined />}>ติดตามตำแหน่ง</Menu.Item>
-                )}
-
                 {role.roleKey === 'owner' && (
                     <Menu.Item key="userManagement" icon={<UserOutlined />}>จัดการข้อมูลผู้ใช้งาน</Menu.Item>
                 )}
@@ -173,7 +167,6 @@ const NavBarComponent = (props: IProps) => {
                         <Menu.Item key="deliveryLine" icon={<TagOutlined />}>จัดสายการเดินรถ</Menu.Item>
                         <Menu.Item key="manufacture" icon={<HomeOutlined />}>การผลิตสินค้า</Menu.Item>
                         <Menu.Item key="order" icon={<PaperClipOutlined />}>การเบิกสินค้า</Menu.Item>
-                        <Menu.Item key="money" icon={<MoneyCollectFilled />}>การเงิน</Menu.Item>
                     </>
                 )}
 
@@ -183,6 +176,13 @@ const NavBarComponent = (props: IProps) => {
 
                 {(role.roleKey === 'admin' || role.roleKey === 'owner' || role.roleKey === 'deliver') && (
                     <Menu.Item key="order/vip" icon={<CarOutlined />}>คำสั่งซื้อพิเศษ</Menu.Item>
+                )}
+
+                {(role.roleKey === 'admin' || role.roleKey === 'owner') && (
+                    <>
+                        <Menu.Item key="maps" icon={<EnvironmentOutlined />}>ติดตามตำแหน่ง</Menu.Item>
+                        <Menu.Item key="money" icon={<MoneyCollectFilled />}>การเงิน</Menu.Item>
+                    </>
                 )}
             </Menu>
         </Sider>

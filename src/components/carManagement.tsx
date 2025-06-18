@@ -1,7 +1,7 @@
 // src/components/carManagement.tsx
 import { createCar, deleteCar, findAllCar, updateCar } from "@/utils/transpotationService";
 import { findAllUser, findAllUserDeliver } from "@/utils/userService";
-import { DeleteOutlined, ToolOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Table } from "antd";
 import useMessage from "antd/es/message/useMessage";
 import { UUID } from "crypto";
@@ -36,7 +36,7 @@ const CarManagement: React.FC = () => {
                     <Button
                         type="primary"
                         className='!bg-yellow-300 mr-1'
-                        icon={<ToolOutlined />}
+                        icon={<EditOutlined />}
                         onClick={() => {
                             setOpenModalEdit(true);
                             setSelectedCar(item.car_id);

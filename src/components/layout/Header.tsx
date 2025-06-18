@@ -27,10 +27,14 @@ const HeaderDefault = (props) => {
   const lightBlue = '#e6f7ff';
   const navyBlue = '#003a8c';
 
+  const handleProfileClick = () => {
+    router.push('/profile/edit'); // เปลี่ยนเป็น path ที่ถูกต้องตาม structure ของโปรเจคคุณ
+  };
+
   return (
     <Header 
-      style={{ 
-        padding: 0, 
+      style={{
+        padding: 0,
         background: 'linear-gradient(to right, #1e3c72, #2a5298)',
         color: '#fff',
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
@@ -53,12 +57,12 @@ const HeaderDefault = (props) => {
       
       <div className='float-right flex items-center mr-4 justify-center mt-3'>
         <div 
-          className='text-lg mr-5' 
-          style={{ 
-            border: "1px solid #91d5ff", 
-            borderRadius: "5px", 
-            padding: "5px 10px", 
-            background: "#e6f7ff", 
+          className='text-lg mr-5'
+          style={{
+            border: "1px solid #91d5ff",
+            borderRadius: "5px",
+            padding: "5px 10px",
+            background: "#e6f7ff",
             color: "#0050b3",
             fontWeight: "500"
           }}
@@ -67,13 +71,24 @@ const HeaderDefault = (props) => {
         </div>
         
         <div 
-          className='text-lg mr-5 flex items-center' 
-          style={{ 
-            border: "1px solid #91d5ff", 
-            borderRadius: "5px", 
-            padding: "5px 10px", 
+          className='text-lg mr-5 flex items-center cursor-pointer hover:bg-opacity-80 transition-all duration-200'
+          style={{
+            border: "1px solid #91d5ff",
+            borderRadius: "5px",
+            padding: "5px 10px",
             background: "#f0f5ff",
             color: "#0050b3"
+          }}
+          onClick={handleProfileClick}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#e6f7ff";
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#f0f5ff";
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
           <UserOutlined style={{ marginRight: '8px' }} /> 
@@ -81,10 +96,10 @@ const HeaderDefault = (props) => {
         </div>
         
         <Button 
-          type="primary" 
+          type="primary"
           icon={<LogoutOutlined />}
-          style={{ 
-            background: "#f5222d", 
+          style={{
+            background: "#f5222d",
             borderColor: "#f5222d",
             boxShadow: "0 2px 0 rgba(0,0,0,0.045)"
           }}

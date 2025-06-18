@@ -7,7 +7,7 @@ import {
   deleteProduct,
   findAllProduct,
 } from "@/utils/productService";
-import { RestOutlined, ToolOutlined } from "@ant-design/icons";
+import { RestOutlined, EditOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
@@ -65,8 +65,8 @@ const ProdectManagement = () => {
     }
   };
 
-  const removeProduct = async (id: number) => {
-    const product = await deleteProduct(id);
+  const removeProduct = async (ice_id: number) => {
+    const product = await deleteProduct(ice_id);
     if (product.status === 200) {
       messageApi.success("ลบสินค้าสําเร็จ");
       fetchProductData();
@@ -74,7 +74,7 @@ const ProdectManagement = () => {
   };
   const handleEdit = (item: any) => {
     setOpenModalEdit(true);
-    setProductEdit(item.id);
+    setProductEdit(item.ice_id);
     formEdit.setFieldsValue({
       ...item,
     });
@@ -113,11 +113,11 @@ const ProdectManagement = () => {
             className="mr-2  !bg-yellow-300"
             onClick={() => handleEdit(record)}
           >
-            <ToolOutlined />
+            <EditOutlined />
           </Button>
           <Popconfirm
             title="ยืนยันการลบ"
-            onConfirm={() => removeProduct(record.id)}
+            onConfirm={() => removeProduct(record.ice_id)}
             okText="Yes"
             cancelText="No"
           >

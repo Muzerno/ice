@@ -91,70 +91,70 @@ export default function Manufacture(props: IProps) {
             render: (value: string) => format(new Date(value), 'HH:mm'),
         },
         {
-            title: 'จำนวน',
-            dataIndex: 'manufacture_amount',
-            key: 'manufacture_amount',
-
-        },
-        {
             title: "ชื่อสินค้า",
             dataIndex: "products",
             key: "products",
             render: (item: any) => item?.name
         },
         {
-            title: "",
-            dataIndex: "",
-            key: "action",
-            width: 100,
-            render: (item: any) => {
-                return (
-                    <>
-                        <Button
-                            type="primary"
-                            className="!bg-yellow-300 mr-1"
-                            icon={<ToolOutlined />}
-                            onClick={() => {
-                                setOpenModalEdit(true);
+            title: 'จำนวน',
+            dataIndex: 'manufacture_amount',
+            key: 'manufacture_amount',
 
-                                formEdit.setFieldsValue({
-                                    id: item?.id,
-                                    ice_id: item?.ice_id,
-                                    manufacture_id: item?.manufacture_id,
-                                    product_id: item?.products.id,
-                                    manufacture_amount: item?.manufacture_amount,
-                                    date_time: dayjs(item?.manufacture?.date_time),
-                                });
+        },
+        // {
+        //     title: "",
+        //     dataIndex: "",
+        //     key: "action",
+        //     width: 100,
+        //     render: (item: any) => {
+        //         return (
+        //             <>
+        //                 <Button
+        //                     type="primary"
+        //                     className="!bg-yellow-300 mr-1"
+        //                     icon={<ToolOutlined />}
+        //                     onClick={() => {
+        //                         setOpenModalEdit(true);
 
-                            }}
-                        />
-                        {/* <Popconfirm
-                            key={item.manufacture_id}
-                            title="ลบข้อมูลการผลิต"
-                            description="คุณต้องการลบข้อมูลการผลิตหรือไม่"
-                            onConfirm={() => onDelete(item.manufacture_id)}
-                            okText="Yes"
-                            cancelText="No"
-                            open={openConfirmUuid === item.manufacture_id}
-                            onOpenChange={(newOpen) => {
-                                if (newOpen) {
-                                    setOpenConfirmUuid(item.manufacture_id);
-                                } else {
-                                    setOpenConfirmUuid(null);
-                                }
-                            }}
-                        >
-                            <Button
-                                type="primary"
-                                className="!bg-red-500"
-                                key={item.id}
-                                icon={<RestOutlined />}
-                            />
-                        </Popconfirm> */}
-                    </>
-                )
-            }
-        }
+        //                         formEdit.setFieldsValue({
+        //                             id: item?.id,
+        //                             ice_id: item?.ice_id,
+        //                             manufacture_id: item?.manufacture_id,
+        //                             product_id: item?.products.id,
+        //                             manufacture_amount: item?.manufacture_amount,
+        //                             date_time: dayjs(item?.manufacture?.date_time),
+        //                         });
+
+        //                     }}
+        //                 />
+        //                 {/* <Popconfirm
+        //                     key={item.manufacture_id}
+        //                     title="ลบข้อมูลการผลิต"
+        //                     description="คุณต้องการลบข้อมูลการผลิตหรือไม่"
+        //                     onConfirm={() => onDelete(item.manufacture_id)}
+        //                     okText="Yes"
+        //                     cancelText="No"
+        //                     open={openConfirmUuid === item.manufacture_id}
+        //                     onOpenChange={(newOpen) => {
+        //                         if (newOpen) {
+        //                             setOpenConfirmUuid(item.manufacture_id);
+        //                         } else {
+        //                             setOpenConfirmUuid(null);
+        //                         }
+        //                     }}
+        //                 >
+        //                     <Button
+        //                         type="primary"
+        //                         className="!bg-red-500"
+        //                         key={item.id}
+        //                         icon={<RestOutlined />}
+        //                     />
+        //                 </Popconfirm> */}
+        //             </>
+        //         )
+        //     }
+        // }
     ]
 
     const ProductColumns = [

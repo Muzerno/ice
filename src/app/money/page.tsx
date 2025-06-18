@@ -1,20 +1,18 @@
 "use client";
 import LayoutComponent from "@/components/Layout";
-import { UserContext } from "@/context/userContext";
-import { moneyPage } from "@/utils/dashboardService";
-import { Button, Card, DatePicker, Modal, Table } from "antd";
-import { format } from "date-fns";
-import React, { useContext, useEffect, useState } from "react";
+import { moneyPage, updateMoneyStatus } from "@/utils/dashboardService";
+import { Button, Card, DatePicker, Modal, Table, Tag } from "antd";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { message } from "antd";
 
 const MoneyOrderPage = () => {
-  const { userLogin } = useContext(UserContext);
   const [data, setData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deliveryDetail, setDeliveryDetail] = useState<any[]>([]);
-  const [date, setDate] = useState<string | any>(
-    format(new Date(), "yyyy-MM-dd")
-  );
+  const [date, setDate] = useState(dayjs());
+  const [selectedMoney, setSelectedMoney] = useState<any>(null);
+  const [selectedMoneyIds, setSelectedMoneyIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +20,7 @@ const MoneyOrderPage = () => {
   }, [date]);
 
   const fetchMoneyOrders = async () => {
-    const res = await moneyPage(date);
+    const res = await moneyPage(date.format("YYYY-MM-DD"));
     if (res) {
       setData(res);
     }
@@ -30,9 +28,36 @@ const MoneyOrderPage = () => {
   };
 
   const handelModal = (item: any) => {
-    const arrayData = item.delivery || [];
-    setDeliveryDetail(arrayData);
+    const arrayData = (item.delivery || []).map((deliveryItem: any) => ({
+      ...deliveryItem,
+      parentStatus: item.status, // เพิ่ม status จาก parent
+    }));
+
+    const moneyIds = arrayData.map(
+      (deliveryItem: any) => deliveryItem.money_id
+    );
+
+    setSelectedMoney(item);
+    setSelectedMoneyIds(moneyIds);
+    setDeliveryDetail(arrayData); // <-- ตอนนี้แต่ละ item มี parentStatus แล้ว
     setIsModalOpen(true);
+  };
+
+  const handleConfirmStatus = async () => {
+    try {
+      // ใช้ Promise.all เพื่ออัปเดตทั้งสองรายการพร้อมกัน
+      await Promise.all(
+        selectedMoneyIds.map((moneyId) =>
+          updateMoneyStatus(moneyId, "confirmed")
+        )
+      );
+
+      message.success("ยืนยันการชำระเงินสำเร็จ");
+      fetchMoneyOrders(); // รีโหลดข้อมูล
+      setIsModalOpen(false);
+    } catch (err) {
+      message.error("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
+    }
   };
 
   const column = [
@@ -114,6 +139,17 @@ const MoneyOrderPage = () => {
         return item.price * item.amount;
       },
     },
+    {
+      title: "สถานะ",
+      key: "status",
+      render: (item: any) => {
+        return (
+          <Tag color={item.parentStatus === "confirmed" ? "green" : "orange"}>
+            {item.parentStatus === "confirmed" ? "ส่งเงินแล้ว" : "รอการส่งเงิน"}
+          </Tag>
+        );
+      },
+    },
   ];
 
   const totalAmount = deliveryDetail.reduce(
@@ -125,14 +161,18 @@ const MoneyOrderPage = () => {
     <LayoutComponent>
       <Card>
         <DatePicker
-          multiple={false}
-          onChange={(e, date_time) => setDate(date_time)}
-          format={"YYYY-MM-DD"}
+          onChange={(e) => {
+            if (e) {
+              setDate(e);
+            }
+          }}
+          format={"DD/MM/YYYY"}
           size="large"
           maxDate={dayjs()}
-          defaultValue={dayjs(new Date())}
+          defaultValue={dayjs()}
           className="float-right pb-2"
         />
+
         {!isLoading && data.length > 0 ? (
           <Table className="pt-2" dataSource={data} columns={column} />
         ) : (
@@ -144,6 +184,8 @@ const MoneyOrderPage = () => {
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={[]}
+        width={1000}
+        style={{ maxHeight: 600, overflowY: "auto" }}
       >
         {deliveryDetail.length > 0 ? (
           <>
@@ -159,6 +201,13 @@ const MoneyOrderPage = () => {
         ) : (
           <div className="text-center">ไม่มีข้อมูล</div>
         )}
+        {[
+          selectedMoney?.status !== "confirmed" && (
+            <Button type="primary" onClick={handleConfirmStatus}>
+              ยืนยันการชำระเงิน
+            </Button>
+          ),
+        ]}
       </Modal>
     </LayoutComponent>
   );
