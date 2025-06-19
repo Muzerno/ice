@@ -449,6 +449,9 @@ const ReportPage = () => {
             (sum: number, group: any) => sum + group.total_amount,
             0
           );
+
+          console.log('rowData', rowData);
+          
         } else if (exportType === "manufacture") {
           const groupedByDate = response.reduce((acc: any, item: any) => {
             const dateOnly = format(
@@ -1290,7 +1293,7 @@ const ReportPage = () => {
                 </>
               )}
               <h3 className="text-lg font-semibold mb-3 text-center">
-                📈 สินค้าคงเหลือในรถแยกตามทะเบียน
+                📈 รายงานการจัดส่ง
               </h3>
               {dateFromDisplay && dateToDisplay && (
                 <p className="text-sm text-gray-600 text-center mb-3">
