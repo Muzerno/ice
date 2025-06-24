@@ -195,7 +195,13 @@ const OrderVip = () => {
   const fetchCustomerId = async () => {
     try {
       const res = await getNewCustomer();
-      form.setFieldsValue({ customer_id: res.data.newCustomerId });
+
+      console.log("New customer ID:", res.data);
+      
+      form.setFieldsValue({ 
+        customer_id: res.data.newCustomerId,
+        customer_name: res.data.newCustomerName
+       });
     } catch (error) {
       messageApi.error("ไม่สามารถดึงรหัสลูกค้าได้");
     }
@@ -379,30 +385,16 @@ const OrderVip = () => {
                       <Input type="text" disabled />
                     </Form.Item>
 
-                    {/* <Form.Item
+                    <Form.Item
                       key={"customer_name"}
                       name={"customer_name"}
                       className="w-full"
                       label="ชื่อลูกค้า"
+                      
                       rules={[{ required: true, message: "กรุณากรอกชื่อ" }]}
                     >
-                      <Input />
+                      <Input disabled />
                     </Form.Item>
-                    <Form.Item
-                      key={"telephone"}
-                      name={"telephone"}
-                      className="w-full"
-                      label="เบอร์โทร"
-                      rules={[
-                        { required: true, message: "กรุณากรอกเบอร์" },
-                        {
-                          pattern: /^[0-9]{10}$/,
-                          message: "กรอกเบอร์โทรศัพท์ให้ถูกต้อง",
-                        },
-                      ]}
-                    >
-                      <Input />
-                    </Form.Item> */}
                     <Form.Item
                       name="line_id" // ต้องมี name property ตรงกับ payload
                       noStyle
