@@ -2,7 +2,16 @@
 import { getExportData } from "@/utils/dashboardService";
 import LayoutComponent from "@/components/Layout";
 import { findAllTransportationLine } from "@/utils/transpotationService";
-import { Table, Select, DatePicker, Avatar, Divider, Button, Spin, Tag } from "antd";
+import {
+  Table,
+  Select,
+  DatePicker,
+  Avatar,
+  Divider,
+  Button,
+  Spin,
+  Tag,
+} from "antd";
 import useMessage from "antd/es/message/useMessage";
 import axios from "axios";
 import { format } from "date-fns";
@@ -394,7 +403,12 @@ const ReportPage = () => {
               };
             }
 
-            const dropOffPoints = item.line?.dropOffPoints || [];
+            // ✅ กรองเฉพาะ drop ที่ตรงกับ drop_id ของ item ปัจจุบัน
+            const dropOffPoints =
+              item.line?.dropOffPoints?.filter(
+                (drop: any) => drop.drop_id === item.drop_id
+              ) || [];
+
             dropOffPoints.forEach((drop: any) => {
               const deliveryDetails = drop.delivery_details || [];
 
@@ -421,8 +435,14 @@ const ReportPage = () => {
               (sum: number, detail: any) => sum + detail.total,
               0
             );
+
             return acc;
           }, {});
+
+          total = Object.values(groupedData).reduce(
+            (sum: number, group: any) => sum + group.total_amount,
+            0
+          );
 
           rowData = Object.values(groupedData).map(
             (group: any, index: number) => ({
@@ -441,17 +461,11 @@ const ReportPage = () => {
                 })
               ),
               total_amount: group.total_amount,
-              total_in_text: numberToThaiText(total),
+              total_in_text: numberToThaiText(group.total_amount), // ✅ แก้ให้ตรง group
             })
           );
 
-          total = rowData.reduce(
-            (sum: number, group: any) => sum + group.total_amount,
-            0
-          );
-
-          console.log('rowData', rowData);
-          
+          console.log("rowData", rowData);
         } else if (exportType === "manufacture") {
           const groupedByDate = response.reduce((acc: any, item: any) => {
             const dateOnly = format(
